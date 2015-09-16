@@ -151,7 +151,7 @@ class RockyCoastCRN
 		/// @param tidalamplitude Amplitude of diurnal tides
 	  ///	@author Martin D. Hurst 
     /// @date 14/09/2015
-		PlatformCRN(double retreatrate1, double retreatrate2, double changetime, double beachwidth, double platformgradient, double cliffheight, double elevinit, double tidalamplitude)
+		RockyCoastCRN(double retreatrate1, double retreatrate2, double changetime, double beachwidth, double platformgradient, double cliffheight, double elevinit, double tidalamplitude)
 		{
 			Initialise(retreatrate1, retreatrate2, changetime, beachwidth, platformgradient, cliffheight, elevinit, tidalamplitude);
 		}
@@ -165,7 +165,7 @@ class RockyCoastCRN
 		/// @param tidalamplitude Amplitude of diurnal tides
 		///	@author Martin D. Hurst 
     /// @date 14/09/2015
-		PlatformCRN(double retreatrate, double beachwidth, double platformgradient, double cliffheight, double elevinit, double tidalamplitude)
+		RockyCoastCRN(double retreatrate, double beachwidth, double platformgradient, double cliffheight, double elevinit, double tidalamplitude)
 		{
 			Initialise(retreatrate, beachwidth, platformgradient, cliffheight, elevinit, tidalamplitude);
 		}
@@ -173,7 +173,7 @@ class RockyCoastCRN
 		/// @brief Empty initialisation function, will throw an error.
 		///	@author Martin D. Hurst 
     /// @date 14/09/2015
-		PlatformCRN()
+		RockyCoastCRN()
 		{
 			Initialise();
 		}
