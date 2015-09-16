@@ -125,13 +125,21 @@ class RockyCoastCRN
 		void Initialise(double retreatrate, double platformgradient, double cliffheight, double beachwidth, double elevinit, double tidalamplitude);
 		void Initialise(double retreatrate1, double retreatrate2, double changetime, double platformgradient, double cliffheight, double beachwidth, double elevinit, double tidalamplitude);
 		
+		//functions to initialise platform morphology
+		void InitialisePlanarPlatformMorphology();
+		
+		//function to initialise the tides
+		void InitialiseTides();
+		
 		//function to retrieve topographic shielding factor
 		double GetTopographicShieldingFactor(double X, double CliffHeight);
 		
-		//function ot retrieve geomagnetic scaling factor		
+		//functions to read and retrieve geomagnetic scaling factor
+		void InitialiseGeomagData();		
 		double GetGeoMagScalingFactor(double Time);
 		
 		//factor to retrieve a rate of sea level rise
+		void InitialiseRSLData();
 		double GetSeaLevelRise(double Time);
 			
 	protected:

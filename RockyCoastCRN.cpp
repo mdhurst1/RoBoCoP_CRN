@@ -85,89 +85,10 @@ void RockyCoastCRN::Initialise(double retreatrate, double beachwidth, double ele
 	platformgradient is the average slope of the platform surface (m/m) 
 	cliffheight is the height of the adjacent cliff (m)
 	tidalamplitude is the average tidal amplitude for diurnal tides. */
-
-	//Geometric paramters
-	NXNodes = 201;											//Number of nodes in cross shore
-	NZNodes = 201;											//Number of nodes in profile
-
-	PlatformWidth = 1000.;						//width of model domain (m)
-	PlatformDepth = 40.;							//Depth to which CRN will be tracked (needs to be large enough that sea level rise is ok)
-	NDV = -9999;											//Place holder for no data
-	
-	//setup vectors
-	vector<double> EmptyX(NXNodes,0.0);
-	vector<double> EmptyZ(NZNodes,0.0);
-	vector<double> EmptyXNDV(NXNodes,NDV);
-	vector< vector<double> > EmptyVV(NXNodes,EmptyZ);
-	X = EmptyX;
-	Z = EmptyZ;
-	SurfaceElevation = EmptyXNDV;
-	SurfaceElevationOld = EmptyXNDV;
-	SurfaceN = EmptyX;
-	N = EmptyVV;
-	for (int j=0; j<NZNodes; ++j) Z[j] = (20.-j*(PlatformDepth/(NZNodes-1)));
-	for (int i=0; i<NXNodes; ++i) X[i] = (i*(PlatformWidth/(NXNodes-1)));
-	
-	//Assign parameters
-	RetreatRate1 = retreatrate;
-	RetreatRate2 = retreatrate;
-	ChangeTime = 0;
-	PlatformGradient = platformgradient;
-	CliffHeight = cliffheight;
-	BeachWidth = beachwidth;
-	ElevInit = elevinit;
-	TidalAmplitude = tidalamplitude;
-	
-	/// TIDES 
-	TidalPeriod=12.;
-	for (double TT = 0; TT <= TidalPeriod; TT += 0.2) TideLevels.push_back(-TidalAmplitude*sin((2.*M_PI*TT)/(TidalPeriod)));
-	NTidalValues = (double)TideLevels.size();
-	WaterDepths.resize(NTidalValues);
-	WaterLevels.resize(NTidalValues);
-	
-	/// GEOMAG VARIATION AND RELATIVE SEALEVEL
-	double indata;
-	char Dummy[32];
-	
-	//read in geomag data from Lifton et al. (2014) model
-	string GeoMagFilename = "Lifton_GeoMagModel_Sussex.data";
-	ifstream GeoMagIn(GeoMagFilename.c_str());
-	if (!GeoMagIn)
-	{
-	  printf("RockyCoastCRN::%s: line %d GeoMag data file \"%s\" doesn't exist\n\n", __func__, __LINE__, GeoMagFilename.c_str());
-	  exit(EXIT_SUCCESS);
-	}
-	GeoMagIn >> Dummy;
-	GeoMagIn >> Dummy;
-	while (!GeoMagIn.eof())
-	{
-	  GeoMagIn >> indata;
-	  GeoMagTime.push_back(indata);
-	  GeoMagIn >> indata;
-	  GeoMagScalingFactors.push_back(indata);
-	}
-	GeoMagIn.close();
-	
-	//read in RSL data from Bradley et al. (2011) model
-	string GIAFilename = "Bradley_GIAModel_Sussex.data";
-	ifstream GIAIn(GIAFilename.c_str());
-	if (!GIAIn)
-	{
-	  printf("RockyCoastCRN::%s: line %d Relative Sea Level data file \"%s\" doesn't exist\n\n", __func__, __LINE__, GIAFilename.c_str());
-	  exit(EXIT_SUCCESS);
-	}
-	GIAIn >> Dummy;
-	GIAIn >> Dummy;
-	while (!GIAIn.eof())
-	{
-	  GIAIn >> indata;
-	  RSLTime.push_back(indata);
-	  GIAIn >> indata;
-	  RSLRate.push_back(indata);
-	}
-	GIAIn.close();
+  double changetime = 0;
+	Initialise(retreatrate, retreatrate, changetime, beachwidth, platformgradient, cliffheight, elevinit, tidalamplitude);
 }
-
+	
 void RockyCoastCRN::Initialise(double retreatrate1, double retreatrate2, double changetime, double beachwidth, double platformgradient, double cliffheight, double elevinit, double tidalamplitude)
 {
   /* initialise a platform object for two retreat rate scenarios
@@ -184,25 +105,10 @@ void RockyCoastCRN::Initialise(double retreatrate1, double retreatrate2, double 
 	//Geometric parameters
 	NXNodes = 201;											//Number of nodes in cross shore
 	NZNodes = 201;											//Number of nodes in profile
-
 	PlatformWidth = 1000.;						//width of model domain (m)
 	PlatformDepth = 40.;							//Depth to which CRN will be tracked (needs to be large enough that sea level rise is ok)
 	NDV = -9999;											//Place holder for no data
-	
-	//setup vectors
-	vector<double> EmptyX(NXNodes,0.0);
-	vector<double> EmptyZ(NZNodes,0.0);
-	vector<double> EmptyXNDV(NXNodes,NDV);
-	vector< vector<double> > EmptyVV(NXNodes,EmptyZ);
-	X = EmptyX;
-	Z = EmptyZ;
-	SurfaceElevation = EmptyXNDV;
-	SurfaceElevationOld = EmptyXNDV;
-	SurfaceN = EmptyX;
-	N = EmptyVV;
-	for (int j=0; j<NZNodes; ++j) Z[j] = (20.-j*(PlatformDepth/(NZNodes-1)));
-	for (int i=0; i<NXNodes; ++i) X[i] = (i*(PlatformWidth/(NXNodes-1)));
-	
+
 	//Assign Parameters
 	RetreatRate1 = retreatrate1;
 	RetreatRate2 = retreatrate2;
@@ -213,14 +119,28 @@ void RockyCoastCRN::Initialise(double retreatrate1, double retreatrate2, double 
 	ElevInit = elevinit;
 	TidalAmplitude = tidalamplitude;
 	
-	/// TIDES
+	//initialise tides, geomag and RSL data
+	InitialiseTides();
+	InitialiseGeomagData();
+	InitialiseRSLData();
+	
+	//Initialise Platform
+	InitialisePlanarPlatformMorphology();
+}
+	
+void RockyCoastCRN::InitialiseTides()
+{
+	/// TIDES 
 	TidalPeriod=12.;
-	for (double TT = 0; TT <= TidalPeriod; TT += 0.5) TideLevels.push_back(-TidalAmplitude*sin((2.*M_PI*TT)/(TidalPeriod)));
+	for (double TT = 0; TT <= TidalPeriod; TT += 0.2) TideLevels.push_back(-TidalAmplitude*sin((2.*M_PI*TT)/(TidalPeriod)));
 	NTidalValues = (double)TideLevels.size();
 	WaterDepths.resize(NTidalValues);
 	WaterLevels.resize(NTidalValues);
-	
-	/// GEOMAG VARIATION AND RELATIVE SEALEVEL
+}
+
+void RockyCoastCRN::InitialiseGeomagData()
+{	
+	/// GEOMAG VARIATION
 	double indata;
 	char Dummy[32];
 	
@@ -241,9 +161,14 @@ void RockyCoastCRN::Initialise(double retreatrate1, double retreatrate2, double 
 	  GeoMagIn >> indata;
 	  GeoMagScalingFactors.push_back(indata);
 	}
-	GeoMagTime.pop_back();
-	GeoMagScalingFactors.pop_back();
 	GeoMagIn.close();
+}
+
+void RockyCoastCRN::InitialiseRSLData()
+{
+	//AND RELATIVE SEALEVEL
+	double indata;
+	char Dummy[32];
 	
 	//read in RSL data from Bradley et al. (2011) model
 	string GIAFilename = "Bradley_GIAModel_Sussex.data";
@@ -262,11 +187,29 @@ void RockyCoastCRN::Initialise(double retreatrate1, double retreatrate2, double 
 	  GIAIn >> indata;
 	  RSLRate.push_back(indata);
 	}
-	RSLTime.pop_back();
-	RSLRate.pop_back();
 	GIAIn.close();
 }
 
+void RockyCoastCRN::InitialisePlanarPlatformMorphology()
+{
+  //MorphType is type of morphology
+  //1 is planar platform
+  //2 is 
+  //setup vectors
+	vector<double> EmptyX(NXNodes,0.0);
+	vector<double> EmptyZ(NZNodes,0.0);
+	vector<double> EmptyXNDV(NXNodes,NDV);
+	vector< vector<double> > EmptyVV(NXNodes,EmptyZ);
+	X = EmptyX;
+	Z = EmptyZ;
+	SurfaceElevation = EmptyXNDV;
+	SurfaceElevationOld = EmptyXNDV;
+	SurfaceN = EmptyX;
+	N = EmptyVV;
+	for (int j=0; j<NZNodes; ++j) Z[j] = (20.-j*(PlatformDepth/(NZNodes-1)));
+	for (int i=0; i<NXNodes; ++i) X[i] = (i*(PlatformWidth/(NXNodes-1)));
+}
+	
 void RockyCoastCRN::UpdateParameters( double RetreatRate1_Test, double RetreatRate2_Test, 
                                     double ChangeTime_Test, double BeachWidth_Test, 
                                     double ElevInit_Test)
