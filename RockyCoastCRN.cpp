@@ -323,7 +323,6 @@ void RockyCoastCRN::RunModel(int RetreatType, int WriteResultsFlag)
 	//Time control
 	double Time = 0;					//time in years
 	double dt = 4;						//time step
-	double PrintTime = 0;     //
 	double SeaLevel = 0;			//Sea Level Tracker
 	double XMax = 1000.; 	    //Distance from cliff
 
@@ -345,7 +344,6 @@ void RockyCoastCRN::RunModel(int RetreatType, int WriteResultsFlag)
   //limit start time to 7ka
 	if (MaxTime > 7000)	Time = 7000;
 	else Time = MaxTime;
-	PrintTime = Time;
 	MaxTime = Time;
 	
 	double XTrack;

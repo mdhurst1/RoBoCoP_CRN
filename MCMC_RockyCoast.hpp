@@ -106,7 +106,7 @@ class MCMC_RockyCoast
 		vector<double> TopoXData;
 		vector<double> TopoZData;
 		
-		PlatformCRN MCMCPlatformCRN;
+		RockyCoastCRN MCMCPlatformCRN;
 		
 		// calcualtes the likelihood using measured and modelled data
 		double CalculateLikelihood();

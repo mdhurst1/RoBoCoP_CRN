@@ -120,7 +120,7 @@ void MCMC_RockyCoast::Initialise(char* CRNDatafile, char* PlatformXSectionDatafi
   NTopoData = TopoXData.size();
   NData = XData.size();
   
-  MCMCRockyCoastCRN = RockyCoastCRN();  
+  RockyCoastCRN MCMCRockyCoastCRN = RockyCoastCRN();  
 }
 
 double MCMC_RockyCoast::CalculateLikelihood()

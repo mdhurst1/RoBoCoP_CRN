@@ -8,14 +8,14 @@ LD=g++
 # -g option build tables for debugging
 # -c option compile but do not try to link (yet)
 # -Wall display all warning messages
-# -pg is some sort of debugging option
+# -pg does what?!
 # -O3 is an optimisation flag, not good for debugging
 
-CFLAGS= -g -c -Wall -pg  -O3 -fopenmp  $(INCDIR)
-LDFLAGS= -g -Wall -pg  -O3 -fopenmp
+CFLAGS= -g -c -Wall -pg -O3 -fopenmp  $(INCDIR)
+LDFLAGS= -g -Wall -pg -O3 -fopenmp
 
 # SOURCE FILES MACROS IN DEPENDENCY ORDER? SHOULDNT MATTER THANKS TO HEADERS
-SOURCES = ./RockyCoastCRN.cpp ./RockyCoastCRN_Driver.cpp
+SOURCES = ./MCMC_RockyCoast_Driver.cpp ./MCMC_RockyCoast.cpp ./RockyCoastCRN.cpp
 
 # LIBRARIES MACRO
 LIBS   = -lm -lstdc++ 
@@ -24,7 +24,7 @@ LIBS   = -lm -lstdc++
 OBJECTS=$(SOURCES:.cpp=.o)
 
 # EXECUTABLE MACRO
-EXECUTABLE=RockyCoastCRN.out
+EXECUTABLE=LaunchMCMC.out
 
 all: $(SOURCES) $(EXECUTABLE)
 
