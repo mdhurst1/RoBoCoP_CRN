@@ -9,12 +9,13 @@
 #include <cstdlib>
 #include <omp.h>
 #include <unistd.h>
-#include "PlatformCRN.hpp"
+#include "RockyCoastCRN.hpp"
 
 using namespace std;
 
 int main()
 {
+	//Input parameters
 	double RetreatRate1 = 0.25;
 	double RetreatRate2 = 0.025;
 	double ChangeTime = 0;
@@ -23,10 +24,13 @@ int main()
 	double CliffHeight = 50.;
 	double BeachWidth = 10.;
 	double ElevInit = 0.;
+	int RetreatType = 2;	
 	
-	PlatformCRN PlatformCRNModel(RetreatRate1, RetreatRate2, ChangeTime, BeachWidth, PlatformGradient, CliffHeight, ElevInit, Amp);
-	int RetreatType = 2;
-	PlatformCRNModel.RunModel(RetreatType);
+	//Create Platform CRN object
+	RockyCoastCRN RockyCoastCRNModel(RetreatRate1, RetreatRate2, ChangeTime, BeachWidth, PlatformGradient, CliffHeight, ElevInit, Amp);
+
+  //Run the model
+	RockyCoastCRNModel.RunModel(RetreatType);
 	
 	return 0;
 }
