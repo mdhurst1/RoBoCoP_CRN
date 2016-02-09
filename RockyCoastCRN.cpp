@@ -76,7 +76,7 @@ void RockyCoastCRN::Initialise()
 	ElevInit = NDV;
 	TidalAmplitude = NDV;
 }
-void RockyCoastCRN::Initialise(double retreatrate, double beachwidth, double elevinit, double platformgradient, double cliffheight, double tidalamplitude)
+void RockyCoastCRN::Initialise(double retreatrate, double beachwidth, double elevinit, double platformgradient, double cliffheight, double tidalamplitude, int steppedplatform, double stepsize)
 {
 	/* initialise a platform object for single retreat rate scenarios
 	retreatrate is the rate of cliff retreat (m/yr)
@@ -86,10 +86,10 @@ void RockyCoastCRN::Initialise(double retreatrate, double beachwidth, double ele
 	cliffheight is the height of the adjacent cliff (m)
 	tidalamplitude is the average tidal amplitude for diurnal tides. */
   double changetime = 0;
-	Initialise(retreatrate, retreatrate, changetime, beachwidth, platformgradient, cliffheight, elevinit, tidalamplitude);
+	Initialise(retreatrate, retreatrate, changetime, beachwidth, platformgradient, cliffheight, elevinit, tidalamplitude,steppedplatform, stepsize);
 }
 	
-void RockyCoastCRN::Initialise(double retreatrate1, double retreatrate2, double changetime, double beachwidth, double platformgradient, double cliffheight, double elevinit, double tidalamplitude)
+void RockyCoastCRN::Initialise(double retreatrate1, double retreatrate2, double changetime, double beachwidth, double platformgradient, double cliffheight, double elevinit, double tidalamplitude, int steppedplatform, double stepsize)
 {
   /* initialise a platform object for two retreat rate scenarios
   retreatrate1 runs from 7.5ka until changetime, after which retreatrate2 continues to present
@@ -118,6 +118,8 @@ void RockyCoastCRN::Initialise(double retreatrate1, double retreatrate2, double 
 	BeachWidth = beachwidth;
 	ElevInit = elevinit;
 	TidalAmplitude = tidalamplitude;
+	SteppedPlatform = steppedplatform;
+	StepSize = stepsize;
 	
 	//initialise tides, geomag and RSL data
 	InitialiseTides();
@@ -192,11 +194,7 @@ void RockyCoastCRN::InitialiseRSLData()
 
 void RockyCoastCRN::InitialisePlanarPlatformMorphology()
 {
-  //MorphType is type of morphology
-  //1 is planar platform
-  //2 is 
-  //setup vectors
-	vector<double> EmptyX(NXNodes,0.0);
+  vector<double> EmptyX(NXNodes,0.0);
 	vector<double> EmptyZ(NZNodes,0.0);
 	vector<double> EmptyXNDV(NXNodes,NDV);
 	vector< vector<double> > EmptyVV(NXNodes,EmptyZ);
@@ -265,7 +263,7 @@ void RockyCoastCRN::RunModel(int RetreatType, int WriteResultsFlag)
 		
 	//Time control
 	double Time = 0;					//time in years
-	double dt = 4;						//time step
+	double dt = 1;						//time step
 	double SeaLevel = 0;			//Sea Level Tracker
 	double XMax = 1000.; 	    //Distance from cliff
 
@@ -306,7 +304,11 @@ void RockyCoastCRN::RunModel(int RetreatType, int WriteResultsFlag)
 	int ZTrackInd = 0;
 	for (int i=0; i<NXNodes; ++i)
 	{
-	  if (X[i] > XTrack) SurfaceElevation[i] = ElevInit-(X[i]-(XTrack+BeachWidth))*PlatformGradient;
+	  if (X[i] > XTrack) 
+	  {
+	    SurfaceElevation[i] = ElevInit-(X[i]-(XTrack+BeachWidth))*PlatformGradient;
+	    if (SteppedPlatform == 1) SurfaceElevation[i] = round(SurfaceElevation[i]/StepSize)*StepSize;
+	  }
 	  else XTrackInd = i;
 	}
   SurfaceElevationOld = SurfaceElevation;
@@ -327,112 +329,27 @@ void RockyCoastCRN::RunModel(int RetreatType, int WriteResultsFlag)
 	while (Time > 0)
 	{
 		//Get retreat rate depending on style of retreat
-		if (RetreatType == 0) RetreatRate = RetreatRate1;
-		else if (RetreatType == 1)
-		{
-		  if (Time > ChangeTime) RetreatRate = RetreatRate1;
-		  else RetreatRate = RetreatRate2;
-		}
-		else if (RetreatType == 2)
-		{
-		  dTime = MaxTime-Time;
-		  Factor = dTime/MaxTime;
-		  dRR = RetreatRate1-RetreatRate2;
-		  RetreatRate = RetreatRate1-dRR*Factor;
-		}
-		else 
-		{
-		  printf("RockyCoastCRN::%s: line %d Unknown retreat type!\n\n", __func__, __LINE__);
-		  exit(EXIT_SUCCESS);
-		}
+		GetRetreatRate();
 		
-		//Get shielding and scaling factors
+		//Get geomag scaling factor
 		GeoMagScalingFactor = GetGeoMagScalingFactor(Time);
+		
+		//Get sea level rise from local record
 		SLR = GetSeaLevelRise(Time);
 		
-		// variation in production on the platform at depth as a function of a tidal period
-		// First get a Tidal Sequence of Water Levels, clipping for negative depths
-		for (int i=0, NN=WaterLevels.size(); i<NN;++i) WaterLevels[i] = SeaLevel+TideLevels[i];
-		
-		//LOOP ACROSS THE ACTIVE PART OF THE PLATFORM
-		for (int i=XTrackInd; i<NXNodes; ++i)
-		{
-			//only work on active nodes beyond the beach
-			if ((X[i] > XTrack+BeachWidth) && (X[i] <= XMax))
-			{
-				//Get topographic shielding factor
-				TopoShieldingFactor = GetTopographicShieldingFactor(X[i]-XTrack, CliffHeight);
-
-				//get water levels for this profile
-				//reset production params
-				P_Spal = 0;
-				P_Muon = 0;
-
-				for (int a=0, NN= WaterLevels.size(); a<NN; ++a)
-				{
-					if (WaterLevels[a] >= SurfaceElevation[i]) WaterDepths[a] = WaterLevels[a]-SurfaceElevation[i];
-					else WaterDepths[a] = 0;
-
-					//Calculate Production for this profile
-					P_Spal += GeoMagScalingFactor*TopoShieldingFactor*Po_Spal*exp(-WaterDepths[a]/z_ws);
-					P_Muon += TopoShieldingFactor*Po_Muon*exp(-WaterDepths[a]/z_wm);
-				}
-
-				//find mean production rate at surface
-				P_Spal /= NTidalValues;
-				P_Muon /= NTidalValues;
-			
-			  //loop through depths and update concentrations
-			  int Top = 0;
-			  for (int j=ZTrackInd; j<NZNodes; ++j)
-			  {
-				  //cout << Z[j] << " " << SurfaceElevation[i] << " " << i << " " << j << endl;
-				  if ((Z[j] <= SurfaceElevation[i]) && (Z[j] > SurfaceElevation[i]-20.))
-				  {
-					  if (Top == 0)
-					  {	
-						  //linearly interpolate to get concentration at the surface
-						  if (SurfaceElevationOld[i] == -9999) SurfaceElevationOld[i] = SeaLevel+ElevInit;
-						  else if (SurfaceN[i] > 0) SurfaceN[i] -= (((SurfaceElevationOld[i]-SurfaceElevation[i])/(SurfaceElevationOld[i]-Z[j]))*(SurfaceN[i]-N[i][j]));
-						  
-						  //update concentration at the surface
-						  SurfaceN[i] += dt*P_Spal*exp((0-((SurfaceElevationOld[i]-SurfaceElevation[i])))/z_rs);
-						  Top = 1;
-					  }
-					
-					  //update concentrations at depth
-					  N[i][j] += dt*P_Spal*exp((Z[j]-SurfaceElevation[i])/z_rs);	//spallation
-					  N[i][j] += dt*P_Muon*exp((Z[j]-SurfaceElevation[i])/z_rm);	//muons
-					  
-					  //remove atoms due to radioactive decay
-					  N[i][j] -= dt*Lambda;
-				  }
-			  }
-			}
-		}
-		
-		//update position and time
+    //update CRN concentrations
+    UpdateCRNs();
+    
+    //update morphology
+    UpdateMorphology();
+    
+		//update cliff position and time
 		XTrack -= RetreatRate*dt;
 		Time -= dt;
 		SeaLevel += SLR*dt;
 		if (XTrack < X[XTrackInd]) XTrackInd -= 1;
 		if (SeaLevel < Z[ZTrackInd]) ZTrackInd += 1;
     if (XTrackInd < 0) XTrackInd = 0;
-
-		for (int i=XTrackInd; i<NXNodes; ++i)
-		{
-			SurfaceElevationOld[i] = SurfaceElevation[i];
-			if ((X[i] >= XTrack) && (XTrack <= XMax))
-			{
-				if (SurfaceElevation[i] == NDV) SurfaceElevation[i] = SeaLevel+ElevInit-(X[i]-XTrack)*PlatformGradient;
-				else
-				{
-					SurfaceElevChange = dt*(RetreatRate*PlatformGradient-SLR);
-					if (SurfaceElevChange < 0) SurfaceElevChange = 0;
-					SurfaceElevation[i] -= SurfaceElevChange;
-				}
-			}
-		}
 	}
 	
   XTrackInd = 0;
@@ -448,6 +365,141 @@ void RockyCoastCRN::RunModel(int RetreatType, int WriteResultsFlag)
 	  for (int i=0; i<NXNodes; ++i) write_results << X[i] << " " << SurfaceN[i] << endl;
 	  write_results.close();
   }
+}
+
+void RockyCoastCRN::GetRetreatRate()
+{
+  /*
+  Function to update get the retreat rate based on the retreat scenario
+  where 0 is constant retreat rate, 1 is step change in retreat rate and
+  2 is linear change in retreat rate
+  
+  Martin Hurst
+  February 2016
+  */
+  
+  if (RetreatType == 0) RetreatRate = RetreatRate1;
+	else if (RetreatType == 1)
+	{
+	  if (Time > ChangeTime) RetreatRate = RetreatRate1;
+	  else RetreatRate = RetreatRate2;
+	}
+	else if (RetreatType == 2)
+	{
+	  dTime = MaxTime-Time;
+	  Factor = dTime/MaxTime;
+	  dRR = RetreatRate1-RetreatRate2;
+	  RetreatRate = RetreatRate1-dRR*Factor;
+	}
+	else 
+	{
+	  printf("RockyCoastCRN::%s: line %d Unknown retreat type!\n\n", __func__, __LINE__);
+	  exit(EXIT_SUCCESS);
+	}
+}
+
+void RockyCoastCRN::UpdateCRNs()
+{
+  /*
+  Function to update the concentrations of cosmogenic radionuclides at and below 
+  the platform surface. Currently for 10Be only.
+  
+  Martin Hurst
+  February 2016
+  */
+  
+  // variation in production on the platform at depth as a function of a tidal period
+	// First get a Tidal Sequence of Water Levels, clipping for negative depths
+	for (int i=0, NN=WaterLevels.size(); i<NN;++i) WaterLevels[i] = SeaLevel+TideLevels[i];
+		
+  //LOOP ACROSS THE ACTIVE PART OF THE PLATFORM
+	for (int i=XTrackInd; i<NXNodes; ++i)
+	{
+		//only work on active nodes beyond the beach
+		if ((X[i] > XTrack+BeachWidth) && (X[i] <= XMax))
+		{
+			//Get topographic shielding factor
+			TopoShieldingFactor = GetTopographicShieldingFactor(X[i]-XTrack, CliffHeight);
+
+			//get water levels for this profile
+			//reset production params
+			P_Spal = 0;
+			P_Muon = 0;
+
+			for (int a=0, NN=WaterLevels.size(); a<NN; ++a)
+			{
+				if (WaterLevels[a] >= SurfaceElevation[i]) WaterDepths[a] = WaterLevels[a]-SurfaceElevation[i];
+				else WaterDepths[a] = 0;
+
+				//Calculate Production for this profile
+				P_Spal += GeoMagScalingFactor*TopoShieldingFactor*Po_Spal*exp(-WaterDepths[a]/z_ws);
+				P_Muon += TopoShieldingFactor*Po_Muon*exp(-WaterDepths[a]/z_wm);
+			}
+
+			//find mean production rate at surface
+			P_Spal /= NTidalValues;
+			P_Muon /= NTidalValues;
+		
+		  //loop through depths and update concentrations
+		  int Top = 0;
+		  for (int j=ZTrackInd; j<NZNodes; ++j)
+		  {
+			  //cout << Z[j] << " " << SurfaceElevation[i] << " " << i << " " << j << endl;
+			  if ((Z[j] <= SurfaceElevation[i]) && (Z[j] > SurfaceElevation[i]-20.))
+			  {
+				  if (Top == 0)
+				  {	
+					  //linearly interpolate to get concentration at the surface
+					  if (SurfaceElevationOld[i] == -9999) SurfaceElevationOld[i] = SeaLevel+ElevInit;
+					  else if (SurfaceN[i] > 0) SurfaceN[i] -= (((SurfaceElevationOld[i]-SurfaceElevation[i])/(SurfaceElevationOld[i]-Z[j]))*(SurfaceN[i]-N[i][j]));
+					  
+					  //update concentration at the surface
+					  SurfaceN[i] += dt*P_Spal*exp((0-((SurfaceElevationOld[i]-SurfaceElevation[i])))/z_rs);
+					  Top = 1;
+				  }
+				
+				  //update concentrations at depth
+				  N[i][j] += dt*P_Spal*exp((Z[j]-SurfaceElevation[i])/z_rs);	//spallation
+				  N[i][j] += dt*P_Muon*exp((Z[j]-SurfaceElevation[i])/z_rm);	//muons
+				  
+				  //remove atoms due to radioactive decay
+				  N[i][j] -= dt*Lambda;
+			  }
+		  }
+		}
+	}
+}
+
+void RockyCoastCRN::UpdateMorphology()
+{
+  /*
+  Function to update the morphology of the platform. Moves the cliff following the 
+  prescribed retreat rate and updates the platform surface.
+  
+  Martin Hurst
+  February 2016
+  */
+  
+  //Update surface elevations
+	for (int i=XTrackInd; i<NXNodes; ++i)
+	{
+		SurfaceElevationOld[i] = SurfaceElevation[i];
+		if ((X[i] >= XTrack) && (XTrack <= XMax))
+		{
+			if (SurfaceElevation[i] == NDV)
+			{
+			  SurfaceElevation[i] = SeaLevel+ElevInit-(X[i]-XTrack)*PlatformGradient;
+			  if (SteppedPlatform == 1) SurfaceElevation[i] = round(SurfaceElevation[i]/StepSize)*StepSize;
+			}
+			else
+			{
+				SurfaceElevChange = dt*(RetreatRate*PlatformGradient-SLR);
+				if (SurfaceElevChange < 0) SurfaceElevChange = 0;
+				SurfaceElevation[i] -= SurfaceElevChange;
+				if (SteppedPlatform == 1) SurfaceElevation[i] = round(SurfaceElevation[i]/StepSize)*StepSize;
+			}
+		}
+	}
 }
 
 double RockyCoastCRN::GetTopographicShieldingFactor(double X, double CliffHeight)

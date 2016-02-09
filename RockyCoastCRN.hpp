@@ -87,18 +87,18 @@ class RockyCoastCRN
 		
 		vector<double> X;										//cross shore distance (m)
 		vector<double> Z;										//elevation (m)
-		vector<double> SurfaceN;							//Surface concentrations	(a/g)
-		vector<double> SurfaceElevation;			//Surface Elevations
+		vector<double> SurfaceN;						//Surface concentrations	(a/g)
+		vector<double> SurfaceElevation;		//Surface Elevations
 		vector<double> SurfaceElevationOld;	//Surface Elevations
-		vector< vector<double> > N;					//concentration of nuclides (a/g)
+		vector< vector<double> > N;					//concentration of nuclides (a/g) as a function of position and depth
 		
 		vector<double> GeoMagTime;
 		vector<double> GeoMagScalingFactors;  //Holds data from Lifton et al. (2014) Geomag model
 		vector<double> RSLTime;
-		vector<double> RSLRate;             //Holds data from Bradley et al. (2011) GIA model
+		vector<double> RSLRate;               //Holds data from Bradley et al. (2011) GIA model
 	
-		double PlatformWidth;								//Wdith of model domain
-		double PlatformDepth;								//depth of model domain
+		double PlatformWidth;								//Width of model domain
+		double PlatformDepth;								//Depth of model domain
 		double NDV;													//No Data Value placeholder
 		
 		//CRN
@@ -119,11 +119,15 @@ class RockyCoastCRN
 		double CliffHeight;
 		double BeachWidth;
 		double ElevInit;
+		
+		//RetreatSyle
+		int SteppedPlatform;
+		double StepSize;
 	
 		//Initialise Function
 		void Initialise();
-		void Initialise(double retreatrate, double platformgradient, double cliffheight, double beachwidth, double elevinit, double tidalamplitude);
-		void Initialise(double retreatrate1, double retreatrate2, double changetime, double platformgradient, double cliffheight, double beachwidth, double elevinit, double tidalamplitude);
+		void Initialise(double retreatrate, double platformgradient, double cliffheight, double beachwidth, double elevinit, double tidalamplitude,int steppedplatform=0, double stepsize=0);
+		void Initialise(double retreatrate1, double retreatrate2, double changetime, double platformgradient, double cliffheight, double beachwidth, double elevinit, double tidalamplitude,int steppedplatform=0, double stepsize=0);
 		
 		//functions to initialise platform morphology
 		void InitialisePlanarPlatformMorphology();
@@ -159,9 +163,9 @@ class RockyCoastCRN
 		/// @param tidalamplitude Amplitude of diurnal tides
 	  ///	@author Martin D. Hurst 
     /// @date 14/09/2015
-		RockyCoastCRN(double retreatrate1, double retreatrate2, double changetime, double beachwidth, double platformgradient, double cliffheight, double elevinit, double tidalamplitude)
+		RockyCoastCRN(double retreatrate1, double retreatrate2, double changetime, double beachwidth, double platformgradient, double cliffheight, double elevinit, double tidalamplitude, int steppedplatform=0, double stepsize=0)
 		{
-			Initialise(retreatrate1, retreatrate2, changetime, beachwidth, platformgradient, cliffheight, elevinit, tidalamplitude);
+			Initialise(retreatrate1, retreatrate2, changetime, beachwidth, platformgradient, cliffheight, elevinit, tidalamplitude, steppedplatform, stepsize);
 		}
 		
 		/// @brief Initialisation function for a single retreat rate scenario.
@@ -173,9 +177,9 @@ class RockyCoastCRN
 		/// @param tidalamplitude Amplitude of diurnal tides
 		///	@author Martin D. Hurst 
     /// @date 14/09/2015
-		RockyCoastCRN(double retreatrate, double beachwidth, double platformgradient, double cliffheight, double elevinit, double tidalamplitude)
+		RockyCoastCRN(double retreatrate, double beachwidth, double platformgradient, double cliffheight, double elevinit, double tidalamplitude, int steppedplatform=0, double stepsize=0)
 		{
-			Initialise(retreatrate, beachwidth, platformgradient, cliffheight, elevinit, tidalamplitude);
+			Initialise(retreatrate, beachwidth, platformgradient, cliffheight, elevinit, tidalamplitude, steppedplatform, stepsize);
 		}
 		
 		/// @brief Empty initialisation function, will throw an error.
@@ -207,6 +211,29 @@ class RockyCoastCRN
 		///	@author Martin D. Hurst 
     /// @date 14/09/2015
 		void RunModel(int RetreatType,int WriteResultsFlag=1);
+		
+		/// @brief Determine current retreat rate
+		/// @details This function determines the cliff retreat rate for the current timestep based on
+		///   the selected scenario/mode of cliff retreat. Retreat type = 0 is constant retreat rate
+		///   1 = step change in retreat rate at time ChangeTime and 2 = gradual change in reteat rate
+		///   through time.
+		///	@author Martin D. Hurst 
+    /// @date 09/02/2016
+		void GetRetreatRate();
+		
+		/// @brief Updates the CRN concentrations at the platform surface and at depth
+		/// @details This function calculates the accumulation of 10Be in the platform surface and
+		//    at depth by both spallation and muogenic production. 
+		///	@author Martin D. Hurst 
+    /// @date 09/02/2016
+		void UpdateCRNConcentrations();
+
+		/// @brief Updates the platform morphology
+		/// @details This function calculates the amount of platform downwear and updates the elevations
+		///   of the platform surface. Currently just does gradual uniform downwear or step-retreat.
+		///	@author Martin D. Hurst 
+    /// @date 09/02/2016
+		void UpdateMorphology();
 		
 		/// @brief Get X coordinates
 		/// @return X coordinates
