@@ -61,7 +61,7 @@ void RockyCoastCRN::Initialise()
   /* initialise an empty platform object
 	retreatrate is the rate of cliff retreat (m/yr)
 	beachwidth is the width of the beach (m), protecting the platform from CRN production
-	elevinit is the elevation of the platform at the beach edge 
+	JunctionElevation is the elevation of the platform/cliff junction
 	platformgradient is the average slope of the platform surface (m/m) 
 	cliffheight is the height of the adjacent cliff (m)
 	tidalamplitude is the average tidal amplitude for diurnal tides. */
@@ -73,23 +73,25 @@ void RockyCoastCRN::Initialise()
 	PlatformGradient = NDV;
 	CliffHeight = NDV;
 	BeachWidth = NDV;
-	ElevInit = NDV;
+	BermHeight = NDV;
+	JunctionElevation = NDV;
 	TidalAmplitude = NDV;
 }
-void RockyCoastCRN::Initialise(double retreatrate, double beachwidth, double elevinit, double platformgradient, double cliffheight, double tidalamplitude, int steppedplatform, double stepsize)
+
+void RockyCoastCRN::Initialise(double retreatrate, double beachwidth, double bermheight, double platformgradient, double cliffheight, double junctionelevation, double tidalamplitude, int steppedplatform, double stepsize)
 {
 	/* initialise a platform object for single retreat rate scenarios
 	retreatrate is the rate of cliff retreat (m/yr)
 	beachwidth is the width of the beach (m), protecting the platform from CRN production
-	elevinit is the elevation of the platform at the beach edge 
+	JunctionElevation is the elevation of the platform/cliff junction
 	platformgradient is the average slope of the platform surface (m/m) 
 	cliffheight is the height of the adjacent cliff (m)
 	tidalamplitude is the average tidal amplitude for diurnal tides. */
   double changetime = 0;
-	Initialise(retreatrate, retreatrate, changetime, beachwidth, platformgradient, cliffheight, elevinit, tidalamplitude,steppedplatform, stepsize);
+	Initialise(retreatrate, retreatrate, changetime, beachwidth, bermheight, platformgradient, cliffheight, junctionelevation, tidalamplitude,steppedplatform, stepsize);
 }
 	
-void RockyCoastCRN::Initialise(double retreatrate1, double retreatrate2, int retreattype, double changetime, double beachwidth, double platformgradient, double cliffheight, double elevinit, double tidalamplitude, int steppedplatform, double stepsize)
+void RockyCoastCRN::Initialise(double retreatrate1, double retreatrate2, int retreattype, double changetime, double beachwidth, double bermheight, double platformgradient, double cliffheight, double junctionelevation, double tidalamplitude, int steppedplatform, double stepsize)
 {
   /* initialise a platform object for two retreat rate scenarios
   retreatrate1 runs from 7.5ka until changetime, after which retreatrate2 continues to present
@@ -97,7 +99,7 @@ void RockyCoastCRN::Initialise(double retreatrate1, double retreatrate2, int ret
 	retreatrate2 is the 2nd rate of cliff retreat (m/yr)
 	changetime is the time to switch from retreatrate1 to retreatrate2 (years BP)
 	beachwidth is the width of the beach (m), protecting the platform from CRN production
-	elevinit is the elevation of the platform at the beach edge 
+	JunctionElevation is the elevation of the platform/cliff junction
 	platformgradient is the average slope of the platform surface (m/m) 
 	cliffheight is the height of the adjacent cliff (m)
 	tidalamplitude is the average tidal amplitude for diurnal tides. */
@@ -106,7 +108,7 @@ void RockyCoastCRN::Initialise(double retreatrate1, double retreatrate2, int ret
 	NXNodes = 201;											//Number of nodes in cross shore
 	NZNodes = 201;											//Number of nodes in profile
 	PlatformWidth = 1000.;						//width of model domain (m)
-	PlatformDepth = 40.;							//Depth to which CRN will be tracked (needs to be large enough that sea level rise is ok)
+	PlatformDepth = 20.;							//Depth to which CRN will be tracked (needs to be large enough that sea level rise is ok)
 	NDV = -9999;											//Place holder for no data
 
 	//Assign Parameters
@@ -117,11 +119,15 @@ void RockyCoastCRN::Initialise(double retreatrate1, double retreatrate2, int ret
 	PlatformGradient = platformgradient;
 	CliffHeight = cliffheight;
 	BeachWidth = beachwidth;
-	ElevInit = elevinit;
+	BermHeight = bermheight;
+	JunctionElevation = junctionelevation;
 	TidalAmplitude = tidalamplitude;
 	SteppedPlatform = steppedplatform;
 	StepSize = stepsize;
 	
+	//constant for Bruun profile beaches
+	A = 0.125;
+		
 	//initialise tides, geomag and RSL data
 	InitialiseTides();
 	InitialiseGeomagData();
@@ -201,17 +207,18 @@ void RockyCoastCRN::InitialisePlanarPlatformMorphology()
 	vector< vector<double> > EmptyVV(NXNodes,EmptyZ);
 	X = EmptyX;
 	Z = EmptyZ;
+	PlatformElevation = EmptyXNDV;
+	PlatformElevationOld = EmptyXNDV;
 	SurfaceElevation = EmptyXNDV;
-	SurfaceElevationOld = EmptyXNDV;
 	SurfaceN = EmptyX;
 	N = EmptyVV;
-	for (int j=0; j<NZNodes; ++j) Z[j] = (20.-j*(PlatformDepth/(NZNodes-1)));
+	for (int j=0; j<NZNodes; ++j) Z[j] = ((PlatformDepth/2.)-j*(PlatformDepth/(NZNodes-1)));
 	for (int i=0; i<NXNodes; ++i) X[i] = (i*(PlatformWidth/(NXNodes-1)));
 }
 	
 void RockyCoastCRN::UpdateParameters( double RetreatRate1_Test, double RetreatRate2_Test, 
                                     double ChangeTime_Test, double BeachWidth_Test, 
-                                    double ElevInit_Test)
+                                    double JunctionElevation_Test)
 {
   /*  Function to update model parameters for a new model run. 
   This is designed for use with the MCMC_RockyCoast object in order to save a 
@@ -220,17 +227,17 @@ void RockyCoastCRN::UpdateParameters( double RetreatRate1_Test, double RetreatRa
   RetreatRate2_Test is the new RetreatRate2
   ChangeTime_Test is the new ChangeTime
   BeachWidth_Test is the new BeachWidth
-  ElevInit_Test is the new ElevInit    */
+  JunctionElevation_Test is the new JunctionElevation    */
   
   RetreatRate1 = RetreatRate1_Test;
   RetreatRate2 = RetreatRate2_Test;
   ChangeTime = ChangeTime_Test;
   BeachWidth = BeachWidth_Test;
-  ElevInit = ElevInit_Test;
+  JunctionElevation = JunctionElevation_Test;
 
 }
 
-void RockyCoastCRN::RunModel(int WriteResultsFlag)
+void RockyCoastCRN::RunModel(string outfilename, int WriteResultsFlag)
 {
   /*  Main model loop. Iterates through time updating the CRN concentrations on the 
       platform and at depth. Cliff steps back following cliff retreat rates, and 
@@ -248,6 +255,9 @@ void RockyCoastCRN::RunModel(int WriteResultsFlag)
       This should be turned off (set to 0) for running MCMC_RockyCoast analysis.
   */
   
+  //Filenames
+  OutFileName = outfilename;
+  
   //Reset Concentrations
   //Setup Vectors
 	vector<double> EmptyX(NXNodes,0.0);
@@ -255,8 +265,11 @@ void RockyCoastCRN::RunModel(int WriteResultsFlag)
 	vector<double> EmptyXNDV(NXNodes,NDV);
 	vector< vector<double> > EmptyVV(NXNodes,EmptyZ);
 	
+	PlatformElevation = EmptyXNDV;
+	PlatformElevationOld = EmptyXNDV;
 	SurfaceElevation = EmptyXNDV;
-	SurfaceElevationOld = EmptyXNDV;
+	BeachThickness = EmptyX;
+	
 	SurfaceN = EmptyX;
 	N = EmptyVV;
 	
@@ -271,7 +284,7 @@ void RockyCoastCRN::RunModel(int WriteResultsFlag)
 	
 	//Write output control
 	double WriteTime;
-	double WriteInterval = 100;
+	double WriteInterval = 1000;
 	
 	//Work out start time from assumed cliff retreat rates.
 	if (RetreatType == 0) MaxTime = XMax/RetreatRate1;
@@ -288,10 +301,10 @@ void RockyCoastCRN::RunModel(int WriteResultsFlag)
 	}
 
   //limit start time to 7ka
-	if (MaxTime > 7000)	Time = 7000;
-	else Time = MaxTime;
-	MaxTime = Time;
-	WriteTime = Time;
+	//if (MaxTime > 7000)	Time = 7000;
+	//else Time = MaxTime;
+	Time = MaxTime;
+	WriteTime = MaxTime;
 	
 	//setup CliffPositionX for tracking cliff position in X
 	if (RetreatType == 0) CliffPositionX = MaxTime*RetreatRate1;
@@ -310,34 +323,49 @@ void RockyCoastCRN::RunModel(int WriteResultsFlag)
 	CliffPositionInd = 0;
 	ZTrackInd = 0;
 	
+	double TempBeachThickness;
+	
 	for (int i=0; i<NXNodes; ++i)
 	{
 	  if (X[i] > CliffPositionX) 
 	  {
-	    SurfaceElevation[i] = ElevInit-(X[i]-(CliffPositionX+BeachWidth))*PlatformGradient;
-	    if (SteppedPlatform == 1) SurfaceElevation[i] = round(SurfaceElevation[i]/StepSize)*StepSize;
+	    //update surface elevation
+	    PlatformElevation[i] = JunctionElevation-(X[i]-CliffPositionX)*PlatformGradient;
+	    if (SteppedPlatform == 1) PlatformElevation[i] = round(PlatformElevation[i]/StepSize)*StepSize;
+	    
+	    //update beach thickness
+	    if ((X[i]-CliffPositionX) < BeachWidth) TempBeachThickness = JunctionElevation+BermHeight-PlatformElevation[i];
+	    else TempBeachThickness = PlatformElevation[i] + (JunctionElevation+BermHeight-A*pow((X[i]-CliffPositionX-BeachWidth),2./3.));
+	    if (TempBeachThickness > 0) BeachThickness[i] = TempBeachThickness;
+	    else BeachThickness[i] = 0;	    
 	  }
 	  else CliffPositionInd = i;
+	  
+	  SurfaceElevation[i] = PlatformElevation[i]+BeachThickness[i];
 	}
-  SurfaceElevationOld = SurfaceElevation;
+  PlatformElevationOld = PlatformElevation;
+  
   
   //Set Z tracker to keep track of elevation index at the platform/cliff junction
-  for (int j=0; j<NZNodes; ++j) if (Z[j] > ElevInit) ZTrackInd = j;
+  for (int j=0; j<NZNodes; ++j) if (Z[j] > SeaLevel+JunctionElevation+BermHeight) ZTrackInd = j;
 	
 	//////////////////////////////////////////////////////////
 	//MAIN MODEL LOOP
 	//////////////////////////////////////////////////////////
 
-	while (Time > 0)
+	while (CliffPositionX > 0)
 	{
 		//Get retreat rate depending on style of retreat
 		GetRetreatRate();
+		
+		//Update beachwidth
+		//GetThinningBeachWidth(Time);
 		
 		//Get geomag scaling factor
 		GeoMagScalingFactor = GetGeoMagScalingFactor(Time);
 		
 		//Get sea level rise from local record
-		SLR = GetSeaLevelRise(Time);
+		//SLR = GetSeaLevelRise(Time);
 		
     //update CRN concentrations
     UpdateCRNs();
@@ -345,31 +373,32 @@ void RockyCoastCRN::RunModel(int WriteResultsFlag)
     //update morphology
     UpdateMorphology();
     
+    //write output?
+    if ((WriteResultsFlag != 0) && (Time <= WriteTime))
+    {
+      WriteProfile();
+      WriteTime -= WriteInterval;
+    }
+    
 		//update cliff position and time
 		CliffPositionX -= RetreatRate*dt;
 		Time -= dt;
 		SeaLevel += SLR*dt;
 		if (CliffPositionX < X[CliffPositionInd]) CliffPositionInd -= 1;
-		if (SeaLevel < Z[ZTrackInd]) ZTrackInd += 1;
+		//if (SeaLevel < Z[ZTrackInd]) ZTrackInd += 1;
     if (CliffPositionInd < 0) CliffPositionInd = 0;
     
-    //write output?
-    if ((WriteResultsFlag != 0) && (Time < WriteTime))
-    {
-      WriteProfile();
-      WriteTime -= WriteInterval;
-    }
 	}
+	
+	WriteProfile();
 	
   CliffPositionInd = 0;
     
 	//Write result to file?
 	if (WriteResultsFlag != 0)
 	{
-		char FileName[128];
-	  sprintf(FileName, "CRN_Model_Results_R1_%0.2f_R2_%0.2f_t%4.0f_Beta%0.3f_T%1.1f.txt", RetreatRate1, RetreatRate2, ChangeTime, PlatformGradient, TidalAmplitude);
-	  ofstream write_results;
-	  write_results.open(FileName);
+		ofstream write_results;
+	  write_results.open((OutFileName+"_CRNs.txt").c_str());
 	  write_results << "X, N\n";
 	  for (int i=0; i<NXNodes; ++i) write_results << X[i] << " " << SurfaceN[i] << endl;
 	  write_results.close();
@@ -420,7 +449,9 @@ void RockyCoastCRN::UpdateCRNs()
   */
   
   //Temp parameters
-  double P_Spal, P_Muon;
+  vector<double> EmptyVector(NXNodes,0);
+  P_Spal = EmptyVector;
+  P_Muon = EmptyVector;
   
   // variation in production on the platform at depth as a function of a tidal period
 	// First get a Tidal Sequence of Water Levels, clipping for negative depths
@@ -429,16 +460,16 @@ void RockyCoastCRN::UpdateCRNs()
   //LOOP ACROSS THE ACTIVE PART OF THE PLATFORM
 	for (int i=CliffPositionInd; i<NXNodes; ++i)
 	{
-		//only work on active nodes beyond the beach
-		if ((X[i] > CliffPositionX+BeachWidth) && (X[i] <= XMax))
+		//only work on active nodes
+		if ((X[i] >= CliffPositionX) && (X[i] <= XMax))
 		{
 			//Get topographic shielding factor
 			TopoShieldingFactor = GetTopographicShieldingFactor(X[i]-CliffPositionX, CliffHeight);
 
 			//get water levels for this profile
 			//reset production params
-			P_Spal = 0;
-			P_Muon = 0;
+			P_Spal[i] = 0;
+			P_Muon[i] = 0;
 
 			for (int a=0, NN=WaterLevels.size(); a<NN; ++a)
 			{
@@ -446,35 +477,37 @@ void RockyCoastCRN::UpdateCRNs()
 				else WaterDepths[a] = 0;
 
 				//Calculate Production for this profile
-				P_Spal += GeoMagScalingFactor*TopoShieldingFactor*Po_Spal*exp(-WaterDepths[a]/z_ws);
-				P_Muon += TopoShieldingFactor*Po_Muon*exp(-WaterDepths[a]/z_wm);
+				P_Spal[i] += GeoMagScalingFactor*TopoShieldingFactor*Po_Spal*exp(-WaterDepths[a]/z_ws);
+				P_Muon[i] += TopoShieldingFactor*Po_Muon*exp(-WaterDepths[a]/z_wm);
 			}
 
 			//find mean production rate at surface
-			P_Spal /= NTidalValues;
-			P_Muon /= NTidalValues;
+			P_Spal[i] /= NTidalValues;
+			P_Muon[i] /= NTidalValues;
 		
 		  //loop through depths and update concentrations
 		  int Top = 0;
 		  for (int j=ZTrackInd; j<NZNodes; ++j)
 		  {
 			  //cout << Z[j] << " " << SurfaceElevation[i] << " " << i << " " << j << endl;
-			  if ((Z[j] <= SurfaceElevation[i]) && (Z[j] > SurfaceElevation[i]-20.))
+			  if ((Z[j] < PlatformElevation[i]) && (Z[j] > PlatformElevation[i]-20.))
 			  {
 				  if (Top == 0)
 				  {	
 					  //linearly interpolate to get concentration at the surface
-					  if (SurfaceElevationOld[i] == -9999) SurfaceElevationOld[i] = SeaLevel+ElevInit;
-					  else if (SurfaceN[i] > 0) SurfaceN[i] -= (((SurfaceElevationOld[i]-SurfaceElevation[i])/(SurfaceElevationOld[i]-Z[j]))*(SurfaceN[i]-N[i][j]));
+					  if (PlatformElevationOld[i] == -9999) PlatformElevationOld[i] = SeaLevel+JunctionElevation;
+					  else if (SurfaceN[i] > 0) SurfaceN[i] -= (((PlatformElevationOld[i]-PlatformElevation[i])/(PlatformElevationOld[i]-Z[j]))*(SurfaceN[i]-N[i][j]));
 					  
-					  //update concentration at the surface
-					  SurfaceN[i] += dt*P_Spal*exp((0-((SurfaceElevationOld[i]-SurfaceElevation[i])))/z_rs);
+					  //update concentration at the platform surface, accounting for beach cover
+					  SurfaceN[i] += dt*P_Spal[i]*exp((0-((SurfaceElevation[i]-PlatformElevation[i])))/z_rs);
 					  Top = 1;
 				  }
 				
 				  //update concentrations at depth
-				  N[i][j] += dt*P_Spal*exp((Z[j]-SurfaceElevation[i])/z_rs);	//spallation
-				  N[i][j] += dt*P_Muon*exp((Z[j]-SurfaceElevation[i])/z_rm);	//muons
+				  //This is kept as SurfaceElevation not Platform Elevation for now
+				  //NB This assumes that material density of the beach is the same as the bedrock!
+				  N[i][j] += dt*P_Spal[i]*exp((Z[j]-SurfaceElevation[i])/z_rs);	//spallation
+				  N[i][j] += dt*P_Muon[i]*exp((Z[j]-SurfaceElevation[i])/z_rm);	//muons
 				  
 				  //remove atoms due to radioactive decay
 				  N[i][j] -= dt*Lambda;
@@ -495,26 +528,43 @@ void RockyCoastCRN::UpdateMorphology()
   */
   
   //temp parameters
-  double SurfaceElevChange;
+  double TempPlatformElevChange, TempBeachThickness;
 		
   //Update surface elevations
 	for (int i=CliffPositionInd; i<NXNodes; ++i)
 	{
-		SurfaceElevationOld[i] = SurfaceElevation[i];
-		if ((X[i] >= CliffPositionX) && (CliffPositionX <= XMax))
+		PlatformElevationOld[i] = PlatformElevation[i];
+		if (X[i] >= CliffPositionX)
 		{
-			if (SurfaceElevation[i] == NDV)
+			if (PlatformElevation[i] == NDV)
 			{
-			  SurfaceElevation[i] = SeaLevel+ElevInit-(X[i]-CliffPositionX)*PlatformGradient;
-			  if (SteppedPlatform == 1) SurfaceElevation[i] = round(SurfaceElevation[i]/StepSize)*StepSize;
+			  PlatformElevation[i] = SeaLevel+JunctionElevation-(X[i]-CliffPositionX)*PlatformGradient;
+			  if (SteppedPlatform == 1) PlatformElevation[i] = round(PlatformElevation[i]/StepSize)*StepSize;
 			}
 			else
 			{
-				SurfaceElevChange = dt*(RetreatRate*PlatformGradient-SLR);
-				if (SurfaceElevChange < 0) SurfaceElevChange = 0;
-				SurfaceElevation[i] -= SurfaceElevChange;
-				if (SteppedPlatform == 1) SurfaceElevation[i] = round(SurfaceElevation[i]/StepSize)*StepSize;
+				if (SteppedPlatform == 0) 
+				{
+				  TempPlatformElevChange = dt*(RetreatRate*PlatformGradient-SLR);
+				  if (TempPlatformElevChange < 0) TempPlatformElevChange = 0;
+				  PlatformElevation[i] -= TempPlatformElevChange;
+				}
+				else if (SteppedPlatform == 1) 
+				{
+				  PlatformElevation[i] = SeaLevel+JunctionElevation-(X[i]-CliffPositionX)*PlatformGradient;
+				  PlatformElevation[i] = round(PlatformElevation[i]/StepSize)*StepSize;
+				}
 			}
+			
+	    //update beach thickness
+	    //update beach thickness
+	    if ((X[i]-CliffPositionX) < BeachWidth) TempBeachThickness = JunctionElevation+BermHeight-PlatformElevation[i];
+	    else TempBeachThickness = BermHeight-A*pow((X[i]-CliffPositionX-BeachWidth),2./3.);
+
+	    if (TempBeachThickness > 0) BeachThickness[i] = TempBeachThickness;
+	    else BeachThickness[i] = 0;	    
+	    
+	    SurfaceElevation[i] = PlatformElevation[i]+BeachThickness[i];
 		}
 	}
 }
@@ -609,14 +659,43 @@ double RockyCoastCRN::GetSeaLevelRise(double Time)
 	return -Rate;
 }
 
+void RockyCoastCRN::GetSinWaveBeachWidth(double Time)
+{
+  // Function to return beach width where beach width varies as a sinosoidal 
+  // of time.
+  // Martin Hurst
+  // Feb 11th 2016
+  
+  double MeanBeachWidth = 50;
+  double BeachWidthAmp = 30;
+  double BeachWidthWaveLength = 100;
+  
+  BeachWidth = MeanBeachWidth+BeachWidthAmp*sin((2.*M_PI*Time)/BeachWidthWaveLength);
+}
+
+void RockyCoastCRN::GetThinningBeachWidth(double Time)
+{
+  // Function to return beach width where beach width varies as a sinosoidal 
+  // of time.
+  // Martin Hurst
+  // Feb 11th 2016
+  
+  double InitialBeachWidth = 100;
+  double FinalBeachWidth = 0;
+  double ThinTime = 1000;
+  
+  if (Time < ThinTime) BeachWidth = (Time/ThinTime)*InitialBeachWidth;
+  else BeachWidth = InitialBeachWidth;
+}
+
 void RockyCoastCRN::WriteProfile()
 {
   //Print to screen
 	cout.flush();
-	cout << "RockyCoastCRN: Time is " << setprecision(2) << fixed << Time << " years\r";
+	cout << "RockyCoastCRN: Time is " << setprecision(0) << fixed << Time << " years\r";
 	
 	//test if output file already exists
-  string OutputFileName = "PlatformProfile.txt";
+  string OutputFileName = OutFileName + "_Morphology.txt";
 	int FileExists = 0;
 	ifstream oftest(OutputFileName.c_str());
 	if (oftest) FileExists = 1;
@@ -637,7 +716,12 @@ void RockyCoastCRN::WriteProfile()
 	//Check if file exists if not open a new one and write headers
 	if (WritePlatform.is_open())
 	{
-		//write BeachWidth
+		//write PlatformElevation
+		WritePlatform << Time;
+		for (int i=0; i<NXNodes; ++i) WritePlatform << setprecision(4) << " " << PlatformElevation[i];
+		WritePlatform << endl;
+		
+		//write SurfaceElevation
 		WritePlatform << Time;
 		for (int i=0; i<NXNodes; ++i) WritePlatform << setprecision(4) << " " << SurfaceElevation[i];
 		WritePlatform << endl;
