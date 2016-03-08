@@ -156,11 +156,26 @@ void RockyCoastCRN::Initialise(RoBoCoP RoBoCoPCoast)
 	double XMax = RoBoCoPCoast.X[0];
 	//printf("XMax = %.2f\n", XMax);
 	
+	//Setup CRN Arrays
+	vector<double> EmptyX(NXNodes,0.0);
+	vector<double> EmptyZ(NZNodes,0.0);
+	vector<double> EmptyXNDV(NXNodes,NDV);
+	vector< vector<double> > EmptyVV(NXNodes,EmptyZ);
+	X = EmptyX;
+	Z = EmptyZ;
+	PlatformElevation = EmptyXNDV;
+	PlatformElevationOld = EmptyXNDV;
+	SurfaceElevation = EmptyXNDV;
+	SurfaceN = EmptyX;
+	N = EmptyVV;
+	
 	//Get surface morphology from RoBoCoP
 	for (int i=0, N=RoBoCoPCoast.X.size(); i<N; ++i)
 	{
 	  //Do Stuff
-	  
+	  for (int j=0; j<NZNodes; ++j) Z[j] = ((PlatformDepth/2.)-j*(PlatformDepth/(NZNodes-1)));
+	  for (int i=0; i<NXNodes; ++i) X[i] = (i*(PlatformWidth/(NXNodes-1)));
+	
 	}
 	
 }	
