@@ -35,6 +35,9 @@
 
 ------------------------------------------------------------------------*/
 
+#ifndef RoBoCoP_CPP
+#define RoBoCoP_CPP
+
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
@@ -49,9 +52,6 @@
 
 using namespace std;
 
-#ifndef RoBoCoP_CPP
-#define RoBoCoP_CPP
-
 void RoBoCoP::Initialise()
 {
   /* initialise an empty RoBoCoP object as default */
@@ -64,7 +64,7 @@ void RoBoCoP::Initialise(double dZ)
   printf("\nRoBoCoP.Initialise: Initialised a RoBoCoP as a vertical cliff\n");
   
   //Declare stuff
-  NoNodes = 20./dZ;
+  NoNodes = round(20./dZ)+1;
   NDV = -9999;
   
   //declare an array of zeros for assignment of x and z vectors
@@ -98,7 +98,7 @@ void RoBoCoP::Initialise(double dZ, double PlatformGradient)
 	for (int i=0; i<NoNodes; ++i) 
 	{
 	  Z[i] = -10.+i*dZ;
-	  X[i] = -Z[i]*PlatformGradient;
+	  X[i] = -Z[i]/PlatformGradient;
   }
 }
 
@@ -120,7 +120,7 @@ void RoBoCoP::Initialise(double dZ, double PlatformGradient, double CliffPositio
 	for (int i=0; i<NoNodes; ++i) 
 	{
 	  Z[i] = -10.+i*dZ;
-	  if (Z[i] < 0) X[i] = CliffPositionX-Z[i]*PlatformGradient;
+	  if (Z[i] < 0) X[i] = CliffPositionX-(Z[i]/PlatformGradient);
 	  else X[i] = CliffPositionX;
   }
 }	
@@ -139,11 +139,12 @@ void RoBoCoP::InitialiseTides(double TidalAmplitude, double TidalPeriod)
   /* intialise the tides as a simple cosine wave (i.e. simple diurnal/semidiurnal) */
 
   //Tidal Timestep (in hours)
-  double dT = 0.001;    
+  double dT = 0.01;    
+  double TideTime;
   
   //Setup tide water levels array
-  NTideValues = TidalPeriod/(2.*dT);
-  vector<double> Empty(NTideValues,NDV);
+  NTideValues = (int)(TidalPeriod/(2.*dT));
+  vector<double> Empty(NTideValues,-9999);
   WaterLevels = Empty;
   
   //loop through and calculate water levels
@@ -167,16 +168,17 @@ void RoBoCoP::InitialiseWaves(double OffshoreWaveHeight, double WavePeriod)
   BreakingWaveWaterDepth = BreakingWaveHeight/0.78;
 }
 
-void RoBoCoP::EvolveCoast(TimeInterval)
+void RoBoCoP::EvolveCoast(double TimeInterval)
 {
   /* Function to evolve the coastal profile through time following
       Trenhaile (2000)  */
   
   //declarations
-  double SurfZoneTopZ, SurfZoneBottomZ, SurfZoneTopX, SurfZoneBottomX, SurfZoneWidth;
+  double SurfZoneTopZ, SurfZoneBottomZ, SurfZoneTopX, SurfZoneBottomX, SurfZoneWidth, SurfForce, WaterDepth;
   
   //vector to sum erosion
-  vector<double> Erosion(NoNodes,0);
+  vector<double> Empty(NoNodes,0);
+  Erosion = Empty;
   
   //Determine surf zone width
   for (int t=0, T=WaterLevels.size(); t<T; ++t)
@@ -186,25 +188,25 @@ void RoBoCoP::EvolveCoast(TimeInterval)
     SurfZoneTopZ = SeaLevel+WaterLevels[t];
     
     //find horizontal extent of surfzone
-    bool SurfZone=False;
+    bool SurfZone=false;
     int i=0;
-    while (SurfZone == False)
+    while (SurfZone == false)
     {
       if (Z[i] > SurfZoneBottomZ)
       {
         //Find Position X of Surfzone bottom by interpolating
-        SurfZoneBottomX = X[i] + (X[i]-X[i-1)*(Z[i]-SurfZoneBottomZ)/(Z[i]-Z[i-1])
-        SurfZone = True;
+        SurfZoneBottomX = X[i] + (X[i]-X[i-1])*(Z[i]-SurfZoneBottomZ)/(Z[i]-Z[i-1]);
+        SurfZone = true;
       }
       ++i;
     }
-    while (SurfZone == True)
+    while (SurfZone == true)
     {
       if (Z[i] > SurfZoneTopZ)
       {
         //Find Position X of Surfzone bottom by interpolating
-        SurfZoneTopX = X[i] + (X[i]-X[i-1)*(Z[i]-SurfZoneTopZ)/(Z[i]-Z[i-1])
-        SurfZone = False;
+        SurfZoneTopX = X[i] + (X[i]-X[i-1])*(Z[i]-SurfZoneTopZ)/(Z[i]-Z[i-1]);
+        SurfZone = false;
         --i;
       }
       ++i;
@@ -220,12 +222,15 @@ void RoBoCoP::EvolveCoast(TimeInterval)
     while (i > 0)
     {
       WaterDepth = SeaLevel+WaterLevels[t]-Z[i];
+      if (fabs(WaterDepth)<0.0001) WaterDepth=0;
+      else if (WaterDepth < 0) WaterDepth = 100.;
+
       Erosion[i] += M*SurfForce*exp(-WaterDepth);
       --i;
     }
   }
   //Do the erosion/update the profile
-  double XCliff = X[0]
+  double XCliff = X[0];
   for (int i=0; i<NoNodes; ++i)
   {
     X[i] -= Erosion[i]*TimeInterval;
@@ -236,7 +241,7 @@ void RoBoCoP::EvolveCoast(TimeInterval)
   }
 }
 
-void RoBoCoP::WriteProfile(string OutputFileName, int Time)
+void RoBoCoP::WriteProfile(string OutputFileName, double Time)
 {
   /* Writes a coastline object X and Z coordinates to file for a given time
 		If the file already exists the data will be ed else a new file is
@@ -261,7 +266,7 @@ void RoBoCoP::WriteProfile(string OutputFileName, int Time)
 	if (FileExists == 0)
 	{
 		WriteCoastFile.open(OutputFileName.c_str());
-		if (WriteCoastFile.is_open()) WriteCoastFile << StartBoundary << " " << EndBoundary << endl;
+		if (WriteCoastFile.is_open()) WriteCoastFile << "Header :)" << endl;
 	}
 	WriteCoastFile.close();
 
@@ -274,6 +279,60 @@ void RoBoCoP::WriteProfile(string OutputFileName, int Time)
 		//write X
 		WriteCoastFile << setprecision(4) << Time;
 		for (int i=0; i<NoNodes; ++i) WriteCoastFile << setprecision(10) << " " << X[i];
+		WriteCoastFile << endl;
+
+		//write Y
+		WriteCoastFile << setprecision(4) << Time;
+		for (int i=0; i< NoNodes; ++i) WriteCoastFile << setprecision(10) << " " << Z[i];
+		WriteCoastFile << endl;
+	}
+	
+	else
+	{
+		//report errors
+		cout << "RoBoCoP.WriteCoast: Error, the file " << OutputFileName << " is not open or cannot be read." << endl;
+		exit(EXIT_FAILURE);
+	}
+}
+
+void RoBoCoP::WriteErosion(string OutputFileName, double Time)
+{
+  /* Writes a coastline object X and Z coordinates to file for a given time
+		If the file already exists the data will be ed else a new file is
+		created.
+
+		File format is 	Time | X[0] | X[1] | X[2] =====> X[NoNodes]
+								Time | Z[0] | Z[1] | Z[2] =====> Z[NoNodes]   */
+      
+  
+	//Print to screen
+	cout.flush();
+	cout << "RoBoCoP: Time is " << setprecision(2) << fixed << Time << " years\r";
+
+	//test if output file already exists
+	int FileExists = 0;
+	ifstream oftest(OutputFileName.c_str());
+	if (oftest) FileExists = 1;
+	oftest.close();
+
+	//open the output filestream and write headers
+	ofstream WriteCoastFile;
+	if (FileExists == 0)
+	{
+		WriteCoastFile.open(OutputFileName.c_str());
+		if (WriteCoastFile.is_open()) WriteCoastFile << "Header :)" << endl;
+	}
+	WriteCoastFile.close();
+
+	//open output filestream again to  coastline data
+	WriteCoastFile.open(OutputFileName.c_str(), fstream::app|fstream::out);
+
+	//Check if file exists if not open a new one and write headers
+	if (WriteCoastFile.is_open())
+	{
+		//write Erosion
+		WriteCoastFile << setprecision(4) << Time;
+		for (int i=0; i<NoNodes; ++i) WriteCoastFile << setprecision(10) << " " << Erosion[i];
 		WriteCoastFile << endl;
 
 		//write Y

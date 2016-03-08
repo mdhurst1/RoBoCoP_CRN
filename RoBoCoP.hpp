@@ -52,6 +52,9 @@ These pages describe the software.
 
 ------------------------------------------------------------------------*/
 
+#ifndef RoBoCoP_HPP
+#define RoBoCoP_HPP
+
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
@@ -65,16 +68,18 @@ These pages describe the software.
 
 using namespace std;
 
-#ifndef RoBoCoP_HPP
-#define RoBoCoP_HPP
-
 /*/////////////////////////////////////////////////////////////////////////////////////////
 //TEMPLATES
 /////////////////////////////////////////////////////////////////////////////////////////*/
 
+//Dummy class for RockyCoastCRN
+class RockyCoastCRN;
+
 ///@brief Main coastal platform object.
 class RoBoCoP
 {
+  friend class RockyCoastCRN;
+  
 	private:
 	
 	  /* MEMBER DECLARATIONS */
@@ -85,6 +90,7 @@ class RoBoCoP
 		double dZ;                          // Vertical spacing of nodes
 		vector<double> X;		          			// cross shore distance (m)
 		vector<double> Z;										// elevation (m)
+		vector<double> Erosion;             //Total erosion at each elevation;
 		
 		// SEA LEVEL DECLARATIONS
 		vector<double> RSLTime;             //Times for relative sea level elevations
@@ -97,10 +103,12 @@ class RoBoCoP
 		vector<double> TideLevels;          //Vector of tide levels
 		vector<double> WaterLevels;         //vector containing water levels
 		vector<double> WaterDepths;         //vector containing water depths
-		double NTideValues;                //number of tidal values (.size() of tidelevels vector)
+		int NTideValues;                //number of tidal values (.size() of tidelevels vector)
 		
 		// WAVE DECLARATIONS
-		double WaveHeight, WavePeriod, 
+		double WavePeriod;
+		double BreakingWaveHeight;
+		double BreakingWaveWaterDepth;
 		
 		//CLIFF POSITION DECLARATIONS
 		double CliffPositionX;        //tracks the cliff position in X
@@ -110,12 +118,11 @@ class RoBoCoP
 		double Time, MaxTime, dt;
 		
 		//PHYSICAL CONSTANTS
-		const rho_w = 1025.;
-		const g = 9.81;
-		const k = 0.02;
-		const M = 0.0001
-		const C = 0.5;
-		
+		static const double rho_w = 1025.;
+		static const double g = 9.81;
+		static const double k = 0.02;
+		static const double M = 0.0001;
+	
     /* FUNCTION DECLARATIONS */
 
 		//Initialise Functions
@@ -160,19 +167,23 @@ class RoBoCoP
 		
 		//Initialise Tides
 		void InitialiseTides(double TidalAmplitude, double TidalPeriod);
-				
+		
+		//Initialise Waves
+		void InitialiseWaves(double WaveHeight, double WavePeriod);
+		
     /// @brief Launch the main program loop to evolve RoBoCoP coast
 		/// @details This function evolves a rocky coastal platform through time.
 		///	@author Martin D. Hurst 
     /// @date 25/02/2016
-    void EvolveCoast(TimeInterval);
+    void EvolveCoast(double TimeInterval);
 		
 		/// @brief Writes the platform morphology to file
 		/// @details This function writes the elevations of the platform surface at the current time to
 		///   a file. If the file exists, this is appended.
 		///	@author Martin D. Hurst 
     /// @date 25/02/2016
-		void WriteProfile();
+		void WriteProfile(string OutputFileName, double Time);
+		void WriteErosion(string OutputFileName, double Time);
 		
 		/// @brief Get X coordinates
 		/// @return X coordinates

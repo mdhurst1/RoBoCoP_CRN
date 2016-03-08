@@ -17,45 +17,50 @@ int main()
 {
   //initialisation parameters
   double dZ = 0.1;
-  double PlatformGradient = 1./50.;
-  double CliffPositionX = 0.;
+  //double PlatformGradient = 1./50.;
+  //double CliffPositionX = 0.;
   
   //initialise RoBoCoP
-  RoBoCoP RoBoCoP = RoBoCoP(dZ);
+  RoBoCoP PlatformModel = RoBoCoP(dZ);
 	
 	//Initialise Tides
-	double TidalAmplitude = 2.5;
+	double TidalAmplitude = 1.;
 	double TidalPeriod = 12.42;
-	RoBoCop.InitialiseTides(TidalAmplitude, TidalPeriod);
+	PlatformModel.InitialiseTides(TidalAmplitude, TidalPeriod);
 	
 	//Initialise Waves
 	//Single Wave for now but could use the waveclimate object from COVE!?
 	double WaveHeight = 1.2;
 	double WavePeriod = 6.;
+	PlatformModel.InitialiseWaves(WaveHeight,WavePeriod);
 	
 	//a few blank lines to finish
 	cout << endl << endl;
 	
 	// Time Control
-	int EndTime = 10000.;
-	int Time = 0.;
-	int TimeInterval = 0.1;
+	double EndTime = 10000.;
+	double Time = 0.;
+	double TimeInterval = 1;
 	
 	//Print Control
-	int PrintInterval = 100.;
-	int PrintTime = Time;
+	double PrintInterval = 100.;
+	double PrintTime = Time;
+	string OutputFileName = "ShoreProfile.xz";
+	string ErosionFileName = "Erosion.ez";
 	
 	//Loop through time
 	while (Time < EndTime)
 	{
 	  //Evolve the coast
-	  EvolveCoast(TimeInterval);
+	  PlatformModel.EvolveCoast(TimeInterval);
 	  
 	  //print?
 	  if (Time >= PrintTime)
 	  {
-	    WriteCoastFile();
+	    PlatformModel.WriteProfile(OutputFileName, Time);
+	    PlatformModel.WriteErosion(ErosionFileName, Time);
 	    PrintTime += PrintInterval;
+	    //cout << "Time is " << Time << endl;
 	  }
 	  
 	  //update time

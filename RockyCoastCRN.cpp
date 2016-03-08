@@ -38,6 +38,9 @@
 
 ------------------------------------------------------------------------*/
 
+#ifndef RockyCoastCRN_CPP
+#define RockyCoastCRN_CPP
+
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
@@ -52,9 +55,6 @@
 #include "CRN_global_variables.hpp"
 
 using namespace std;
-
-#ifndef RockyCoastCRN_CPP
-#define RockyCoastCRN_CPP
 
 void RockyCoastCRN::Initialise()
 {
@@ -136,7 +136,34 @@ void RockyCoastCRN::Initialise(double retreatrate1, double retreatrate2, int ret
 	//Initialise Platform
 	InitialisePlanarPlatformMorphology();
 }
+
+void RockyCoastCRN::Initialise(RoBoCoP RoBoCoPCoast)
+{
+  /* initialise a RockyCoastCRN object for use with a RoBoCoP object */
+  printf("\nRockyCoastCRN.Initialise: Initialised a RockyCoastCRN object for use with a RoBoCoP object\n");
+
+  //Geometric parameters
+	NXNodes = 201;										//Number of nodes in cross shore
+	NZNodes = 201;										//Number of nodes in profile
+	PlatformWidth = 1000.;						//width of model domain (m)
+	PlatformDepth = 20.;							//Depth to which CRN will be tracked (needs to be large enough that sea level rise is ok)
+	NDV = -9999;											//Place holder for no data
 	
+	//set tidal amplitude
+	TidalAmplitude = RoBoCoPCoast.TidalAmplitude;
+	
+	//get max extent of shoreface
+	double XMax = RoBoCoPCoast.X[0];
+	//printf("XMax = %.2f\n", XMax);
+	
+	//Get surface morphology from RoBoCoP
+	for (int i=0, N=RoBoCoPCoast.X.size(); i<N; ++i)
+	{
+	  //Do Stuff
+	  
+	}
+	
+}	
 void RockyCoastCRN::InitialiseTides()
 {
 	/// TIDES 
@@ -557,7 +584,6 @@ void RockyCoastCRN::UpdateMorphology()
 			}
 			
 	    //update beach thickness
-	    //update beach thickness
 	    if ((X[i]-CliffPositionX) < BeachWidth) TempBeachThickness = JunctionElevation+BermHeight-PlatformElevation[i];
 	    else TempBeachThickness = BermHeight-A*pow((X[i]-CliffPositionX-BeachWidth),2./3.);
 
@@ -681,7 +707,6 @@ void RockyCoastCRN::GetThinningBeachWidth(double Time)
   // Feb 11th 2016
   
   double InitialBeachWidth = 100;
-  double FinalBeachWidth = 0;
   double ThinTime = 1000;
   
   if (Time < ThinTime) BeachWidth = (Time/ThinTime)*InitialBeachWidth;

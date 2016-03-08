@@ -58,6 +58,9 @@ These pages describe the software.
 
 ------------------------------------------------------------------------*/
 
+#ifndef RockyCoastCRN_HPP
+#define RockyCoastCRN_HPP
+
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
@@ -68,11 +71,9 @@ These pages describe the software.
 #include <sstream>
 #include <cstdlib>
 #include <omp.h>
+#include "RoBoCoP.hpp"
 
 using namespace std;
-
-#ifndef RockyCoastCRN_HPP
-#define RockyCoastCRN_HPP
 
 /*/////////////////////////////////////////////////////////////////////////////////////////
 //TEMPLATES
@@ -81,6 +82,8 @@ using namespace std;
 ///@brief Main coastal platform object.
 class RockyCoastCRN
 {
+	friend class RoBoCoP;
+	
 	private:
 		int NXNodes;	//Number of nodes across the coastline
 		int NZNodes;	//Number of nodes depth
@@ -154,6 +157,7 @@ class RockyCoastCRN
 		void Initialise();
 		void Initialise(double retreatrate, double beachwidth, double bermheight, double platformgradient, double cliffheight, double junctionelevation, double tidalamplitude,int steppedplatform=0, double stepsize=0);
 		void Initialise(double retreatrate1, double retreatrate2, int retreattype, double changetime, double platformgradient, double cliffheight, double beachwidth, double bermheight, double junctionelevation, double tidalamplitude,int steppedplatform=0, double stepsize=0);
+		void Initialise(RoBoCoP RoBoCoPCoast);
 		
 		//functions to initialise platform morphology
 		void InitialisePlanarPlatformMorphology();
@@ -210,6 +214,15 @@ class RockyCoastCRN
 		RockyCoastCRN(double retreatrate, double beachwidth, double platformgradient, double cliffheight, double junctionelevation, double tidalamplitude, int steppedplatform=0, double stepsize=0)
 		{
 			Initialise(retreatrate, beachwidth, platformgradient, cliffheight, junctionelevation, tidalamplitude, steppedplatform, stepsize);
+		}
+		
+		/// @brief Initialisation function with friend class RoBoCoP as the morphological model
+		/// @param RoBoCoP RoBoCoPCoast a RoBoCoP coastal morphology object 
+		///	@author Martin D. Hurst 
+    /// @date 8/3/2015
+		RockyCoastCRN(RoBoCoP RoBoCoPCoast)
+		{
+			Initialise(RoBoCoPCoast);
 		}
 		
 		/// @brief Empty initialisation function, will throw an error.
