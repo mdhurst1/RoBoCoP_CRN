@@ -85,12 +85,16 @@ class RockyCoastCRN
 	friend class RoBoCoP;
 	
 	private:
+		vector<double> X;	  //cross shore distance (m)
+		vector<double> Z;		//elevation (m)
+		
 		int NXNodes;	//Number of nodes across the coastline
 		int NZNodes;	//Number of nodes depth
 		
-		vector<double> X;										//cross shore distance (m)
-		vector<double> Z;										//elevation (m)
-		vector<double> SurfaceN;						//Surface concentrations	(a/g)
+		double dX;    //Nodes spacing in cross shore (m)
+		double dY;    //Node spacing in vertical (m)
+				
+		vector<double> SurfaceN;						//CRN surface concentrations	(a/g)
 		
 		vector<double> PlatformElevation;		  //Platform Surface Elevations (m)
 		vector<double> PlatformElevationOld;	//Platform Surface Elevations Old (m)
@@ -276,7 +280,15 @@ class RockyCoastCRN
 		///   of the platform surface. Currently just does gradual uniform downwear or step-retreat.
 		///	@author Martin D. Hurst 
     /// @date 09/02/2016
-		void UpdateMorphology();
+		void UpdateEquillibriumMorphology();
+		
+		/// @brief Updates the platform morphology
+		/// @details This function calculates the amount of platform downwear and cliff retre updates the elevations
+		///   of the platform surface based on an iteration of the RoBoCoP coast object.
+		///	@author Martin D. Hurst
+		/// @param RoBoCoPCoast A RoBoCoP Coastal model object
+    /// @date 14/03/2016
+		void UpdateMorphology(RoBoCoP RoBoCoPCoast);
 		
 		/// @brief Writes the platform morphology to file
 		/// @details This function writes the elevations of the platform surface at the current time to

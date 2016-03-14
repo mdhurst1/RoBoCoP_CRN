@@ -156,7 +156,7 @@ void RockyCoastCRN::Initialise(RoBoCoP RoBoCoPCoast)
 	NXNodes = RoBoCoPCoast.NoNodes;
 	NZNodes = RoBoCoPCoast.NoNodes;
 	NDV = -9999;
-	double dX = (XMax-XMin)/(NXNodes);
+	dX = (XMax-XMin)/(NXNodes);
 		
 	//Setup CRN Arrays
 	vector<double> EmptyX(NXNodes,0.0);
@@ -180,7 +180,8 @@ void RockyCoastCRN::Initialise(RoBoCoP RoBoCoPCoast)
     if (RoBoCoPCoast.X[Ind] == X[i]) Z[i] = RoBoCoPCoast.Z[Ind];
     else Z[i] = RoBoCoPCoast.Z[Ind-1] + (RoBoCoPCoast.Z[Ind]-RoBoCoPCoast.Z[Ind-1])*((X[i]-RoBoCoPCoast.X[Ind-1])/(RoBoCoPCoast.X[Ind]-RoBoCoPCoast.X[Ind-1]));
   }	
-}	
+}
+	
 void RockyCoastCRN::InitialiseTides()
 {
 	/// TIDES 
@@ -415,7 +416,7 @@ void RockyCoastCRN::RunModel(string outfilename, int WriteResultsFlag)
     UpdateCRNs();
     
     //update morphology
-    UpdateMorphology();
+    UpdateEquillibriumMorphology();
     
     //write output?
     if ((WriteResultsFlag != 0) && (Time <= WriteTime))
@@ -561,7 +562,7 @@ void RockyCoastCRN::UpdateCRNs()
 	}
 }
 
-void RockyCoastCRN::UpdateMorphology()
+void RockyCoastCRN::UpdateEquillibriumMorphology()
 {
   /*
   Function to update the morphology of the platform. Moves the cliff following the 
@@ -612,6 +613,32 @@ void RockyCoastCRN::UpdateMorphology()
 	}
 }
 
+void RockyCoastCRN::UpdateMorphology(RoBoCoP RoBoCoPCoast)
+{
+  //Find cliff position
+  double XMin = RoBoCoPCoast.X[0];
+  CliffPositionX = XMin;  
+  
+  //Add nodes to front of RockyCoastCRN as required
+  vector<double> EmptyZ(NZNodes,0.0);
+  while (XMin < X[0]) 
+  {
+    X.insert(X.begin(),X[0]-dX);
+    SurfaceElevation.insert(SurfaceElevation.begin(), NDV);
+    SurfaceN.insert(SurfaceN.begin(),0);
+    N.insert(N.begin(),EmptyZ);
+  }
+  
+  //Get surface morphology from RoBoCoP
+  int Ind = 0;
+	for (int i=0; i<RoBoCoPCoast.NoNodes; ++i)
+  {
+    X[i] = dX*i;
+    while (RoBoCoPCoast.X[Ind] <= X[i]) ++Ind;
+    if (RoBoCoPCoast.X[Ind] == X[i]) Z[i] = RoBoCoPCoast.Z[Ind];
+    else Z[i] = RoBoCoPCoast.Z[Ind-1] + (RoBoCoPCoast.Z[Ind]-RoBoCoPCoast.Z[Ind-1])*((X[i]-RoBoCoPCoast.X[Ind-1])/(RoBoCoPCoast.X[Ind]-RoBoCoPCoast.X[Ind-1]));
+  }	
+}
 double RockyCoastCRN::GetTopographicShieldingFactor(double X, double CliffHeight)
 {
 	/* 

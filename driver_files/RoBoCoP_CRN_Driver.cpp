@@ -32,50 +32,47 @@ int main()
 	//Initialise RockyCoastCRN
 	RockyCoastCRN PlatformCRN = RockyCoastCRN(PlatformModel);
 	
-//	
-//	//Initialise Waves
-//	//Single Wave for now but could use the waveclimate object from COVE!?
-//	double WaveHeight = 1.2;
-//	double WavePeriod = 6.;
-//	PlatformModel.InitialiseWaves(WaveHeight,WavePeriod);
-//	
-//	//a few blank lines to finish
-//	cout << endl << endl;
-//	
-//	// Time Control
-//	double EndTime = 10000.;
-//	double Time = 0.;
-//	double TimeInterval = 1;
-//	
-//	//Print Control
-//	double PrintInterval = 100.;
-//	double PrintTime = Time;
-//	string OutputFileName = "ShoreProfile.xz";
-//	string ErosionFileName = "Erosion.ez";
-//	
-//	//Loop through time
-//	while (Time < EndTime)
-//	{
-//	  //Evolve the coast
-//	  PlatformModel.EvolveCoast(TimeInterval);
-//	  
-//	  //Update the morphology inside RockyCoastCRN
-//	  
-//	  //Update the CRN concentrations
-//	  
-//	  
-//	  //print?
-//	  if (Time >= PrintTime)
-//	  {
-//	    PlatformModel.WriteProfile(OutputFileName, Time);
-//	    PlatformModel.WriteErosion(ErosionFileName, Time);
-//	    PrintTime += PrintInterval;
-//	    //cout << "Time is " << Time << endl;
-//	  }
-//	  
-//	  //update time
-//	  Time += TimeInterval;
-//	}
+	
+	//Initialise Waves
+	//Single Wave for now but could use the waveclimate object from COVE!?
+	double WaveHeight = 1.2;
+	double WavePeriod = 6.;
+	PlatformModel.InitialiseWaves(WaveHeight,WavePeriod);
+	
+	// Time Control
+	double EndTime = 10000.;
+	double Time = 0.;
+	double TimeInterval = 1;
+	
+	//Print Control
+	double PrintInterval = 100.;
+	double PrintTime = Time;
+	string OutputFileName = "ShoreProfile.xz";
+	
+	//Loop through time
+	while (Time < EndTime)
+	{
+	  //Evolve the coast
+	  PlatformModel.EvolveCoast(TimeInterval);
+	  
+	  //Update the morphology inside RockyCoastCRN
+	  PlatformCRN.UpdateMorphology(PlatformModel);
+	  
+	  //Update the CRN concentrations
+	  PlatformCRN.UpdateCRNs();
+        
+	  //print?
+	  if (Time >= PrintTime)
+	  {
+	    PlatformModel.WriteProfile(OutputFileName, Time);
+	    PlatformCRN.WriteProfile();
+	    PrintTime += PrintInterval;
+	    //cout << "Time is " << Time << endl;
+	  }
+	  
+	  //update time
+	  Time += TimeInterval;
+	}
 }
 
 
