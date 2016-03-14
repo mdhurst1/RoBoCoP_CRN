@@ -75,7 +75,7 @@ void RoBoCoP::Initialise(double dZ)
 	//Loop through array and calculate X and Z
 	for (int i=0; i<NoNodes; ++i) 
 	{
-	  Z[i] = -10.+i*dZ;
+	  Z[i] = 10.-i*dZ;
 	  X[i] = 0;
   }
 }
@@ -86,7 +86,7 @@ void RoBoCoP::Initialise(double dZ, double PlatformGradient)
 	printf("\nRoBoCoP.Initialise: Initialised a RoBoCoP as a planar, sloped platform\n");
 	
   //Declare stuff
-  NoNodes = 20./dZ;
+  NoNodes = 1+round(20./dZ);
   NDV = -9999;
   
   //declare an array of zeros for assignment of x and z vectors
@@ -97,8 +97,8 @@ void RoBoCoP::Initialise(double dZ, double PlatformGradient)
 	//Loop through array and calculate X and Z
 	for (int i=0; i<NoNodes; ++i) 
 	{
-	  Z[i] = -10.+i*dZ;
-	  X[i] = -Z[i]/PlatformGradient;
+	  Z[i] = 10.-i*dZ;
+	  X[i] = Z[i]/PlatformGradient;
   }
 }
 
@@ -108,7 +108,7 @@ void RoBoCoP::Initialise(double dZ, double PlatformGradient, double CliffPositio
   printf("\nRoBoCoP.Initialise: Initialised a RoBoCoP as planar, sloped platform backed by a cliff\n");
   
   //Declare stuff
-  NoNodes = 20./dZ;
+  NoNodes = 1+round(20./dZ);
   NDV = -9999;
   
   //declare an array of zeros for assignment of x and z vectors
@@ -119,8 +119,8 @@ void RoBoCoP::Initialise(double dZ, double PlatformGradient, double CliffPositio
 	//Loop through array and calculate X and Z
 	for (int i=0; i<NoNodes; ++i) 
 	{
-	  Z[i] = -10.+i*dZ;
-	  if (Z[i] < 0) X[i] = CliffPositionX-(Z[i]/PlatformGradient);
+	  Z[i] = 10.-i*dZ;
+	  if (Z[i] < 0) X[i] = CliffPositionX+(Z[i]/PlatformGradient);
 	  else X[i] = CliffPositionX;
   }
 }	
@@ -130,7 +130,7 @@ void RoBoCoP::Initialise(string FileNameIn)
   /* read coastal profile from file to RoBoCoP object */
   
   //Declare stuff
-  NoNodes = 20./dZ;
+  NoNodes = 1+round(20./dZ);
   NDV = -9999;
 }
 
@@ -189,27 +189,27 @@ void RoBoCoP::EvolveCoast(double TimeInterval)
     
     //find horizontal extent of surfzone
     bool SurfZone=false;
-    int i=0;
+    int i=NoNodes-1;
     while (SurfZone == false)
     {
       if (Z[i] > SurfZoneBottomZ)
       {
         //Find Position X of Surfzone bottom by interpolating
-        SurfZoneBottomX = X[i] + (X[i]-X[i-1])*(Z[i]-SurfZoneBottomZ)/(Z[i]-Z[i-1]);
+        SurfZoneBottomX = X[i] + (X[i+1]-X[i])*(Z[i]-SurfZoneBottomZ)/(Z[i+1]-Z[i]);
         SurfZone = true;
       }
-      ++i;
+      --i;
     }
     while (SurfZone == true)
     {
       if (Z[i] > SurfZoneTopZ)
       {
         //Find Position X of Surfzone bottom by interpolating
-        SurfZoneTopX = X[i] + (X[i]-X[i-1])*(Z[i]-SurfZoneTopZ)/(Z[i]-Z[i-1]);
+        SurfZoneTopX = X[i] + (X[i+1]-X[i])*(Z[i]-SurfZoneTopZ)/(Z[i+1]-Z[i]);
         SurfZone = false;
-        --i;
+        ++i;
       }
-      ++i;
+      --i;
     }
     
     //Calculate Surf Zone width
@@ -226,12 +226,12 @@ void RoBoCoP::EvolveCoast(double TimeInterval)
       else if (WaterDepth < 0) WaterDepth = 100.;
 
       Erosion[i] += M*SurfForce*exp(-WaterDepth);
-      --i;
+      ++i;
     }
   }
   //Do the erosion/update the profile
-  double XCliff = X[0];
-  for (int i=0; i<NoNodes; ++i)
+  double XCliff = X[NoNodes-1];
+  for (int i=NoNodes-1; i>0; --i)
   {
     X[i] -= Erosion[i]*TimeInterval;
     

@@ -142,20 +142,22 @@ void RockyCoastCRN::Initialise(RoBoCoP RoBoCoPCoast)
   /* initialise a RockyCoastCRN object for use with a RoBoCoP object */
   printf("\nRockyCoastCRN.Initialise: Initialised a RockyCoastCRN object for use with a RoBoCoP object\n");
 
-  //Geometric parameters
-	NXNodes = 201;										//Number of nodes in cross shore
-	NZNodes = 201;										//Number of nodes in profile
-	PlatformWidth = 1000.;						//width of model domain (m)
-	PlatformDepth = 20.;							//Depth to which CRN will be tracked (needs to be large enough that sea level rise is ok)
-	NDV = -9999;											//Place holder for no data
-	
-	//set tidal amplitude
+  //set tidal amplitude based on RoBoCoP
 	TidalAmplitude = RoBoCoPCoast.TidalAmplitude;
 	
-	//get max extent of shoreface
+	//get max extent of shoreface from RoBoCoP
 	double XMax = RoBoCoPCoast.X[0];
-	//printf("XMax = %.2f\n", XMax);
-	
+	double XMin = RoBoCoPCoast.X[RoBoCoPCoast.NoNodes-1];
+	double ZMin = RoBoCoPCoast.Z[0];
+	double ZMax = RoBoCoPCoast.Z[RoBoCoPCoast.NoNodes-1];
+	CliffHeight = ZMax;
+		
+	//Setup CRN domain based on RoBoCoP
+	NXNodes = RoBoCoPCoast.NoNodes;
+	NZNodes = RoBoCoPCoast.NoNodes;
+	NDV = -9999;
+	double dX = (XMax-XMin)/(NXNodes);
+		
 	//Setup CRN Arrays
 	vector<double> EmptyX(NXNodes,0.0);
 	vector<double> EmptyZ(NZNodes,0.0);
@@ -170,14 +172,19 @@ void RockyCoastCRN::Initialise(RoBoCoP RoBoCoPCoast)
 	N = EmptyVV;
 	
 	//Get surface morphology from RoBoCoP
-	for (int i=0, N=RoBoCoPCoast.X.size(); i<N; ++i)
-	{
-	  //Do Stuff
-	  for (int j=0; j<NZNodes; ++j) Z[j] = ((PlatformDepth/2.)-j*(PlatformDepth/(NZNodes-1)));
-	  for (int i=0; i<NXNodes; ++i) X[i] = (i*(PlatformWidth/(NXNodes-1)));
-	
+  int Ind = 0
+	for (int i=0; i<RoBoCoP.NoNodes; ++i)
+  {
+    X[i] = dX*i;
+    if (i == 0) Z[i] = RoBoCoP.Z[Ind];
+    else if (X[i] < RoBoCoP.X[Ind])
+    {
+      Z[i] = Z[Ind-1] + (Z[Ind]-Z[Ind-1])*X[i]/(X[Ind]-X[Ind-1]);
+    }
+    ++Ind;
 	}
-	
+	// Break here to test
+	cout << "Break" << endl;
 }	
 void RockyCoastCRN::InitialiseTides()
 {

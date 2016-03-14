@@ -18,14 +18,11 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 
 #Define constants
-M = 6.5*10.**(-3.)          #Conversion coefficient (m^3/kg)
+M = 0.0001                  #Conversion coefficient (m^3/kg)
 C = 0.5                     #Coeffcient representing breaker type
 k = 0.02                    #Coefficient of wave energy attenuation
 rho_w = 1025.0              #density of water (kg/m^3)
 g = 9.81                    #gravity (m/s^2)
-u = 10.0                    #wind velocity (m/s)
-MinSurfForce = 100.         #critical resisting force to overcome (kg/m^2)
-W = 240.                    #waves/hour!?
 
 #Geometric Parameters
 PlatformGradient = 1./10.
@@ -33,29 +30,30 @@ PlatformGradient = 1./10.
 InitialCliffPosition = 500.
 InitialCliffHeight = 10.
 InitialJunctionElevation = 1.
-dz = 0.1
+dz = 0.01
 Z = np.arange(-10.,10.,dz)
 NoNodes = len(Z)
-X = -Z/PlatformGradient+InitialCliffPosition+InitialJunctionElevation/PlatformGradient
-X[Z>InitialJunctionElevation] = InitialCliffPosition
-X[-1] = 0.
+X = np.zeros(len(Z))
+#X = -Z/PlatformGradient+InitialCliffPosition+InitialJunctionElevation/PlatformGradient
+#X[Z>InitialJunctionElevation] = InitialCliffPosition
+#X[-1] = 0.
 
 #Tides
-TidalAmplitude = 1.0
+TidalAmplitude = 5.
 TidalPeriod=12.42
 TidalTimes = np.arange(0,TidalPeriod/2.,0.001)
 WaterLevels = -TidalAmplitude*np.cos((2.*np.pi*TidalTimes/(TidalPeriod)));
 NTidalValues = len(WaterLevels)
 
 #Sea level
-SLR = 0.0001 # m/yr
+SLR = 0.0 # m/yr
 SeaLevel = 0
 
 #Waves
 #significant wave height and period calculated following Kraal et al 2006
 #equations 11 and 12, after Pond and Pickard, 1983
-Hs = 0.2412*u**2/g      #Significant wave height (m)
-T = 7.6924*(u/g)       #peak period (s)
+Hs = 1.2      #Significant wave height (m)
+T = 6.        #peak period (s)
 
 #Incoming wave height (Hb) is related to far field wave height (hs)
 #Komar and Gaughan (1972)
@@ -65,17 +63,18 @@ Hb = 0.39*(g**0.2)*(T*Hs**2)**0.4
 hb = Hb*1.0/0.78        #breaking wave depth
 
 #setup time control
-MaxTime = 10000.
+MaxTime = 1000.
 Time = MaxTime
 EndTime = 0.
 dt = 1.
 PlotTime = MaxTime
-PlotInterval = 1000.
+PlotInterval = 100.
 
 #setup figure
-plt.figure(2)
-ax1 = plt.subplot(211)
-ax2 = plt.subplot(212)
+plt.figure(2,figsize=(4,8))
+ax1 = plt.subplot(311)
+ax2 = plt.subplot(312)
+ax3 = plt.subplot(313)
 
 #Main Model Loop
 while Time > EndTime:
@@ -152,6 +151,7 @@ while Time > EndTime:
         Color = Time/MaxTime
         ax1.plot(X,Z,'-',color=cm.Paired(Color))
         ax2.plot(Ez,Z,'-',color=cm.Paired(Color))
+        ax3.plot(TidalWeights,TidalWaterLevels[:-1],color=cm.Paired(Color))
         
     #UPDATE TIME
     Time -= dt
