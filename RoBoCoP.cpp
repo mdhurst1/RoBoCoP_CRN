@@ -98,7 +98,7 @@ void RoBoCoP::Initialise(double dZ, double PlatformGradient)
 	for (int i=0; i<NoNodes; ++i) 
 	{
 	  Z[i] = 10.-i*dZ;
-	  X[i] = Z[i]/PlatformGradient;
+	  X[i] = -Z[i]/PlatformGradient;
   }
 }
 
@@ -120,7 +120,7 @@ void RoBoCoP::Initialise(double dZ, double PlatformGradient, double CliffPositio
 	for (int i=0; i<NoNodes; ++i) 
 	{
 	  Z[i] = 10.-i*dZ;
-	  if (Z[i] < 0) X[i] = CliffPositionX+(Z[i]/PlatformGradient);
+	  if (Z[i] < 0) X[i] = CliffPositionX-(Z[i]/PlatformGradient);
 	  else X[i] = CliffPositionX;
   }
 }	

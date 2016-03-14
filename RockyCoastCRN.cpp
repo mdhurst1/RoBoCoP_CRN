@@ -146,8 +146,8 @@ void RockyCoastCRN::Initialise(RoBoCoP RoBoCoPCoast)
 	TidalAmplitude = RoBoCoPCoast.TidalAmplitude;
 	
 	//get max extent of shoreface from RoBoCoP
-	double XMax = RoBoCoPCoast.X[0];
-	double XMin = RoBoCoPCoast.X[RoBoCoPCoast.NoNodes-1];
+	double XMin = RoBoCoPCoast.X[0];
+	double XMax = RoBoCoPCoast.X[RoBoCoPCoast.NoNodes-1];
 	double ZMin = RoBoCoPCoast.Z[0];
 	double ZMax = RoBoCoPCoast.Z[RoBoCoPCoast.NoNodes-1];
 	CliffHeight = ZMax;
@@ -172,19 +172,14 @@ void RockyCoastCRN::Initialise(RoBoCoP RoBoCoPCoast)
 	N = EmptyVV;
 	
 	//Get surface morphology from RoBoCoP
-  int Ind = 0
-	for (int i=0; i<RoBoCoP.NoNodes; ++i)
+  int Ind = 0;
+	for (int i=0; i<RoBoCoPCoast.NoNodes; ++i)
   {
     X[i] = dX*i;
-    if (i == 0) Z[i] = RoBoCoP.Z[Ind];
-    else if (X[i] < RoBoCoP.X[Ind])
-    {
-      Z[i] = Z[Ind-1] + (Z[Ind]-Z[Ind-1])*X[i]/(X[Ind]-X[Ind-1]);
-    }
-    ++Ind;
-	}
-	// Break here to test
-	cout << "Break" << endl;
+    while (RoBoCoPCoast.X[Ind] <= X[i]) ++Ind;
+    if (RoBoCoPCoast.X[Ind] == X[i]) Z[i] = RoBoCoPCoast.Z[Ind];
+    else Z[i] = RoBoCoPCoast.Z[Ind-1] + (RoBoCoPCoast.Z[Ind]-RoBoCoPCoast.Z[Ind-1])*((X[i]-RoBoCoPCoast.X[Ind-1])/(RoBoCoPCoast.X[Ind]-RoBoCoPCoast.X[Ind-1]));
+  }	
 }	
 void RockyCoastCRN::InitialiseTides()
 {
