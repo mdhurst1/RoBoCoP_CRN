@@ -295,7 +295,14 @@ class RockyCoastCRN
 		///   a file. If the file exists, this is appended.
 		///	@author Martin D. Hurst 
     /// @date 09/02/2016
-		void WriteProfile();
+		void WriteProfile(string OutputFileName, double Time);
+		
+		/// @brief Writes the platform morphology to file
+		/// @details This function writes the CRN concnetrations on the platform surface at the current time to
+		///   a file. If the file exists, this is appended.
+		///	@author Martin D. Hurst 
+    /// @date 15/03/2016
+		void WriteCRNProfile(string OutputFileName, double Time);
 		
 		/// @brief Get X coordinates
 		/// @return X coordinates

@@ -46,9 +46,16 @@ int main()
 	
 	//Print Control
 	double PrintInterval = 100.;
-	double PrintTime = Time;
-	string OutputFileName = "ShoreProfile.xz";
+	double PrintTime = PrintInterval;
+	string OutputMorphologyFileName = "ShoreProfile.xz";
+	string OutputCRNMorphologyFileName = "ShoreProfile2.xz";
+	string OutputConcentrationFileName = "CRNConcentrations.xn";
 	
+	//print initial conditions to file first
+	PlatformModel.WriteProfile(OutputMorphologyFileName, Time);
+  PlatformCRN.WriteProfile(OutputCRNMorphologyFileName, Time);
+  PlatformCRN.WriteCRNProfile(OutputConcentrationFileName, Time);
+  
 	//Loop through time
 	while (Time < EndTime)
 	{
@@ -60,19 +67,24 @@ int main()
 	  
 	  //Update the CRN concentrations
 	  PlatformCRN.UpdateCRNs();
-        
+    
+    //update time
+	  Time += TimeInterval;
+	      
 	  //print?
 	  if (Time >= PrintTime)
 	  {
-	    PlatformModel.WriteProfile(OutputFileName, Time);
-	    PlatformCRN.WriteProfile();
+	    PlatformModel.WriteProfile(OutputMorphologyFileName, Time);
+	    PlatformCRN.WriteProfile(OutputCRNMorphologyFileName, Time);
+	    PlatformCRN.WriteCRNProfile(OutputConcentrationFileName, Time);
 	    PrintTime += PrintInterval;
 	    //cout << "Time is " << Time << endl;
 	  }
 	  
-	  //update time
-	  Time += TimeInterval;
+	  
 	}
+	//write a gap at the end
+	cout << endl << endl;
 }
 
 

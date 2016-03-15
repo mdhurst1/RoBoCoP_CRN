@@ -148,7 +148,7 @@ void RockyCoastCRN::Initialise(RoBoCoP RoBoCoPCoast)
 	//get max extent of shoreface from RoBoCoP
 	double XMin = RoBoCoPCoast.X[0];
 	double XMax = RoBoCoPCoast.X[RoBoCoPCoast.NoNodes-1];
-	double ZMin = RoBoCoPCoast.Z[0];
+	//double ZMin = RoBoCoPCoast.Z[0]; // not needed
 	double ZMax = RoBoCoPCoast.Z[RoBoCoPCoast.NoNodes-1];
 	CliffHeight = ZMax;
 		
@@ -173,13 +173,16 @@ void RockyCoastCRN::Initialise(RoBoCoP RoBoCoPCoast)
 	
 	//Get surface morphology from RoBoCoP
   int Ind = 0;
-	for (int i=0; i<RoBoCoPCoast.NoNodes; ++i)
+	for (int i=0; i<NXNodes; ++i)
   {
     X[i] = dX*i;
-    while (RoBoCoPCoast.X[Ind] <= X[i]) ++Ind;
+    while (RoBoCoPCoast.X[Ind] < X[i]) ++Ind;
     if (RoBoCoPCoast.X[Ind] == X[i]) Z[i] = RoBoCoPCoast.Z[Ind];
     else Z[i] = RoBoCoPCoast.Z[Ind-1] + (RoBoCoPCoast.Z[Ind]-RoBoCoPCoast.Z[Ind-1])*((X[i]-RoBoCoPCoast.X[Ind-1])/(RoBoCoPCoast.X[Ind]-RoBoCoPCoast.X[Ind-1]));
-  }	
+  }
+  // copy Z to PlatformElevation
+  // Do we need both?
+  SurfaceElevation = Z;
 }
 	
 void RockyCoastCRN::InitialiseTides()
@@ -421,7 +424,8 @@ void RockyCoastCRN::RunModel(string outfilename, int WriteResultsFlag)
     //write output?
     if ((WriteResultsFlag != 0) && (Time <= WriteTime))
     {
-      WriteProfile();
+      WriteProfile(OutFileName, Time);
+      WriteCRNProfile(OutFileName, Time);
       WriteTime -= WriteInterval;
     }
     
@@ -435,19 +439,11 @@ void RockyCoastCRN::RunModel(string outfilename, int WriteResultsFlag)
     
 	}
 	
-	WriteProfile();
+	WriteProfile(OutFileName, Time);
+	WriteCRNProfile(OutFileName, Time);
 	
   CliffPositionInd = 0;
-    
-	//Write result to file?
-	if (WriteResultsFlag != 0)
-	{
-		ofstream write_results;
-	  write_results.open((OutFileName+"_CRNs.txt").c_str());
-	  write_results << "X, N\n";
-	  for (int i=0; i<NXNodes; ++i) write_results << X[i] << " " << SurfaceN[i] << endl;
-	  write_results.close();
-  }
+  
 }
 
 void RockyCoastCRN::GetRetreatRate()
@@ -615,29 +611,33 @@ void RockyCoastCRN::UpdateEquillibriumMorphology()
 
 void RockyCoastCRN::UpdateMorphology(RoBoCoP RoBoCoPCoast)
 {
-  //Find cliff position
+  // Find cliff position
   double XMin = RoBoCoPCoast.X[0];
   CliffPositionX = XMin;  
   
-  //Add nodes to front of RockyCoastCRN as required
+  // Add nodes to front of RockyCoastCRN as required
   vector<double> EmptyZ(NZNodes,0.0);
   while (XMin < X[0]) 
   {
     X.insert(X.begin(),X[0]-dX);
+    Z.insert(Z.begin(),NDV);
     SurfaceElevation.insert(SurfaceElevation.begin(), NDV);
     SurfaceN.insert(SurfaceN.begin(),0);
     N.insert(N.begin(),EmptyZ);
+    ++NXNodes;
   }
   
-  //Get surface morphology from RoBoCoP
+  // Get surface morphology from RoBoCoP
   int Ind = 0;
-	for (int i=0; i<RoBoCoPCoast.NoNodes; ++i)
+	for (int i=0; i<NXNodes; ++i)
   {
-    X[i] = dX*i;
-    while (RoBoCoPCoast.X[Ind] <= X[i]) ++Ind;
+    while (RoBoCoPCoast.X[Ind] < X[i]) ++Ind;
     if (RoBoCoPCoast.X[Ind] == X[i]) Z[i] = RoBoCoPCoast.Z[Ind];
     else Z[i] = RoBoCoPCoast.Z[Ind-1] + (RoBoCoPCoast.Z[Ind]-RoBoCoPCoast.Z[Ind-1])*((X[i]-RoBoCoPCoast.X[Ind-1])/(RoBoCoPCoast.X[Ind]-RoBoCoPCoast.X[Ind-1]));
   }	
+  // Copy Z to SurfaceElevation
+  // Do we need both?
+  SurfaceElevation = Z;
 }
 double RockyCoastCRN::GetTopographicShieldingFactor(double X, double CliffHeight)
 {
@@ -757,15 +757,10 @@ void RockyCoastCRN::GetThinningBeachWidth(double Time)
   else BeachWidth = InitialBeachWidth;
 }
 
-void RockyCoastCRN::WriteProfile()
+void RockyCoastCRN::WriteProfile(string OutputFileName, double Time)
 {
-  //Print to screen
-	cout.flush();
-	cout << "RockyCoastCRN: Time is " << setprecision(0) << fixed << Time << " years\r";
-	
-	//test if output file already exists
-  string OutputFileName = OutFileName + "_Morphology.txt";
-	int FileExists = 0;
+  //test if output file already exists
+  int FileExists = 0;
 	ifstream oftest(OutputFileName.c_str());
 	if (oftest) FileExists = 1;
 	oftest.close();
@@ -787,7 +782,7 @@ void RockyCoastCRN::WriteProfile()
 	{
 		//write PlatformElevation
 		WritePlatform << Time;
-		for (int i=0; i<NXNodes; ++i) WritePlatform << setprecision(4) << " " << PlatformElevation[i];
+		for (int i=0; i<NXNodes; ++i) WritePlatform << setprecision(4) << " " << X[i];
 		WritePlatform << endl;
 		
 		//write SurfaceElevation
@@ -796,4 +791,40 @@ void RockyCoastCRN::WriteProfile()
 		WritePlatform << endl;
 	}
 }
+
+void RockyCoastCRN::WriteCRNProfile(string OutputFileName, double Time)
+{
+  //test if output file already exists
+  int FileExists = 0;
+	ifstream oftest(OutputFileName.c_str());
+	if (oftest) FileExists = 1;
+	oftest.close();
+
+	//open the output filestream and write headers
+	ofstream WritePlatform;
+	if (FileExists == 0)
+	{
+		WritePlatform.open(OutputFileName.c_str());
+		if (WritePlatform.is_open()) WritePlatform << NXNodes << " " << PlatformWidth << endl;
+	}
+	WritePlatform.close();
+
+	//open output filestream again to  coastline data
+	WritePlatform.open(OutputFileName.c_str(), fstream::app|fstream::out);
+
+	//Check if file exists if not open a new one and write headers
+	if (WritePlatform.is_open())
+	{
+		//write PlatformElevation
+		WritePlatform << Time;
+		for (int i=0; i<NXNodes; ++i) WritePlatform << setprecision(4) << " " << X[i];
+		WritePlatform << endl;
+		
+		//write SurfaceElevation
+		WritePlatform << Time;
+		for (int i=0; i<NXNodes; ++i) WritePlatform << setprecision(4) << " " << SurfaceN[i];
+		WritePlatform << endl;
+	}
+}
+
 #endif

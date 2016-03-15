@@ -219,7 +219,7 @@ void RoBoCoP::EvolveCoast(double TimeInterval)
     SurfForce = 0.5*rho_w*(BreakingWaveWaterDepth)*exp(-k*SurfZoneWidth);
     
     //Loop offshore and calculate erosion
-    while (i > 0)
+    while (i < NoNodes)
     {
       WaterDepth = SeaLevel+WaterLevels[t]-Z[i];
       if (fabs(WaterDepth)<0.0001) WaterDepth=0;
@@ -231,7 +231,7 @@ void RoBoCoP::EvolveCoast(double TimeInterval)
   }
   //Do the erosion/update the profile
   double XCliff = X[NoNodes-1];
-  for (int i=NoNodes-1; i>0; --i)
+  for (int i=NoNodes-1; i>-1; --i)
   {
     X[i] -= Erosion[i]*TimeInterval;
     
