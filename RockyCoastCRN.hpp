@@ -131,9 +131,9 @@ class RockyCoastCRN
 		double PlatformGradient;
 		double CliffHeight;
 		double JunctionElevation;
-		double CliffPositionX;        //tracks the cliff position in X
+		double CliffPositionX;        //tracks the cliff position in X (m)
 		int CliffPositionInd;         //tracks the index of the cliff position in X
-		double XMax;
+		double XMin, XMax;            //Extent of the model domain in X (m)
 		int ZTrackInd;
 				
 		//sea level parameters
@@ -165,10 +165,7 @@ class RockyCoastCRN
 		
 		//functions to initialise platform morphology
 		void InitialisePlanarPlatformMorphology();
-		
-		//function to initialise the tides
-		void InitialiseTides();
-		
+				
 		//function to retrieve topographic shielding factor
 		double GetTopographicShieldingFactor(double X, double CliffHeight);
 		
@@ -237,6 +234,15 @@ class RockyCoastCRN
 			Initialise();
 		}
 		
+		/// @brief function to initialise the tides
+		/// @details This function initialises tides as a single cosine wave with fixed amplitude and
+		///   period. 
+		/// @param A Tidal Amplitude (metres)
+		/// @param T Tidal Period (hours)
+		///	@author Martin D. Hurst 
+    /// @date 15/03/2016
+		void InitialiseTides(double A, double T);
+				
 		/// @brief Update RockyCoastCRN object parameters for a new model run
 		/// @param RetreatRate1_Test New first rate of cliff retreat (m/yr)
 		/// @param RetreatRate2_Test second rate of cliff retreat (m/yr)
@@ -270,10 +276,11 @@ class RockyCoastCRN
 		
 		/// @brief Updates the CRN concentrations at the platform surface and at depth
 		/// @details This function calculates the accumulation of 10Be in the platform surface and
-		//    at depth by both spallation and muogenic production. 
+		///   at depth by both spallation and muogenic production. 
+		/// @param TimeInterval the time step in years
 		///	@author Martin D. Hurst 
     /// @date 09/02/2016
-		void UpdateCRNs();
+		void UpdateCRNs(double TimeInterval);
 
 		/// @brief Updates the platform morphology
 		/// @details This function calculates the amount of platform downwear and updates the elevations

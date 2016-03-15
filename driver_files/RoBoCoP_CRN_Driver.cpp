@@ -24,13 +24,15 @@ int main()
   //initialise RoBoCoP
   RoBoCoP PlatformModel = RoBoCoP(dZ,PlatformGradient,CliffPositionX);
 
+  //Initialise RockyCoastCRN
+	RockyCoastCRN PlatformCRN = RockyCoastCRN(PlatformModel);
+	
 	//Initialise Tides
 	double TidalAmplitude = 1.;
 	double TidalPeriod = 12.42;
 	PlatformModel.InitialiseTides(TidalAmplitude, TidalPeriod);
+	PlatformCRN.InitialiseTides(TidalAmplitude, TidalPeriod);
 	
-	//Initialise RockyCoastCRN
-	RockyCoastCRN PlatformCRN = RockyCoastCRN(PlatformModel);
 	
 	
 	//Initialise Waves
@@ -66,7 +68,7 @@ int main()
 	  PlatformCRN.UpdateMorphology(PlatformModel);
 	  
 	  //Update the CRN concentrations
-	  PlatformCRN.UpdateCRNs();
+	  PlatformCRN.UpdateCRNs(TimeInterval);
     
     //update time
 	  Time += TimeInterval;

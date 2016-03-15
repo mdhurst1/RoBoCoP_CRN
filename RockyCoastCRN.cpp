@@ -122,14 +122,17 @@ void RockyCoastCRN::Initialise(double retreatrate1, double retreatrate2, int ret
 	BermHeight = bermheight;
 	JunctionElevation = junctionelevation;
 	TidalAmplitude = tidalamplitude;
+
 	SteppedPlatform = steppedplatform;
 	StepSize = stepsize;
-	
+
+	TidalPeriod = 12.42;
+		
 	//constant for Bruun profile beaches
 	A = 0.125;
 		
 	//initialise tides, geomag and RSL data
-	InitialiseTides();
+	InitialiseTides(TidalAmplitude,TidalPeriod);
 	InitialiseGeomagData();
 	InitialiseRSLData();
 	
@@ -146,17 +149,20 @@ void RockyCoastCRN::Initialise(RoBoCoP RoBoCoPCoast)
 	TidalAmplitude = RoBoCoPCoast.TidalAmplitude;
 	
 	//get max extent of shoreface from RoBoCoP
-	double XMin = RoBoCoPCoast.X[0];
-	double XMax = RoBoCoPCoast.X[RoBoCoPCoast.NoNodes-1];
-	//double ZMin = RoBoCoPCoast.Z[0]; // not needed
-	double ZMax = RoBoCoPCoast.Z[RoBoCoPCoast.NoNodes-1];
+	XMin = RoBoCoPCoast.X[0];
+	XMax = RoBoCoPCoast.X[RoBoCoPCoast.NoNodes-1];
+	double ZMax = RoBoCoPCoast.Z[0];
+  double ZMin = RoBoCoPCoast.Z[RoBoCoPCoast.NoNodes-1];
+  //Cliff is at the start of the vector
 	CliffHeight = ZMax;
+	CliffPositionX = XMin;
+  CliffPositionInd = 0;
 		
 	//Setup CRN domain based on RoBoCoP
 	NXNodes = RoBoCoPCoast.NoNodes;
 	NZNodes = RoBoCoPCoast.NoNodes;
 	NDV = -9999;
-	dX = (XMax-XMin)/(NXNodes);
+	dX = (XMax-XMin)/(NXNodes-1);
 		
 	//Setup CRN Arrays
 	vector<double> EmptyX(NXNodes,0.0);
@@ -170,25 +176,49 @@ void RockyCoastCRN::Initialise(RoBoCoP RoBoCoPCoast)
 	SurfaceElevation = EmptyXNDV;
 	SurfaceN = EmptyX;
 	N = EmptyVV;
-	
+
+  for (int j=0; j<NZNodes; ++j) Z[j] = (((ZMax-ZMin)/2.)-j*((ZMax-ZMin)/(NZNodes-1)));	
+  
 	//Get surface morphology from RoBoCoP
   int Ind = 0;
 	for (int i=0; i<NXNodes; ++i)
   {
     X[i] = dX*i;
-    while (RoBoCoPCoast.X[Ind] < X[i]) ++Ind;
-    if (RoBoCoPCoast.X[Ind] == X[i]) Z[i] = RoBoCoPCoast.Z[Ind];
-    else Z[i] = RoBoCoPCoast.Z[Ind-1] + (RoBoCoPCoast.Z[Ind]-RoBoCoPCoast.Z[Ind-1])*((X[i]-RoBoCoPCoast.X[Ind-1])/(RoBoCoPCoast.X[Ind]-RoBoCoPCoast.X[Ind-1]));
+    while ((RoBoCoPCoast.X[Ind] < X[i]) && (Ind < RoBoCoPCoast.NoNodes)) ++Ind;
+    if (RoBoCoPCoast.X[Ind] == X[i]) SurfaceElevation[i] = RoBoCoPCoast.Z[Ind];
+    else SurfaceElevation[i] = RoBoCoPCoast.Z[Ind-1] + (RoBoCoPCoast.Z[Ind]-RoBoCoPCoast.Z[Ind-1])*((X[i]-RoBoCoPCoast.X[Ind-1])/(RoBoCoPCoast.X[Ind]-RoBoCoPCoast.X[Ind-1]));
   }
-  // copy Z to PlatformElevation
-  // Do we need both?
-  SurfaceElevation = Z;
+
+  // copy to PlatformElevation
+  PlatformElevation = SurfaceElevation;
+  
+  //Initialise Geomagnetic Scaling as constant
+  GeoMagScalingFactor = 1;
 }
 	
-void RockyCoastCRN::InitialiseTides()
+
+void RockyCoastCRN::InitialisePlanarPlatformMorphology()
+{
+  vector<double> EmptyX(NXNodes,0.0);
+	vector<double> EmptyZ(NZNodes,0.0);
+	vector<double> EmptyXNDV(NXNodes,NDV);
+	vector< vector<double> > EmptyVV(NXNodes,EmptyZ);
+	X = EmptyX;
+	Z = EmptyZ;
+	PlatformElevation = EmptyXNDV;
+	PlatformElevationOld = EmptyXNDV;
+	SurfaceElevation = EmptyXNDV;
+	SurfaceN = EmptyX;
+	N = EmptyVV;
+	for (int j=0; j<NZNodes; ++j) Z[j] = ((PlatformDepth/2.)-j*(PlatformDepth/(NZNodes-1)));
+	for (int i=0; i<NXNodes; ++i) X[i] = (i*(PlatformWidth/(NXNodes-1)));
+}
+
+void RockyCoastCRN::InitialiseTides(double A, double T)
 {
 	/// TIDES 
-	TidalPeriod=12.;
+	TidalAmplitude = A;
+	TidalPeriod = T;
 	for (double TT = 0; TT <= TidalPeriod; TT += 0.2) TideLevels.push_back(-TidalAmplitude*sin((2.*M_PI*TT)/(TidalPeriod)));
 	NTidalValues = (double)TideLevels.size();
 	WaterDepths.resize(NTidalValues);
@@ -245,23 +275,6 @@ void RockyCoastCRN::InitialiseRSLData()
 	  RSLRate.push_back(indata);
 	}
 	GIAIn.close();
-}
-
-void RockyCoastCRN::InitialisePlanarPlatformMorphology()
-{
-  vector<double> EmptyX(NXNodes,0.0);
-	vector<double> EmptyZ(NZNodes,0.0);
-	vector<double> EmptyXNDV(NXNodes,NDV);
-	vector< vector<double> > EmptyVV(NXNodes,EmptyZ);
-	X = EmptyX;
-	Z = EmptyZ;
-	PlatformElevation = EmptyXNDV;
-	PlatformElevationOld = EmptyXNDV;
-	SurfaceElevation = EmptyXNDV;
-	SurfaceN = EmptyX;
-	N = EmptyVV;
-	for (int j=0; j<NZNodes; ++j) Z[j] = ((PlatformDepth/2.)-j*(PlatformDepth/(NZNodes-1)));
-	for (int i=0; i<NXNodes; ++i) X[i] = (i*(PlatformWidth/(NXNodes-1)));
 }
 	
 void RockyCoastCRN::UpdateParameters( double RetreatRate1_Test, double RetreatRate2_Test, 
@@ -416,7 +429,7 @@ void RockyCoastCRN::RunModel(string outfilename, int WriteResultsFlag)
 		//SLR = GetSeaLevelRise(Time);
 		
     //update CRN concentrations
-    UpdateCRNs();
+    UpdateCRNs(dt);
     
     //update morphology
     UpdateEquillibriumMorphology();
@@ -479,7 +492,7 @@ void RockyCoastCRN::GetRetreatRate()
 	}
 }
 
-void RockyCoastCRN::UpdateCRNs()
+void RockyCoastCRN::UpdateCRNs(double TimeInterval)
 {
   /*
   Function to update the concentrations of cosmogenic radionuclides at and below 
@@ -488,6 +501,8 @@ void RockyCoastCRN::UpdateCRNs()
   Martin Hurst
   February 2016
   */
+
+  dt = TimeInterval;
   
   //Temp parameters
   vector<double> EmptyVector(NXNodes,0);
@@ -528,7 +543,7 @@ void RockyCoastCRN::UpdateCRNs()
 		
 		  //loop through depths and update concentrations
 		  int Top = 0;
-		  for (int j=ZTrackInd; j<NZNodes; ++j)
+		  for (int j=0; j<NZNodes; ++j)
 		  {
 			  //cout << Z[j] << " " << SurfaceElevation[i] << " " << i << " " << j << endl;
 			  if ((Z[j] < PlatformElevation[i]) && (Z[j] > PlatformElevation[i]-20.))
@@ -536,7 +551,7 @@ void RockyCoastCRN::UpdateCRNs()
 				  if (Top == 0)
 				  {	
 					  //linearly interpolate to get concentration at the surface
-					  if (PlatformElevationOld[i] == -9999) PlatformElevationOld[i] = SeaLevel+JunctionElevation;
+					  if (PlatformElevationOld[i] == -9999) SurfaceN[i] = 0;
 					  else if (SurfaceN[i] > 0) SurfaceN[i] -= (((PlatformElevationOld[i]-PlatformElevation[i])/(PlatformElevationOld[i]-Z[j]))*(SurfaceN[i]-N[i][j]));
 					  
 					  //update concentration at the platform surface, accounting for beach cover
@@ -570,11 +585,12 @@ void RockyCoastCRN::UpdateEquillibriumMorphology()
   
   //temp parameters
   double TempPlatformElevChange, TempBeachThickness;
-		
+	
   //Update surface elevations
+  PlatformElevationOld = PlatformElevation;
+  
 	for (int i=CliffPositionInd; i<NXNodes; ++i)
 	{
-		PlatformElevationOld[i] = PlatformElevation[i];
 		if (X[i] >= CliffPositionX)
 		{
 			if (PlatformElevation[i] == NDV)
@@ -612,16 +628,22 @@ void RockyCoastCRN::UpdateEquillibriumMorphology()
 void RockyCoastCRN::UpdateMorphology(RoBoCoP RoBoCoPCoast)
 {
   // Find cliff position
-  double XMin = RoBoCoPCoast.X[0];
-  CliffPositionX = XMin;  
+  XMin = RoBoCoPCoast.X[0];
+  XMax = RoBoCoPCoast.X[RoBoCoPCoast.NoNodes-1];
+  
+  CliffPositionX = XMin;
+  CliffPositionInd = 0;
+  
+  PlatformElevationOld = PlatformElevation;
   
   // Add nodes to front of RockyCoastCRN as required
   vector<double> EmptyZ(NZNodes,0.0);
   while (XMin < X[0]) 
   {
     X.insert(X.begin(),X[0]-dX);
-    Z.insert(Z.begin(),NDV);
     SurfaceElevation.insert(SurfaceElevation.begin(), NDV);
+    PlatformElevation.insert(PlatformElevation.begin(), NDV);
+    PlatformElevationOld.insert(PlatformElevationOld.begin(), NDV);
     SurfaceN.insert(SurfaceN.begin(),0);
     N.insert(N.begin(),EmptyZ);
     ++NXNodes;
@@ -629,15 +651,16 @@ void RockyCoastCRN::UpdateMorphology(RoBoCoP RoBoCoPCoast)
   
   // Get surface morphology from RoBoCoP
   int Ind = 0;
-	for (int i=0; i<NXNodes; ++i)
+  SurfaceElevation[0] = CliffHeight;
+	for (int i=1; i<NXNodes; ++i)
   {
-    while (RoBoCoPCoast.X[Ind] < X[i]) ++Ind;
-    if (RoBoCoPCoast.X[Ind] == X[i]) Z[i] = RoBoCoPCoast.Z[Ind];
-    else Z[i] = RoBoCoPCoast.Z[Ind-1] + (RoBoCoPCoast.Z[Ind]-RoBoCoPCoast.Z[Ind-1])*((X[i]-RoBoCoPCoast.X[Ind-1])/(RoBoCoPCoast.X[Ind]-RoBoCoPCoast.X[Ind-1]));
+    while ((RoBoCoPCoast.X[Ind] < X[i]) && (Ind < RoBoCoPCoast.NoNodes)) ++Ind;
+    if (RoBoCoPCoast.X[Ind] == X[i]) SurfaceElevation[i] = RoBoCoPCoast.Z[Ind];
+    else SurfaceElevation[i] = RoBoCoPCoast.Z[Ind-1] + (RoBoCoPCoast.Z[Ind]-RoBoCoPCoast.Z[Ind-1])*((X[i]-RoBoCoPCoast.X[Ind-1])/(RoBoCoPCoast.X[Ind]-RoBoCoPCoast.X[Ind-1]));
   }	
   // Copy Z to SurfaceElevation
   // Do we need both?
-  SurfaceElevation = Z;
+  PlatformElevation = SurfaceElevation;
 }
 double RockyCoastCRN::GetTopographicShieldingFactor(double X, double CliffHeight)
 {
