@@ -1,3 +1,42 @@
+/*==============================================================
+
+Block_Removal_Driver.hpp
+
+A driver function to simulate the evolution of a stepped shore platform and 
+predict the resultant concentrations of 10Be
+
+Developed by:
+Martin D. Hurst
+
+Copyright (C) 2016, Martin Hurst
+
+Developer can be contacted:
+mhurst@bgs.ac.uk
+
+Martin D. Hurst
+British Geological Survey,
+Environmental Science Centre,
+Nicker Hill,
+Keyworth,
+Nottingham,
+UK,
+NG12 5GG
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+==============================================================*/
+
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
@@ -15,6 +54,8 @@ using namespace std;
 
 int main()
 {
+	cout << "RockyCoastCRN: Running Block Removal Experiments..." << endl;
+	
 	//Input parameters
 	double RetreatRate1 = 0.1;            //Retreat Rate (m/yr) at the start of the model run
 	double RetreatRate2 = 0.1;            //Retreat Rate (m/yr) at the end of the model run
@@ -31,12 +72,15 @@ int main()
 	//Create Platform CRN object
 	RockyCoastCRN RockyCoastCRNModel(RetreatRate1, RetreatRate2, RetreatType, ChangeTime, BeachWidth, PlatformGradient, CliffHeight, ElevInit, Amp, SteppedPlatformFlag, StepSize);
 
-  //Run the model
+   //Run the model
+ 
   //First for no steps
+  cout << "\tNo steps" << endl;
   string OutFileName = "NoSteps";
 	RockyCoastCRNModel.RunModel(OutFileName);
 	
 	//10cm Steps
+	cout << "\t10 cm steps" << endl;
 	SteppedPlatformFlag = 1;
 	StepSize = 0.1;
 	OutFileName = "Steps10cm";
@@ -44,6 +88,7 @@ int main()
 	RockyCoastCRNModel2.RunModel(OutFileName);
 	
 	//20cm Steps
+	cout << "\t20 cm steps" << endl;
 	SteppedPlatformFlag = 1;
 	StepSize = 0.2;
 	OutFileName = "Steps20cm";
@@ -51,6 +96,7 @@ int main()
 	RockyCoastCRNModel3.RunModel(OutFileName);
 	
 	//40cm Steps
+	cout << "\t40 cm steps" << endl;
 	SteppedPlatformFlag = 1;
 	StepSize = 0.4;
 	OutFileName = "Steps40cm";
@@ -58,13 +104,14 @@ int main()
 	RockyCoastCRNModel4.RunModel(OutFileName);
 	
 	//80cm Steps
+	cout << "\t80 cm steps" << endl;
 	SteppedPlatformFlag = 1;
 	StepSize = 0.8;
 	OutFileName = "Steps80cm";
 	RockyCoastCRN RockyCoastCRNModel5(RetreatRate1, RetreatRate2, RetreatType, ChangeTime, BeachWidth, PlatformGradient, CliffHeight, ElevInit, Amp, SteppedPlatformFlag, StepSize);
 	RockyCoastCRNModel5.RunModel(OutFileName);
 
-	cout << endl;
+	cout << "\tDone" << endl << endl;
 	
 	return 0;
 }
