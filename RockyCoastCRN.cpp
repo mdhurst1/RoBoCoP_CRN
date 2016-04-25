@@ -88,7 +88,7 @@ void RockyCoastCRN::Initialise(double retreatrate, double beachwidth, double ber
 	cliffheight is the height of the adjacent cliff (m)
 	tidalamplitude is the average tidal amplitude for diurnal tides. */
   double changetime = 0;
-	Initialise(retreatrate, retreatrate, changetime, beachwidth, bermheight, platformgradient, cliffheight, junctionelevation, tidalamplitude,steppedplatform, stepsize);
+	Initialise(retreatrate, retreatrate, changetime, beachwidth, bermheight, platformgradient, cliffheight, junctionelevation, tidalamplitude, steppedplatform, stepsize);
 }
 	
 void RockyCoastCRN::Initialise(double retreatrate1, double retreatrate2, int retreattype, double changetime, double beachwidth, double bermheight, double platformgradient, double cliffheight, double junctionelevation, double tidalamplitude, int steppedplatform, double stepsize)
