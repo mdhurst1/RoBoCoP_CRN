@@ -2,7 +2,7 @@
 """
 Created on Mon Feb  8 15:10:34 2016
 
-Script to plot the results of RoBoCoP
+Script to plot the results of RoBoCoP and RockyCoastCRN
 
 Martin Hurst,
 March 7th 2016
@@ -23,6 +23,7 @@ rc('xtick.major',pad=5)
 padding = 5
 plt.figure(1,figsize=(6,6))
 
+#First plot the morphology through time
 FileName = "../driver_files/ShoreProfile.xz"
 f = open(FileName,'r')
 Lines = f.readlines()
@@ -43,46 +44,26 @@ for j in range(1,NoLines,2):
     
     ax1.plot(X,Z,'k-',lw=6)
 
-    
-    if j==1: 
-        CliffPositionX = X[0]
-        TimeOld = Time
-        CliffPositionXOld = CliffPositionX
-        continue
-    
-    CliffPositionX = X[0]
-    Times.append(Time)
-    RetreatRate.append((CliffPositionXOld-CliffPositionX)/(TimeOld-Time))
-    if TimeOld == Time:
-        print "hello!"
-        print Time
-        print TimeOld
-        print j
-    
-    TimeOld = Time
-    CliffPositionXOld = CliffPositionX
-    
-FileName = "../driver_files/ShoreProfile2.xz"
+ax1.set_xticklabels([])
+plt.ylabel("Elevation (m)")
+
+#now plot CRN concentration through time
+FileName = "../driver_files/CRNConcentrations.xn"
 f = open(FileName,'r')
 Lines = f.readlines()
 NoLines = len(Lines)
 
+ax2 = plt.subplot(212)
 #Get header info and setup X coord
 Header = Lines[0].strip().split(" ")
 for j in range(1,NoLines,2):
     X = np.array((Lines[j].strip().split(" "))[1:],dtype="float64")
-    Z = np.array((Lines[j+1].strip().split(" "))[1:],dtype="float64")
+    N = np.array((Lines[j+1].strip().split(" "))[1:],dtype="float64")
     
-    ax1.plot(X,Z,'r-',lw=2)
-
-    
+    ax2.plot(X,N,'r-',lw=2)
     
 plt.xlabel('Distance (m)')
-plt.ylabel('Elevation (m)')
+plt.ylabel('Concentration (atoms g$^{-1}$)')
 
-plt.subplot(212)
-plt.semilogy(Times,np.abs(RetreatRate),'k-')
-plt.xlabel("Time (years)")
-plt.ylabel("Retreat Rate (m/y)")
 plt.tight_layout()
 plt.show()

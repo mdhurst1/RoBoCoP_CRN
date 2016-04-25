@@ -110,5 +110,4 @@ plt.ylabel("Sea Level (m)")
 #WaterLevels += S2_Amplitude*np.sin((2.*np.pi*TideTimes/(S2_Period)))
 
 plt.xlabel("Time (hours)")
-
 plt.show()
