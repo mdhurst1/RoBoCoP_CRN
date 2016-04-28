@@ -402,7 +402,7 @@ void RockyCoastCRN::RunModel(string outfilename, int WriteResultsFlag)
 	    
 	    //update beach thickness
 	    if ((X[i]-CliffPositionX) < BeachWidth) TempBeachThickness = JunctionElevation+BermHeight-PlatformElevation[i];
-	    else TempBeachThickness = PlatformElevation[i] + (JunctionElevation+BermHeight-A*pow((X[i]-CliffPositionX-BeachWidth),2./3.));
+	    else TempBeachThickness = (JunctionElevation+BermHeight-A*pow((X[i]-CliffPositionX-BeachWidth),2./3.)) - PlatformElevation[i];
 	    if (TempBeachThickness > 0) BeachThickness[i] = TempBeachThickness;
 	    else BeachThickness[i] = 0;	    
 	  }
