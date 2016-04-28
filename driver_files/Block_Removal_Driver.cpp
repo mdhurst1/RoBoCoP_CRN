@@ -64,6 +64,7 @@ int main()
 	double Amp = 1.;                     //Tidal amplitude (1/2 tidal range)
 	double CliffHeight = 20.;             //Cliff height for shielding
 	double BeachWidth = 0.;               //Beach width (currently assumes total shielding)
+	int BeachType = 0;                    //Constant beach width
 	double BermHeight = 0.;               //No Beach in these runs
 	double ElevInit = 0.;                 //Elevation of the platform/cliff junction
 	int RetreatType = 0;	                //Scenario of retreat 0 = constant, 1 = step change, 2 = gradual change
@@ -71,7 +72,7 @@ int main()
 	double StepSize = 0.0;                //size of step (0=no steps)
 	
 	//Create Platform CRN object
-	RockyCoastCRN RockyCoastCRNModel(RetreatRate1, RetreatRate2, RetreatType, ChangeTime, BeachWidth, BermHeight, PlatformGradient, CliffHeight, ElevInit, Amp, SteppedPlatformFlag, StepSize);
+	RockyCoastCRN RockyCoastCRNModel(RetreatRate1, RetreatRate2, RetreatType, ChangeTime, BeachWidth, BeachType, BermHeight, PlatformGradient, CliffHeight, ElevInit, Amp, SteppedPlatformFlag, StepSize);
 
    //Run the model
   //First for no steps

@@ -20,11 +20,11 @@ int main()
 	double RetreatRate2 = 0.1;            //Retreat Rate (m/yr) at the end of the model run
 	double ChangeTime = 0;                //Time to change retreat rates if a step change
 	double PlatformGradient = 1./100.;    //Platform gradient (average if stepped platform)
-	double Amp = 2.4;                     //Tidal amplitude (1/2 tidal range)
+	double Amp = 1.;                      //Tidal amplitude (1/2 tidal range)
 	double CliffHeight = 10.;             //Cliff height for shielding
 	double BeachWidth = 0.;               //Beach width landward of berm
 	double BermHeight = 0.;               //Elevation of Beach Berm above junction (set beachwidth = 0 and bermheight = 0 for no beaches)
-	double JunctionElevation = 1.;        //Elevation of the platform/cliff junction
+	double JunctionElevation = 0.;        //Elevation of the platform/cliff junction
 	int RetreatType = 0;	                //Scenario of retreat 0 = constant, 1 = step change, 2 = gradual change
 	int SteppedPlatformFlag = 0;          //Flag for a stepped platform (1 = steps, 0=no steps)
 	double StepSize = 0.0;                //size of step (0=no steps)

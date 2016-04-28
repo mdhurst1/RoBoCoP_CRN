@@ -44,6 +44,12 @@ int main()
 	OutFileName = "Beach_Bh1_Bw0";
 	RockyCoastCRN RockyCoastCRNModel2(RetreatRate1, RetreatRate2, RetreatType, ChangeTime, BeachWidth, PlatformGradient, CliffHeight, ElevInit, Amp, SteppedPlatformFlag, StepSize);
 	RockyCoastCRNModel2.RunModel(OutFileName);
+	
+	//Berm Height = 1m, Beach Width = 0m
+	BermHeight = 2.;
+	OutFileName = "Beach_Bh2_Bw0";
+	RockyCoastCRN RockyCoastCRNModel2(RetreatRate1, RetreatRate2, RetreatType, ChangeTime, BeachWidth, PlatformGradient, CliffHeight, ElevInit, Amp, SteppedPlatformFlag, StepSize);
+	RockyCoastCRNModel2.RunModel(OutFileName);
 }
 
 

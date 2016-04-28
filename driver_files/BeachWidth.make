@@ -24,7 +24,7 @@ LIBS   = -lm -lstdc++
 OBJECTS=$(SOURCES:.cpp=.o)
 
 # EXECUTABLE MACRO
-EXECUTABLE=RockyCoastCRN.out
+EXECUTABLE=BeachWidth.out
 
 all: $(SOURCES) $(EXECUTABLE)
 

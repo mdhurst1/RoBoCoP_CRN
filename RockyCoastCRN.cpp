@@ -78,20 +78,22 @@ void RockyCoastCRN::Initialise()
 	TidalAmplitude = NDV;
 }
 
-void RockyCoastCRN::Initialise(double retreatrate, double beachwidth, double bermheight, double platformgradient, double cliffheight, double junctionelevation, double tidalamplitude, int steppedplatform, double stepsize)
+void RockyCoastCRN::Initialise(double retreatrate, double beachwidth, int beachtype, double bermheight, double platformgradient, double cliffheight, double junctionelevation, double tidalamplitude, int steppedplatform, double stepsize)
 {
 	/* initialise a platform object for single retreat rate scenarios
 	retreatrate is the rate of cliff retreat (m/yr)
+	retreat type is the style of retreat, dfaults to 0 for single retreat rate scenario
 	beachwidth is the width of the beach (m), protecting the platform from CRN production
 	JunctionElevation is the elevation of the platform/cliff junction
 	platformgradient is the average slope of the platform surface (m/m) 
 	cliffheight is the height of the adjacent cliff (m)
 	tidalamplitude is the average tidal amplitude for diurnal tides. */
+	int retreattype = 0;
   double changetime = 0;
-	Initialise(retreatrate, retreatrate, changetime, beachwidth, bermheight, platformgradient, cliffheight, junctionelevation, tidalamplitude, steppedplatform, stepsize);
+	Initialise(retreatrate, retreatrate, retreattype, changetime, beachwidth, beachtype, bermheight, platformgradient, cliffheight, junctionelevation, tidalamplitude, steppedplatform, stepsize);
 }
 	
-void RockyCoastCRN::Initialise(double retreatrate1, double retreatrate2, int retreattype, double changetime, double beachwidth, double bermheight, double platformgradient, double cliffheight, double junctionelevation, double tidalamplitude, int steppedplatform, double stepsize)
+void RockyCoastCRN::Initialise(double retreatrate1, double retreatrate2, int retreattype, double changetime, double beachwidth, int beachtype, double bermheight, double platformgradient, double cliffheight, double junctionelevation, double tidalamplitude, int steppedplatform, double stepsize)
 {
   /* initialise a platform object for two retreat rate scenarios
   retreatrate1 runs from 7.5ka until changetime, after which retreatrate2 continues to present
@@ -119,6 +121,8 @@ void RockyCoastCRN::Initialise(double retreatrate1, double retreatrate2, int ret
 	PlatformGradient = platformgradient;
 	CliffHeight = cliffheight;
 	BeachWidth = beachwidth;
+	MeanBeachWidth = BeachWidth;
+	BeachType = beachtype;
 	BermHeight = bermheight;
 	JunctionElevation = junctionelevation;
 	TidalAmplitude = tidalamplitude;
@@ -337,6 +341,7 @@ void RockyCoastCRN::RunModel(string outfilename, int WriteResultsFlag)
 	//set Sea level parameters
 	SLR = 0;          //Rate of relative sea level rise (m/y)  
 	SeaLevel = 0;			//Sea Level Tracker	
+	MeanBeachWidth = BeachWidth;
 	
 	//Time control
 	Time = 0;			//time in years
@@ -364,6 +369,7 @@ void RockyCoastCRN::RunModel(string outfilename, int WriteResultsFlag)
   //limit start time to 7ka
 	//if (MaxTime > 7000)	Time = 7000;
 	//else Time = MaxTime;
+
 	Time = MaxTime;
 	WriteTime = MaxTime;
 	
@@ -420,7 +426,8 @@ void RockyCoastCRN::RunModel(string outfilename, int WriteResultsFlag)
 		GetRetreatRate();
 		
 		//Update beachwidth
-		//GetThinningBeachWidth(Time);
+		if (BeachType == 1) GetSinWaveBeachWidth(Time);
+		else if (BeachType == 2) GetThinningBeachWidth(Time);
 		
 		//Get geomag scaling factor
 		GeoMagScalingFactor = GetGeoMagScalingFactor(Time);
@@ -429,7 +436,7 @@ void RockyCoastCRN::RunModel(string outfilename, int WriteResultsFlag)
 		//SLR = GetSeaLevelRise(Time);
 		
     //update CRN concentrations
-    UpdateCRNs(dt);
+    UpdateCRNs();
     
     //update morphology
     UpdateEquillibriumMorphology();
@@ -492,7 +499,7 @@ void RockyCoastCRN::GetRetreatRate()
 	}
 }
 
-void RockyCoastCRN::UpdateCRNs(double TimeInterval)
+void RockyCoastCRN::UpdateCRNs()
 {
   /*
   Function to update the concentrations of cosmogenic radionuclides at and below 
@@ -502,8 +509,6 @@ void RockyCoastCRN::UpdateCRNs(double TimeInterval)
   February 2016
   */
 
-  dt = TimeInterval;
-  
   //Temp parameters
   vector<double> EmptyVector(NXNodes,0);
   P_Spal = EmptyVector;
@@ -759,7 +764,6 @@ void RockyCoastCRN::GetSinWaveBeachWidth(double Time)
   // Martin Hurst
   // Feb 11th 2016
   
-  double MeanBeachWidth = 50;
   double BeachWidthAmp = 30;
   double BeachWidthWaveLength = 100;
   
@@ -768,8 +772,7 @@ void RockyCoastCRN::GetSinWaveBeachWidth(double Time)
 
 void RockyCoastCRN::GetThinningBeachWidth(double Time)
 {
-  // Function to return beach width where beach width varies as a sinosoidal 
-  // of time.
+  // Function to return beach width where beach width reduces with time
   // Martin Hurst
   // Feb 11th 2016
   

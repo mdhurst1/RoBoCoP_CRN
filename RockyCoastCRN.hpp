@@ -152,15 +152,17 @@ class RockyCoastCRN
 	  //Beach profile stuff
 	  vector<double> BeachThickness;
 	  double BeachWidth;      //Width of beach at BermHeight
+	  double MeanBeachWidth;  //Mean Width of Beach when using a variable beach width
 		double BermHeight;      //Height of Berm
+		int BeachType;          //Style of beach evolution, 0 = fixed beach, 1 = sinusoidal beach width, 2 = thinning beach width
 		double A;               //Sediment Scale Parameter in Bruun Profile (m^1/3)
 
 	  string OutFileName;
 	  
 		//Initialise Function
 		void Initialise();
-		void Initialise(double retreatrate, double beachwidth, double bermheight, double platformgradient, double cliffheight, double junctionelevation, double tidalamplitude,int steppedplatform=0, double stepsize=0);
-		void Initialise(double retreatrate1, double retreatrate2, int retreattype, double changetime, double platformgradient, double cliffheight, double beachwidth, double bermheight, double junctionelevation, double tidalamplitude,int steppedplatform=0, double stepsize=0);
+		void Initialise(double retreatrate, double beachwidth, int beachtype, double bermheight, double platformgradient, double cliffheight, double junctionelevation, double tidalamplitude,int steppedplatform=0, double stepsize=0);
+		void Initialise(double retreatrate1, double retreatrate2, int retreattype, double changetime, double beachwidth, int beachtype, double bermheight, double platformgradient, double cliffheight, double junctionelevation, double tidalamplitude,int steppedplatform=0, double stepsize=0);
 		void Initialise(RoBoCoP RoBoCoPCoast);
 		
 		//functions to initialise platform morphology
@@ -198,9 +200,9 @@ class RockyCoastCRN
 		/// @param tidalamplitude Amplitude of diurnal tides
 	  ///	@author Martin D. Hurst 
     /// @date 14/09/2015
-		RockyCoastCRN(double retreatrate1, double retreatrate2, int retreattype, double changetime, double beachwidth, double bermheight, double platformgradient, double cliffheight, double junctionelevation, double tidalamplitude, int steppedplatform=0, double stepsize=0)
+		RockyCoastCRN(double retreatrate1, double retreatrate2, int retreattype, double changetime, double beachwidth, int beachtype, double bermheight, double platformgradient, double cliffheight, double junctionelevation, double tidalamplitude, int steppedplatform=0, double stepsize=0)
 		{
-			Initialise(retreatrate1, retreatrate2, retreattype, changetime, beachwidth, bermheight, platformgradient, cliffheight, junctionelevation, tidalamplitude, steppedplatform, stepsize);
+			Initialise(retreatrate1, retreatrate2, retreattype, changetime, beachwidth, beachtype, bermheight, platformgradient, cliffheight, junctionelevation, tidalamplitude, steppedplatform, stepsize);
 		}
 		
 		/// @brief Initialisation function for a single retreat rate scenario.
@@ -212,9 +214,9 @@ class RockyCoastCRN
 		/// @param tidalamplitude Amplitude of diurnal tides
 		///	@author Martin D. Hurst 
     /// @date 14/09/2015
-		RockyCoastCRN(double retreatrate, double beachwidth, double platformgradient, double cliffheight, double junctionelevation, double tidalamplitude, int steppedplatform=0, double stepsize=0)
+		RockyCoastCRN(double retreatrate, double beachwidth, int beachtype, double platformgradient, double cliffheight, double junctionelevation, double tidalamplitude, int steppedplatform=0, double stepsize=0)
 		{
-			Initialise(retreatrate, beachwidth, platformgradient, cliffheight, junctionelevation, tidalamplitude, steppedplatform, stepsize);
+			Initialise(retreatrate, beachwidth, beachtype, platformgradient, cliffheight, junctionelevation, tidalamplitude, steppedplatform, stepsize);
 		}
 		
 		/// @brief Initialisation function with friend class RoBoCoP as the morphological model
@@ -280,7 +282,7 @@ class RockyCoastCRN
 		/// @param TimeInterval the time step in years
 		///	@author Martin D. Hurst 
     /// @date 09/02/2016
-		void UpdateCRNs(double TimeInterval);
+		void UpdateCRNs();
 
 		/// @brief Updates the platform morphology
 		/// @details This function calculates the amount of platform downwear and updates the elevations
