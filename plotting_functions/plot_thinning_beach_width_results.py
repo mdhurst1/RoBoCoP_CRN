@@ -3,7 +3,7 @@
 Created on Mon Feb  8 15:10:34 2016
 
 Script to plot the results of RockyCoastCRN experiments to explore the influence
-of beaches on the concentrations of CRNs built up in the 
+of thinning beaches on the concentrations of CRNs built up in the 
 platform surface
 
 Martin Hurst,
@@ -23,7 +23,7 @@ rc('font',size=8)
 rc('ytick.major',pad=5)
 rc('xtick.major',pad=5)
 padding = 5
-plt.figure(1,figsize=(6,8))
+plt.figure(1,figsize=(6,6))
 ax1 = plt.axes([0.1,0.65,0.85,0.3])
 ax2 = plt.axes([0.1,0.1,0.85,0.5])
 
@@ -31,7 +31,7 @@ FileNames = ["BeachWidth_Bh0_Bw0","Thinning_Bh1_Bw50","Thinning_Bh1_Bw100","Thin
 Labels = ["$B_H$ = 0 m; $B_W$ = 0 m;","$B_H$ = 1 m; $B_W$ = 50 m;","$B_H$ = 1 m; $B_W$ = 100 m;","$B_H$ = 1 m; $B_W$ = 200 m;"]
 
 for i in range (0,len(FileNames)):
-    FileName = "../driver_files/" + FileNames[i] + ".pdat"
+    FileName = "../results/beaches/" + FileNames[i] + ".pdat"
     f = open(FileName,'r')
     Lines = f.readlines()
     NoLines = len(Lines)
@@ -76,28 +76,33 @@ for i in range (0,len(FileNames)):
     else:
         ax2.plot(X,N,'-',color=cm.Paired(Color),lw=2,label=str(Labels[i]))
 
-#ax1.set_ylabel('Beach Width $B_w$ (m)')
-#ax1.set_xlabel('Time (Years)')
-#ax1.set_ylim(0,100)
-#ax1.spines['right'].set_visible(False)
-#ax1.spines['top'].set_visible(False)
-#ax1.yaxis.set_ticks_position('left')
-#ax1.xaxis.set_ticks_position('bottom')
-#ax1.text(20,90,'(a)')
-#
-#ax2.set_ylabel('Elevation (m)')
-#ax2.set_xlim(-50,1000)
-#ax2.set_ylim(-10,8)
-#ax2.set_xticklabels([])
-#ax2.set_yticks([-10,-5,0,5])
-#ax2.spines['right'].set_visible(False)
-#ax2.spines['top'].set_visible(False)
-#ax2.spines['bottom'].set_visible(False)
-#ax2.yaxis.set_ticks_position('left')
-#ax2.set_xticklabels([])
-#ax2.set_xticks([])
-#ax2.text(-20,6.5,'(b)')
-#
+#setup subplot 1
+ax1.set_ylabel('Elevation (m)')
+ax1.set_ylim(-10,8)
+ax1.set_xlim(-50,1000)
+ax1.spines['right'].set_visible(False)
+ax1.spines['top'].set_visible(False)
+ax1.yaxis.set_ticks_position('left')
+ax1.xaxis.set_ticks_position('bottom')
+ax1.spines['bottom'].set_visible(False)
+ax1.yaxis.set_ticks_position('left')
+ax1.text(-20,6.5,'(a)')
+ax1.set_xticklabels([])
+ax1.set_xticks([])
+ax1.set_yticks([-10,-5,0,5])
+
+
+#setup subplot 2
+ax2.set_xlim(-50,1000)
+ax2.set_yticks([0,250,500,750,1000,1250,1500,1750])
+ax2.set_ylabel('$^{10}$Be Concentration (atoms g$^{-1}$)')
+ax2.set_xlabel('Distance Offshore (m)')
+ax2.spines['right'].set_visible(False)
+ax2.spines['top'].set_visible(False)
+ax2.yaxis.set_ticks_position('left')
+ax2.xaxis.set_ticks_position('bottom')
+ax2.text(-20,1700,'(b)')
+
 #Display legend
 plt.rcParams.update({'legend.labelspacing':0.1}) 
 plt.rcParams.update({'legend.columnspacing':1.0}) 
@@ -105,33 +110,7 @@ plt.rcParams.update({'legend.numpoints':1})
 plt.rcParams.update({'legend.frameon':False}) 
 plt.rcParams.update({'legend.handlelength':1.0}) 
 plt.rcParams.update({'legend.fontsize':8})
-ax2.legend(loc=3,ncol=1)
-#leg = plt.gca().get_legend()
-#
-###set fontsize to small
-##ltext  = leg.get_texts()
-##plt.setp(ltext, fontsize=8) 
-##
-#
-#ax3.set_xlim(-50,1000)
-#ax3.set_yticks([0,250,500,750,1000,1250,1500,1750])
-#ax3.set_ylabel('$^{10}$Be Concentration (atoms g$^{-1}$)')
-#ax3.set_xlabel('Distance Offshore (m)')
-#ax3.spines['right'].set_visible(False)
-#ax3.spines['top'].set_visible(False)
-#ax3.yaxis.set_ticks_position('left')
-#ax3.xaxis.set_ticks_position('bottom')
-#ax3.text(-20,1700,'(c)')
-#
-##Display legend
-#plt.legend(loc=1,ncol=1,title="Beach Parameters")
-#leg = plt.gca().get_legend()
-##
-###set fontsize to small
-#ltext  = leg.get_texts()
-#plt.setp(ltext, fontsize=8) 
-#
-plt.xlim(-50,1000)
+ax2.legend(loc=1,ncol=1)
 
 plt.savefig("./ThinningBeachWidth.pdf")
 
