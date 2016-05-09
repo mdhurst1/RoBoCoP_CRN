@@ -23,14 +23,15 @@ rc('font',size=8)
 rc('ytick.major',pad=5)
 rc('xtick.major',pad=5)
 padding = 5
-plt.figure(1,figsize=(6,6))
-ax = plt.subplot(211)
+plt.figure(1,figsize=(6,8))
+ax1 = plt.axes([0.1,0.65,0.85,0.3])
+ax2 = plt.axes([0.1,0.1,0.85,0.5])
 
-FileNames = ["Beach_Bh1_Bw200_Thinning10000","Beach_Bh1_Bw200_Thinning5000","Beach_Bh1_Bw200_Thinning1000","Beach_Bh1_Bw100_Thinning1000"]
-Labels = ["$B_H$ = 1 m; $B_W$ = 200 m; $T$ = 10 ka;","$B_H$ = 1 m; $B_W$ = 200 m; $T$ = 5 ka;","$B_H$ = 1 m; $B_W$ = 200 m; $T$ = 1 ka;","$B_H$ = 1 m; $B_W$ = 100 m; $T$ = 1 ka;"]
+FileNames = ["BeachWidth_Bh0_Bw0","Thinning_Bh1_Bw50","Thinning_Bh1_Bw100","Thinning_Bh1_Bw200"]
+Labels = ["$B_H$ = 0 m; $B_W$ = 0 m;","$B_H$ = 1 m; $B_W$ = 50 m;","$B_H$ = 1 m; $B_W$ = 100 m;","$B_H$ = 1 m; $B_W$ = 200 m;"]
 
 for i in range (0,len(FileNames)):
-    FileName = FileNames[i] + "_Morphology.txt"
+    FileName = "../driver_files/" + FileNames[i] + ".pdat"
     f = open(FileName,'r')
     Lines = f.readlines()
     NoLines = len(Lines)
@@ -41,74 +42,97 @@ for i in range (0,len(FileNames)):
     PlatformWidth = float(Header[1])
     X = np.linspace(0,PlatformWidth+1,NXNodes)
     
-    for j in range(5,NoLines,4):
+    Z = np.array(Lines[-3].strip().split(" "), dtype="float64")[1:]
+    N = np.array(Lines[-1].strip().split(" "), dtype="float64")[1:]
+    
+    #plt.plot(X,Z,'k-')
+    
+    #plot timeseries of platform evolution
+    for j in range(10,NoLines-1,8):
+            
         #Get data    
         Line = Lines[j].strip().split(" ")
         Time = float(Line[0])
         ZRock = np.array(Line[1:],dtype="float64")
-            
-        Line = Lines[j+1].strip().split(" ")
-        Time = float(Line[0])
-        ZBeach = np.array(Line[1:],dtype="float64")
-            
+        
         #mask for NDVs
         mask = ZRock != -9999
         ZRockplot = ZRock[mask]
         Xplot = X[mask]
-        ZBeachplot = ZBeach[mask]
         
-        plt.plot([Xplot[0]-20,Xplot[0],Xplot[0]],[10,10,ZRockplot[0]],'k-')
-
+        #setup color
+        Color = float(i)/float(len(FileNames))
+        ax1.plot(Xplot,ZRockplot,'-',color=cm.Paired(Color))
+        
+        
         if (i == 0):
-            plt.text(Xplot[0],ZRockplot[0]+5, str(Time/1000.) + " ka",rotation=-90)
-        plt.plot(Xplot,ZRockplot,'k-')
-
-        Color = 0.1+0.4*float(i)/float(len(FileNames))
-        plt.plot(Xplot,ZBeachplot,'-',color=cm.Paired(Color))        
+            ax1.plot([Xplot[0]-20,Xplot[0],Xplot[0]],[5,5,ZRockplot[0]],'k-')
+            ax1.plot(Xplot,ZRockplot,'k-',zorder=10)
+            ax1.text(Xplot[0],ZRockplot[0]+4, str(Time/1000.) + " ka",rotation=-90)
         
-#    Line = Lines[-2].strip().split(" ")
-#    Time = float(Line[0])
-#    ZRock = np.array(Line[1:],dtype="float64")
-#    
-#    Line = Lines[-1].strip().split(" ")
-#    Time = float(Line[0])
-#    ZBeach = np.array(Line[1:],dtype="float64")
-#    
-    
-    
-plt.plot([Xplot[0]-20,Xplot[0],Xplot[0]],[10,10,ZRockplot[0]],'k-')
-plt.text(Xplot[0],ZRockplot[0]+5, str(Time/1000.) + " ka",rotation=-90)
-plt.plot(Xplot,ZRockplot,'k-')
-            
-plt.ylabel('Elevation (m)')
-plt.xlim(-50,1000)
-ax.set_xticklabels([])
-    
-plt.subplot(212)
-Color=0
-for i in range(0,len(FileNames)):  
-    #open morphology file and read
-    FileName = FileNames[i] + "_CRNs.txt"
-    X, N = np.loadtxt(FileName,skiprows=1, unpack=True)
-    Color = 0.1+0.4*float(i)/float(len(FileNames))
-    plt.plot(X,N,'-',color=cm.Paired(Color),linewidth=2,label=str(Labels[i]))
+        
+    if (i == 0):
+        ax2.plot(X,N,'k-',lw=2,label=str(Labels[i]),zorder=10)
+    else:
+        ax2.plot(X,N,'-',color=cm.Paired(Color),lw=2,label=str(Labels[i]))
 
+#ax1.set_ylabel('Beach Width $B_w$ (m)')
+#ax1.set_xlabel('Time (Years)')
+#ax1.set_ylim(0,100)
+#ax1.spines['right'].set_visible(False)
+#ax1.spines['top'].set_visible(False)
+#ax1.yaxis.set_ticks_position('left')
+#ax1.xaxis.set_ticks_position('bottom')
+#ax1.text(20,90,'(a)')
+#
+#ax2.set_ylabel('Elevation (m)')
+#ax2.set_xlim(-50,1000)
+#ax2.set_ylim(-10,8)
+#ax2.set_xticklabels([])
+#ax2.set_yticks([-10,-5,0,5])
+#ax2.spines['right'].set_visible(False)
+#ax2.spines['top'].set_visible(False)
+#ax2.spines['bottom'].set_visible(False)
+#ax2.yaxis.set_ticks_position('left')
+#ax2.set_xticklabels([])
+#ax2.set_xticks([])
+#ax2.text(-20,6.5,'(b)')
+#
 #Display legend
 plt.rcParams.update({'legend.labelspacing':0.1}) 
 plt.rcParams.update({'legend.columnspacing':1.0}) 
 plt.rcParams.update({'legend.numpoints':1}) 
 plt.rcParams.update({'legend.frameon':False}) 
-plt.rcParams.update({'legend.handlelength':0.5}) 
-plt.legend(loc=1,ncol=1,title="Beach Parameters")
-leg = plt.gca().get_legend()
-
-#set fontsize to small
-ltext  = leg.get_texts()
-plt.setp(ltext, fontsize=8) 
-
-plt.xlabel('Distance (m)')
-plt.ylabel('$^{10}$Be (atoms g$^{-1}$)')
+plt.rcParams.update({'legend.handlelength':1.0}) 
+plt.rcParams.update({'legend.fontsize':8})
+ax2.legend(loc=3,ncol=1)
+#leg = plt.gca().get_legend()
+#
+###set fontsize to small
+##ltext  = leg.get_texts()
+##plt.setp(ltext, fontsize=8) 
+##
+#
+#ax3.set_xlim(-50,1000)
+#ax3.set_yticks([0,250,500,750,1000,1250,1500,1750])
+#ax3.set_ylabel('$^{10}$Be Concentration (atoms g$^{-1}$)')
+#ax3.set_xlabel('Distance Offshore (m)')
+#ax3.spines['right'].set_visible(False)
+#ax3.spines['top'].set_visible(False)
+#ax3.yaxis.set_ticks_position('left')
+#ax3.xaxis.set_ticks_position('bottom')
+#ax3.text(-20,1700,'(c)')
+#
+##Display legend
+#plt.legend(loc=1,ncol=1,title="Beach Parameters")
+#leg = plt.gca().get_legend()
+##
+###set fontsize to small
+#ltext  = leg.get_texts()
+#plt.setp(ltext, fontsize=8) 
+#
 plt.xlim(-50,1000)
-plt.tight_layout()
-plt.savefig("Thinning_Beach_Width.pdf")
+
+plt.savefig("./ThinningBeachWidth.pdf")
+
 plt.show()

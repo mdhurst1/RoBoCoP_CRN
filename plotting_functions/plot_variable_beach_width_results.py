@@ -35,6 +35,8 @@ Time = np.arange(0.,1000.,1.)
 BeachWidth = 50.+30.*np.sin(2.*np.pi*Time/100.)
 ax1.plot(Time,BeachWidth,'k-')
 
+legend_flag = 0
+
 for i in range (0,len(FileNames)):
     FileName = "../driver_files/" + FileNames[i] + ".pdat"
     f = open(FileName,'r')
@@ -89,10 +91,27 @@ for i in range (0,len(FileNames)):
             XBeachMax = Xplot[mask]
             ZBeachMax = ZBeachMax[mask]
             
-            #ax2.plot(Xplot,Zplot,'k-')
-            ax2.plot(XBeachMin,ZBeachMin,'k-')
-            ax2.plot(XBeachMax,ZBeachMax,'k-')
+            #get profile of mean beach width
+            ZBeachMean = Zplot
+            ZBeachMean[(Xplot-Xplot[0]) < 50] = 1.
+            ZBeachMean[(Xplot-Xplot[0]) > 50] = 1.-0.125*np.power((Xplot[(Xplot-Xplot[0]) > 50]-Xplot[0]-50.),2./3.)
+            mask2 = ZBeachMean > ZPlatform
+            XBeachMean = Xplot[mask2]
+            ZBeachMean = ZBeachMean[mask2]
             
+            #plot, only set labels once
+            
+            if (legend_flag == 0):
+                ax2.plot(XBeachMin,ZBeachMin,'k-',label="Variation in beach width")
+                ax2.plot(XBeachMax,ZBeachMax,'k-')
+                ax2.plot(XBeachMean,ZBeachMean,'k:',label="Mean beach width")
+                legend_flag = 1
+            else:
+                ax2.plot(XBeachMin,ZBeachMin,'k-')
+                ax2.plot(XBeachMax,ZBeachMax,'k-')
+                ax2.plot(XBeachMean,ZBeachMean,'k:')
+                
+            #color in the beaches
             XFill = np.concatenate((XBeachMax,XBeachMax[::-1]))
             ZFill = np.concatenate((ZBeachMax,ZPlatform[mask][::-1]))
             ax2.fill(XFill,ZFill,color=[1.0,1.0,0.5])
@@ -100,7 +119,7 @@ for i in range (0,len(FileNames)):
     if (i == 0):
         ax3.plot(X,N,'k-',lw=2,label=str(Labels[i]),zorder=10)
     else:
-        ax3.plot(X,N,'k-',lw=2,label=str(Labels[i]))
+        ax3.plot(X,N,'-',lw=2,label=str(Labels[i]))
 
 ax1.set_ylabel('Beach Width $B_w$ (m)')
 ax1.set_xlabel('Time (Years)')
@@ -109,7 +128,7 @@ ax1.spines['right'].set_visible(False)
 ax1.spines['top'].set_visible(False)
 ax1.yaxis.set_ticks_position('left')
 ax1.xaxis.set_ticks_position('bottom')
-ax1.text(40,90,'(a)')
+ax1.text(20,90,'(a)')
 
 ax2.set_ylabel('Elevation (m)')
 ax2.set_xlim(-50,1000)
@@ -122,8 +141,22 @@ ax2.spines['bottom'].set_visible(False)
 ax2.yaxis.set_ticks_position('left')
 ax2.set_xticklabels([])
 ax2.set_xticks([])
-ax2.text(0,6.5,'(b)')
+ax2.text(-20,6.5,'(b)')
 
+#Display legend
+plt.rcParams.update({'legend.labelspacing':0.1}) 
+plt.rcParams.update({'legend.columnspacing':1.0}) 
+plt.rcParams.update({'legend.numpoints':1}) 
+plt.rcParams.update({'legend.frameon':False}) 
+plt.rcParams.update({'legend.handlelength':1.0}) 
+plt.rcParams.update({'legend.fontsize':8})
+ax2.legend(loc=3,ncol=1)
+#leg = plt.gca().get_legend()
+#
+##set fontsize to small
+#ltext  = leg.get_texts()
+#plt.setp(ltext, fontsize=8) 
+#
 
 ax3.set_xlim(-50,1000)
 ax3.set_yticks([0,250,500,750,1000,1250,1500,1750])
@@ -133,16 +166,11 @@ ax3.spines['right'].set_visible(False)
 ax3.spines['top'].set_visible(False)
 ax3.yaxis.set_ticks_position('left')
 ax3.xaxis.set_ticks_position('bottom')
-ax3.text(0,1700,'(c)')
+ax3.text(-20,1700,'(c)')
 
-##Display legend
-#plt.rcParams.update({'legend.labelspacing':0.1}) 
-#plt.rcParams.update({'legend.columnspacing':1.0}) 
-#plt.rcParams.update({'legend.numpoints':1}) 
-#plt.rcParams.update({'legend.frameon':False}) 
-#plt.rcParams.update({'legend.handlelength':0.5}) 
-#plt.legend(loc=1,ncol=1,title="Beach Parameters")
-#leg = plt.gca().get_legend()
+#Display legend
+plt.legend(loc=1,ncol=1,title="Beach Parameters")
+leg = plt.gca().get_legend()
 #
 ##set fontsize to small
 #ltext  = leg.get_texts()

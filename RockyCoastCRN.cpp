@@ -122,6 +122,7 @@ void RockyCoastCRN::Initialise(double retreatrate1, double retreatrate2, int ret
 	CliffHeight = cliffheight;
 	BeachWidth = beachwidth;
 	MeanBeachWidth = BeachWidth;
+	InitialBeachWidth = BeachWidth;
 	BeachType = beachtype;
 	BermHeight = bermheight;
 	JunctionElevation = junctionelevation;
@@ -298,6 +299,8 @@ void RockyCoastCRN::UpdateParameters( double RetreatRate1_Test, double RetreatRa
   RetreatRate2 = RetreatRate2_Test;
   ChangeTime = ChangeTime_Test;
   BeachWidth = BeachWidth_Test;
+  MeanBeachWidth = BeachWidth;
+  InitialBeachWidth = BeachWidth;
   JunctionElevation = JunctionElevation_Test;
 
 }
@@ -342,6 +345,7 @@ void RockyCoastCRN::RunModel(string outfilename, int WriteResultsFlag)
 	SLR = 0;          //Rate of relative sea level rise (m/y)  
 	SeaLevel = 0;			//Sea Level Tracker	
 	MeanBeachWidth = BeachWidth;
+	InitialBeachWidth = BeachWidth;
 	
 	//Time control
 	Time = 0;			//time in years
@@ -776,7 +780,6 @@ void RockyCoastCRN::GetThinningBeachWidth(double Time)
   // Martin Hurst
   // Feb 11th 2016
   
-  double InitialBeachWidth = 100;
   double ThinTime = 1000;
   
   if (Time < ThinTime) BeachWidth = (Time/ThinTime)*InitialBeachWidth;

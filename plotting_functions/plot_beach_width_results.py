@@ -114,6 +114,6 @@ plt.setp(ltext, fontsize=8)
 
 plt.xlim(-50,1000)
 
-plt.savefig("../BeachWidth.pdf")
+plt.savefig("./BeachWidth.pdf")
 
 plt.show()

@@ -151,6 +151,7 @@ class RockyCoastCRN
 	
 	  //Beach profile stuff
 	  vector<double> BeachThickness;
+	  double InitialBeachWidth; //Initial value of beach width when using a thinning beach width
 	  double BeachWidth;      //Width of beach at BermHeight
 	  double MeanBeachWidth;  //Mean Width of Beach when using a variable beach width
 		double BermHeight;      //Height of Berm
