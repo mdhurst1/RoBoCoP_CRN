@@ -129,7 +129,7 @@ class RoBoCoP
 		void Initialise();
 		void Initialise(double dZ);
 		void Initialise(double dZ, double PlatformGradient);
-		void Initialise(double dZ, double PlatformGradient, double CliffPositionX);
+		void Initialise(double dZ, double PlatformGradient, double CliffPositionX, double TimeInterval=1.);
 		void Initialise(string FileNameIn);
 		
 	protected:
@@ -155,9 +155,9 @@ class RoBoCoP
 			Initialise(dZ, PlatformGradient);
 		}
 		
-		RoBoCoP(double dZ, double PlatformGradient, double CliffPositionX)
+		RoBoCoP(double dZ, double PlatformGradient, double CliffPositionX, double TimeInterval=1.)
 		{
-			Initialise(dZ, PlatformGradient, CliffPositionX);
+			Initialise(dZ, PlatformGradient, CliffPositionX, TimeInterval);
 		}
 		
 		RoBoCoP(string FileNameIn)
@@ -171,11 +171,14 @@ class RoBoCoP
 		//Initialise Waves
 		void InitialiseWaves(double WaveHeight, double WavePeriod);
 		
+		//Update Sea Level
+		void UpdateSeaLevel(double SLRRate);
+		
     /// @brief Launch the main program loop to evolve RoBoCoP coast
 		/// @details This function evolves a rocky coastal platform through time.
 		///	@author Martin D. Hurst 
     /// @date 25/02/2016
-    void EvolveCoast(double TimeInterval);
+    void EvolveCoast();
 		
 		/// @brief Writes the platform morphology to file
 		/// @details This function writes the elevations of the platform surface at the current time to

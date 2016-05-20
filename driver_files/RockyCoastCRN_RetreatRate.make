@@ -1,4 +1,4 @@
-# make with make -f benacre_make.make
+# make with make -f RockyCoastCRN_RetreatRate_make.make
 
 # COMPILER and LINKER MACROs
 CC=g++
@@ -15,7 +15,7 @@ CFLAGS= -g -c -Wall -pg  $(INCDIR)
 LDFLAGS= -g -Wall -pg  
 
 # SOURCE FILES MACROS IN DEPENDENCY ORDER? SHOULDNT MATTER THANKS TO HEADERS
-SOURCES = ../RockyCoastCRN.cpp ./RockyCoastCRN_Driver.cpp
+SOURCES = ../RockyCoastCRN.cpp ./RockyCoastCRN_RetreatRate_Driver.cpp
 
 # LIBRARIES MACRO
 LIBS   = -lm -lstdc++ 
@@ -24,7 +24,7 @@ LIBS   = -lm -lstdc++
 OBJECTS=$(SOURCES:.cpp=.o)
 
 # EXECUTABLE MACRO
-EXECUTABLE=RockyCoastCRN.out
+EXECUTABLE=RockyCoastCRN_RetreatRate.out
 
 all: $(SOURCES) $(EXECUTABLE)
 

@@ -1,4 +1,4 @@
-# make with make -f benacre_make.make
+# make with make -f RockyCoastCRN_make.make
 
 # COMPILER and LINKER MACROs
 CC=g++

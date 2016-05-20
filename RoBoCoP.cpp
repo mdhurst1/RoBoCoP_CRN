@@ -64,7 +64,7 @@ void RoBoCoP::Initialise(double dZ)
   printf("\nRoBoCoP.Initialise: Initialised a RoBoCoP as a vertical cliff\n");
   
   //Declare stuff
-  NoNodes = round(20./dZ)+1;
+  NoNodes = round(30./dZ)+1;
   NDV = -9999;
   
   //declare an array of zeros for assignment of x and z vectors
@@ -75,9 +75,12 @@ void RoBoCoP::Initialise(double dZ)
 	//Loop through array and calculate X and Z
 	for (int i=0; i<NoNodes; ++i) 
 	{
-	  Z[i] = 10.-i*dZ;
+	  Z[i] = 20.-i*dZ;
 	  X[i] = 0;
   }
+  
+  //default time interval
+  dt = 1.;
 }
 
 void RoBoCoP::Initialise(double dZ, double PlatformGradient)
@@ -100,9 +103,12 @@ void RoBoCoP::Initialise(double dZ, double PlatformGradient)
 	  Z[i] = 10.-i*dZ;
 	  X[i] = -Z[i]/PlatformGradient;
   }
+  
+  //default time interval
+  dt = 1.;
 }
 
-void RoBoCoP::Initialise(double dZ, double PlatformGradient, double CliffPositionX)
+void RoBoCoP::Initialise(double dZ, double PlatformGradient, double CliffPositionX, double TimeInterval)
 {
 	/* initialise a sloped platform backed by a vertical cliff RoBoCoP object */
   printf("\nRoBoCoP.Initialise: Initialised a RoBoCoP as planar, sloped platform backed by a cliff\n");
@@ -123,6 +129,10 @@ void RoBoCoP::Initialise(double dZ, double PlatformGradient, double CliffPositio
 	  if (Z[i] < 0) X[i] = CliffPositionX-(Z[i]/PlatformGradient);
 	  else X[i] = CliffPositionX;
   }
+  
+  //default time interval
+  dt = TimeInterval;
+  
 }	
 
 void RoBoCoP::Initialise(string FileNameIn)
@@ -168,7 +178,13 @@ void RoBoCoP::InitialiseWaves(double OffshoreWaveHeight, double WavePeriod)
   BreakingWaveWaterDepth = BreakingWaveHeight/0.78;
 }
 
-void RoBoCoP::EvolveCoast(double TimeInterval)
+void RoBoCoP::UpdateSeaLevel(double SLRRate)
+{
+	/*Update sea level based on a constant sea level rise rate*/
+	SeaLevel += SLRRate*dt;
+}
+
+void RoBoCoP::EvolveCoast()
 {
   /* Function to evolve the coastal profile through time following
       Trenhaile (2000)  */
@@ -225,7 +241,7 @@ void RoBoCoP::EvolveCoast(double TimeInterval)
       if (fabs(WaterDepth)<0.0001) WaterDepth=0;
       else if (WaterDepth < 0) WaterDepth = 100.;
 
-      Erosion[i] += M*SurfForce*exp(-WaterDepth);
+      Erosion[i] += M*SurfForce*exp(-0.5*WaterDepth);
       ++i;
     }
   }
@@ -233,7 +249,7 @@ void RoBoCoP::EvolveCoast(double TimeInterval)
   double XCliff = X[NoNodes-1];
   for (int i=NoNodes-1; i>-1; --i)
   {
-    X[i] -= Erosion[i]*TimeInterval;
+    X[i] -= Erosion[i]*dt;
     
     //check for overhangs and remove
     if (X[i] > XCliff) X[i] = XCliff;

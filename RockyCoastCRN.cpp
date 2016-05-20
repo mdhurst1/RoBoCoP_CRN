@@ -168,6 +168,7 @@ void RockyCoastCRN::Initialise(RoBoCoP RoBoCoPCoast)
 	NZNodes = RoBoCoPCoast.NoNodes;
 	NDV = -9999;
 	dX = (XMax-XMin)/(NXNodes-1);
+	dt = RoBoCoPCoast.dt;
 		
 	//Setup CRN Arrays
 	vector<double> EmptyX(NXNodes,0.0);
@@ -342,7 +343,7 @@ void RockyCoastCRN::RunModel(string outfilename, int WriteResultsFlag)
 	N = EmptyVV;
 	
 	//set Sea level parameters
-	SLR = 0;          //Rate of relative sea level rise (m/y)  
+	SLR = 0.0002;     //Rate of relative sea level rise (m/y)  
 	SeaLevel = 0;			//Sea Level Tracker	
 	MeanBeachWidth = BeachWidth;
 	InitialBeachWidth = BeachWidth;
@@ -670,7 +671,11 @@ void RockyCoastCRN::UpdateMorphology(RoBoCoP RoBoCoPCoast)
   // Copy Z to SurfaceElevation
   // Do we need both?
   PlatformElevation = SurfaceElevation;
+  
+  // Copy sea level
+  SeaLevel = RoBoCoPCoast.SeaLevel;
 }
+
 double RockyCoastCRN::GetTopographicShieldingFactor(double X, double CliffHeight)
 {
 	/* 

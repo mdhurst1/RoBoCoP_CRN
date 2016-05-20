@@ -35,14 +35,34 @@ ax1 = plt.subplot(211)
 Header = Lines[0].strip().split(" ")
 Times = []
 RetreatRate = []
-for j in range(1,NoLines,2):
+for j in range(1,NoLines,10):
     
     Line = (Lines[j].strip().split(" "))
     Time = float(Line[0])
     X = np.array(Line[1:],dtype="float64")
     Z = np.array((Lines[j+1].strip().split(" "))[1:],dtype="float64")
     
-    ax1.plot(X,Z,'k-',lw=6)
+    ax1.plot(X,Z,'k-',lw=3)
+
+
+#First plot the morphology through time
+FileName = "../driver_files/ShoreProfile2.xz"
+f = open(FileName,'r')
+Lines = f.readlines()
+NoLines = len(Lines)
+
+#Get header info and setup X coord
+Header = Lines[0].strip().split(" ")
+Times = []
+RetreatRate = []
+for j in range(1,NoLines,10):
+    
+    Line = (Lines[j].strip().split(" "))
+    Time = float(Line[0])
+    X = np.array(Line[1:],dtype="float64")
+    Z = np.array((Lines[j+1].strip().split(" "))[1:],dtype="float64")
+    
+    ax1.plot(X,Z,'r-',lw=1)
 
 ax1.set_xticklabels([])
 plt.ylabel("Elevation (m)")
@@ -56,12 +76,11 @@ NoLines = len(Lines)
 ax2 = plt.subplot(212)
 #Get header info and setup X coord
 Header = Lines[0].strip().split(" ")
-for j in range(1,NoLines,2):
+for j in range(1,NoLines,10):
     X = np.array((Lines[j].strip().split(" "))[1:],dtype="float64")
     N = np.array((Lines[j+1].strip().split(" "))[1:],dtype="float64")
-    
     ax2.plot(X,N,'r-',lw=2)
-    
+        
 plt.xlabel('Distance (m)')
 plt.ylabel('Concentration (atoms g$^{-1}$)')
 

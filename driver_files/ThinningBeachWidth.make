@@ -15,7 +15,7 @@ CFLAGS= -g -c -Wall -pg  $(INCDIR)
 LDFLAGS= -g -Wall -pg  
 
 # SOURCE FILES MACROS IN DEPENDENCY ORDER? SHOULDNT MATTER THANKS TO HEADERS
-SOURCES = ../RockyCoastCRN.cpp ./RockyCoastCRN_Driver.cpp
+SOURCES = ../RockyCoastCRN.cpp ./ThinningBeachWidth_Driver.cpp
 
 # LIBRARIES MACRO
 LIBS   = -lm -lstdc++ 
@@ -24,7 +24,7 @@ LIBS   = -lm -lstdc++
 OBJECTS=$(SOURCES:.cpp=.o)
 
 # EXECUTABLE MACRO
-EXECUTABLE=RockyCoastCRN.out
+EXECUTABLE=ThinningBeachWidth.out
 
 all: $(SOURCES) $(EXECUTABLE)
 
@@ -33,4 +33,8 @@ $(EXECUTABLE): $(OBJECTS)
 
 .cpp.o:
 	$(CC) $(CFLAGS) $< -o $@
+
+#CLEAN
+clean: 
+	rm -f $(OBJECTS) $(EXECUTABLE)
 

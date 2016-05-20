@@ -41,7 +41,7 @@ for j in range(1,NoLines,2):
     X = np.array(Line[1:],dtype="float64")
     Z = np.array((Lines[j+1].strip().split(" "))[1:],dtype="float64")
     
-    ax1.plot(X,Z,'k-',lw=6)
+    ax1.plot(X,Z,'k-',lw=2)
 
     
     if j==1: 
@@ -62,23 +62,17 @@ for j in range(1,NoLines,2):
     TimeOld = Time
     CliffPositionXOld = CliffPositionX
     
-FileName = "../driver_files/ShoreProfile2.xz"
-f = open(FileName,'r')
-Lines = f.readlines()
-NoLines = len(Lines)
-
-#Get header info and setup X coord
-Header = Lines[0].strip().split(" ")
-for j in range(1,NoLines,2):
-    X = np.array((Lines[j].strip().split(" "))[1:],dtype="float64")
-    Z = np.array((Lines[j+1].strip().split(" "))[1:],dtype="float64")
-    
-    ax1.plot(X,Z,'r-',lw=2)
-
-    
-    
 plt.xlabel('Distance (m)')
 plt.ylabel('Elevation (m)')
+
+print Times
+print RetreatRate
+
+MilleniaTimes = [1000,2000,3000,4000,5000]
+AverageRate = [np.mean(RetreatRate[0:10]),np.mean(RetreatRate[11:20]),np.mean(RetreatRate[21:30]),np.mean(RetreatRate[31:40]),np.mean(RetreatRate[41:50])]
+
+print MilleniaTimes
+print AverageRate
 
 plt.subplot(212)
 plt.semilogy(Times,np.abs(RetreatRate),'k-')
