@@ -51,17 +51,18 @@
 
 using namespace std;
 
-int main()
+int main(int argc, char* argv[])
 {
   //initialisation parameters
   double dZ = 0.1;
   double PlatformGradient = 1./10.;
   double CliffPositionX = 0.;
   
-  // Rate of sea level rise
+  // Rate of sea level rise taken as input argument
   // Modify to 0.0, 0.0002, 0.0005, 0.001 to compare the influence of Sea Level Rise
   // on platform CRN concentrations.
-  double SLR = 0.0;
+  string SLRString = argv[1];
+  double SLR = atof(argv[1]); 
   
   	// Time Control
 	double EndTime = 10000.;
@@ -90,11 +91,7 @@ int main()
 	double PrintInterval = 100.;
 	double PrintTime = PrintInterval;
 	
-	// Setup file names
-	ostringstream strs;
-	strs << SLR;
-	string SLRString = = strs.str();
-	
+	//setup output files
 	string OutputMorphologyFileName = "ShoreProfile_slr_"+SLRString+".xz";
 	string OutputConcentrationFileName = "CRNConcentrations_slr_"+SLRString+".xn";
 	
