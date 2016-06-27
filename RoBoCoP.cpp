@@ -89,7 +89,7 @@ void RoBoCoP::Initialise(double dZ, double PlatformGradient)
 	printf("\nRoBoCoP.Initialise: Initialised a RoBoCoP as a planar, sloped platform\n");
 	
   //Declare stuff
-  NoNodes = 1+round(20./dZ);
+  NoNodes = 1+round(30./dZ);
   NDV = -9999;
   
   //declare an array of zeros for assignment of x and z vectors
@@ -100,7 +100,7 @@ void RoBoCoP::Initialise(double dZ, double PlatformGradient)
 	//Loop through array and calculate X and Z
 	for (int i=0; i<NoNodes; ++i) 
 	{
-	  Z[i] = 10.-i*dZ;
+	  Z[i] = 15.-i*dZ;
 	  X[i] = -Z[i]/PlatformGradient;
   }
   
@@ -114,7 +114,7 @@ void RoBoCoP::Initialise(double dZ, double PlatformGradient, double CliffPositio
   printf("\nRoBoCoP.Initialise: Initialised a RoBoCoP as planar, sloped platform backed by a cliff\n");
   
   //Declare stuff
-  NoNodes = 1+round(20./dZ);
+  NoNodes = 1+round(30./dZ);
   NDV = -9999;
   
   //declare an array of zeros for assignment of x and z vectors
@@ -125,7 +125,7 @@ void RoBoCoP::Initialise(double dZ, double PlatformGradient, double CliffPositio
 	//Loop through array and calculate X and Z
 	for (int i=0; i<NoNodes; ++i) 
 	{
-	  Z[i] = 10.-i*dZ;
+	  Z[i] = 15.-i*dZ;
 	  if (Z[i] < 0) X[i] = CliffPositionX-(Z[i]/PlatformGradient);
 	  else X[i] = CliffPositionX;
   }
@@ -165,12 +165,29 @@ void RoBoCoP::InitialiseTides(double TidalAmplitude, double TidalPeriod)
   }  
 }
 
-void RoBoCoP::InitialiseWaves(double OffshoreWaveHeight, double WavePeriod)
+void RoBoCoP::InitialiseWaves(double MeanWaveHeight, double StdWaveHeight double MeanWavePeriod, double StdWavePeriod)
 {
   /* intialise waves as a single wave */
 
-  WavePeriod = WavePeriod;
-  
+  MeanWavePeriod = MeanWavePeriod;
+  StdWavePeriod = StdWavePeriod;
+  MeanWaveHeight = MeanWaveHeight;
+  StdWaveHeight = StdWaveHeight;
+}
+
+void RoBoCoP::GetWave()
+{
+
+	//declare temp variables
+	double OffshoreWaveHeight;
+	double rand1, rand2;
+	
+	//Get two random numbers and generate wave data
+	rand1 = (double)rand()/RAND_MAX; rand2 = (double)rand()/RAND_MAX;
+	WavePeriod = MeanWavePeriod + StdWavePeriod*sqrt(-2.*log(rand1))*cos(2.*M_PI*(rand2));
+	rand1 = (double)rand()/RAND_MAX; rand2 = (double)rand()/RAND_MAX;
+	OffshoreWaveHeight = MeanWaveHeight + StdWaveHeight*sqrt(-2.*log(rand1))*cos(2.*M_PI*(rand2));
+	
   //Breaking Wave Height calculated following Komar and Gaughan (1972)
   BreakingWaveHeight = 0.39*pow(g,0.2)*pow(WavePeriod,0.4)*pow(OffshoreWaveHeight,2.4);
   

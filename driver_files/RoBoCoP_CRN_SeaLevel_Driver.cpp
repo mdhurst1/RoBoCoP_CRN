@@ -53,18 +53,27 @@ using namespace std;
 
 int main(int argc, char* argv[])
 {
+  
+  if (argc != 2)
+	{
+		cout << "Program needs a rate of relative sea level rise (mm/yr) as an input argument;" << endl << endl;
+		exit(EXIT_FAILURE);
+	}
+	
+  // Rate of sea level rise taken as input argument in mm/yr
+  // Modify to 0.0, 0.0002, 0.0005, 0.001 to compare the influence of Sea Level Rise
+  // on platform CRN concentrations.
+  // Divide through by 1000 to get m/yr
+  string SLRString = argv[1];
+  double SLR = atof(argv[1])/1000.; 
+  
+  
   //initialisation parameters
   double dZ = 0.1;
   double PlatformGradient = 1./10.;
   double CliffPositionX = 0.;
-  
-  // Rate of sea level rise taken as input argument
-  // Modify to 0.0, 0.0002, 0.0005, 0.001 to compare the influence of Sea Level Rise
-  // on platform CRN concentrations.
-  string SLRString = argv[1];
-  double SLR = atof(argv[1]); 
-  
-  	// Time Control
+    
+  // Time Control
 	double EndTime = 10000.;
 	double Time = 0.;
 	double TimeInterval = 1.;
@@ -97,7 +106,6 @@ int main(int argc, char* argv[])
 	
 	//print initial conditions to file first
 	PlatformModel.WriteProfile(OutputMorphologyFileName, Time);
-  PlatformCRN.WriteProfile(OutputCRNMorphologyFileName, Time);
   PlatformCRN.WriteCRNProfile(OutputConcentrationFileName, Time);
   
 	//Loop through time
@@ -122,7 +130,6 @@ int main(int argc, char* argv[])
 	  if (Time >= PrintTime)
 	  {
 	    PlatformModel.WriteProfile(OutputMorphologyFileName, Time);
-	    PlatformCRN.WriteProfile(OutputCRNMorphologyFileName, Time);
 	    PlatformCRN.WriteCRNProfile(OutputConcentrationFileName, Time);
 	    PrintTime += PrintInterval;
 	  }

@@ -88,12 +88,10 @@ int main()
 	double PrintInterval = 100.;
 	double PrintTime = PrintInterval;
 	string OutputMorphologyFileName = "ShoreProfile.xz";
-	string OutputCRNMorphologyFileName = "ShoreProfile2.xz";
 	string OutputConcentrationFileName = "CRNConcentrations.xn";
 	
 	//print initial conditions to file first
 	PlatformModel.WriteProfile(OutputMorphologyFileName, Time);
-  PlatformCRN.WriteProfile(OutputCRNMorphologyFileName, Time);
   PlatformCRN.WriteCRNProfile(OutputConcentrationFileName, Time);
   
 	//Loop through time
@@ -118,7 +116,6 @@ int main()
 	  if (Time >= PrintTime)
 	  {
 	    PlatformModel.WriteProfile(OutputMorphologyFileName, Time);
-	    PlatformCRN.WriteProfile(OutputCRNMorphologyFileName, Time);
 	    PlatformCRN.WriteCRNProfile(OutputConcentrationFileName, Time);
 	    PrintTime += PrintInterval;
 	  }

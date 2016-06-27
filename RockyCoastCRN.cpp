@@ -816,18 +816,21 @@ void RockyCoastCRN::WriteProfile(string OutputFileName, double Time)
 	{
 		//write PlatformElevation
 		WritePlatform << Time;
-		for (int i=0; i<NXNodes; ++i) WritePlatform << setprecision(4) << " " << X[i];
+		for (int i=0; i<NXNodes; ++i) WritePlatform << setprecision(5) << " " << X[i];
 		WritePlatform << endl;
 		
 		//write SurfaceElevation
 		WritePlatform << Time;
-		for (int i=0; i<NXNodes; ++i) WritePlatform << setprecision(4) << " " << SurfaceElevation[i];
+		for (int i=0; i<NXNodes; ++i) WritePlatform << setprecision(5) << " " << SurfaceElevation[i];
 		WritePlatform << endl;
 	}
 }
 
 void RockyCoastCRN::WriteCRNProfile(string OutputFileName, double Time)
 {
+  //write Sea Level to screen
+  cout << endl << "Sea level = " << SeaLevel << endl;
+  
   //test if output file already exists
   int FileExists = 0;
 	ifstream oftest(OutputFileName.c_str());
@@ -851,12 +854,12 @@ void RockyCoastCRN::WriteCRNProfile(string OutputFileName, double Time)
 	{
 		//write PlatformElevation
 		WritePlatform << Time;
-		for (int i=0; i<NXNodes; ++i) WritePlatform << setprecision(4) << " " << X[i];
+		for (int i=0; i<NXNodes; ++i) WritePlatform << setprecision(5) << " " << X[i];
 		WritePlatform << endl;
 		
 		//write SurfaceElevation
 		WritePlatform << Time;
-		for (int i=0; i<NXNodes; ++i) WritePlatform << setprecision(4) << " " << SurfaceN[i];
+		for (int i=0; i<NXNodes; ++i) WritePlatform << setprecision(5) << " " << SurfaceN[i];
 		WritePlatform << endl;
 	}
 }
