@@ -106,6 +106,10 @@ class RoBoCoP
 		int NTideValues;                //number of tidal values (.size() of tidelevels vector)
 		
 		// WAVE DECLARATIONS
+		double MeanWavePeriod;
+		double StdWavePeriod;
+		double MeanWaveHeight;
+		double StdWaveHeight;
 		double WavePeriod;
 		double BreakingWaveHeight;
 		double BreakingWaveWaterDepth;
@@ -169,10 +173,13 @@ class RoBoCoP
 		void InitialiseTides(double TidalAmplitude, double TidalPeriod);
 		
 		//Initialise Waves
-		void InitialiseWaves(double WaveHeight, double WavePeriod);
+		void InitialiseWaves(double WaveHeight_Mean, double WaveHeight_StD, double WavePeriod_Mean, double WavePeriod_StD);
 		
 		//Update Sea Level
 		void UpdateSeaLevel(double SLRRate);
+		
+		//Sample a wave
+		void GetWave();
 		
     /// @brief Launch the main program loop to evolve RoBoCoP coast
 		/// @details This function evolves a rocky coastal platform through time.

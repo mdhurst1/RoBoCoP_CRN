@@ -92,9 +92,11 @@ int main(int argc, char* argv[])
 	
 	//Initialise Waves
 	//Single Wave for now but could use the waveclimate object from COVE!?
-	double WaveHeight = 1.2;
-	double WavePeriod = 8.;
-	PlatformModel.InitialiseWaves(WaveHeight,WavePeriod);
+	double MeanWaveHeight = 1.2;
+	double StdWaveHeight = 0.2;
+	double MeanWavePeriod = 8.;
+	double StdWavePeriod = 1.;
+	PlatformModel.InitialiseWaves(MeanWaveHeight, StdWaveHeight, MeanWavePeriod, StdWavePeriod);
 	
 	//Print Control
 	double PrintInterval = 100.;
@@ -113,6 +115,9 @@ int main(int argc, char* argv[])
 	{
 	  //Update Sea Level
 	  PlatformModel.UpdateSeaLevel(SLR);
+	  
+	  //Get a new wave
+	  PlatformModel.GetWave();
 	  
 	  //Evolve the coast
 	  PlatformModel.EvolveCoast();

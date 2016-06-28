@@ -78,7 +78,7 @@ void RockyCoastCRN::Initialise()
 	TidalAmplitude = NDV;
 }
 
-void RockyCoastCRN::Initialise(double retreatrate, double beachwidth, int beachtype, double bermheight, double platformgradient, double cliffheight, double junctionelevation, double tidalamplitude, int steppedplatform, double stepsize)
+void RockyCoastCRN::Initialise(double retreatrate, double beachwidth, int beachtype, double bermheight, double platformgradient, double cliffheight, double junctionelevation, double tidalamplitude, double slr, int steppedplatform, double stepsize)
 {
 	/* initialise a platform object for single retreat rate scenarios
 	retreatrate is the rate of cliff retreat (m/yr)
@@ -90,10 +90,10 @@ void RockyCoastCRN::Initialise(double retreatrate, double beachwidth, int beacht
 	tidalamplitude is the average tidal amplitude for diurnal tides. */
 	int retreattype = 0;
   double changetime = 0;
-	Initialise(retreatrate, retreatrate, retreattype, changetime, beachwidth, beachtype, bermheight, platformgradient, cliffheight, junctionelevation, tidalamplitude, steppedplatform, stepsize);
+	Initialise(retreatrate, retreatrate, retreattype, changetime, beachwidth, beachtype, bermheight, platformgradient, cliffheight, junctionelevation, slr, tidalamplitude, steppedplatform, stepsize);
 }
 	
-void RockyCoastCRN::Initialise(double retreatrate1, double retreatrate2, int retreattype, double changetime, double beachwidth, int beachtype, double bermheight, double platformgradient, double cliffheight, double junctionelevation, double tidalamplitude, int steppedplatform, double stepsize)
+void RockyCoastCRN::Initialise(double retreatrate1, double retreatrate2, int retreattype, double changetime, double beachwidth, int beachtype, double bermheight, double platformgradient, double cliffheight, double junctionelevation, double SLR, double tidalamplitude, int steppedplatform, double stepsize)
 {
   /* initialise a platform object for two retreat rate scenarios
   retreatrate1 runs from 7.5ka until changetime, after which retreatrate2 continues to present
@@ -112,7 +112,7 @@ void RockyCoastCRN::Initialise(double retreatrate1, double retreatrate2, int ret
 	PlatformWidth = 1000.;						//width of model domain (m)
 	PlatformDepth = 20.;							//Depth to which CRN will be tracked (needs to be large enough that sea level rise is ok)
 	NDV = -9999;											//Place holder for no data
-
+	
 	//Assign Parameters
 	RetreatRate1 = retreatrate1;
 	RetreatRate2 = retreatrate2;
@@ -126,8 +126,9 @@ void RockyCoastCRN::Initialise(double retreatrate1, double retreatrate2, int ret
 	BeachType = beachtype;
 	BermHeight = bermheight;
 	JunctionElevation = junctionelevation;
+	SLRRate = SLR;
 	TidalAmplitude = tidalamplitude;
-
+	
 	SteppedPlatform = steppedplatform;
 	StepSize = stepsize;
 
@@ -343,7 +344,7 @@ void RockyCoastCRN::RunModel(string outfilename, int WriteResultsFlag)
 	N = EmptyVV;
 	
 	//set Sea level parameters
-	SLR = 0.0002;     //Rate of relative sea level rise (m/y)  
+	//SLR = 0.0002;     //Rate of relative sea level rise (m/y)  
 	SeaLevel = 0;			//Sea Level Tracker	
 	MeanBeachWidth = BeachWidth;
 	InitialBeachWidth = BeachWidth;
@@ -457,7 +458,7 @@ void RockyCoastCRN::RunModel(string outfilename, int WriteResultsFlag)
 		//update cliff position and time
 		CliffPositionX -= RetreatRate*dt;
 		Time -= dt;
-		SeaLevel += SLR*dt;
+		SeaLevel += SLRRate*dt;
 		if (CliffPositionX < X[CliffPositionInd]) CliffPositionInd -= 1;
 		//if (SeaLevel < Z[ZTrackInd]) ZTrackInd += 1;
     if (CliffPositionInd < 0) CliffPositionInd = 0;
@@ -612,7 +613,7 @@ void RockyCoastCRN::UpdateEquillibriumMorphology()
 			{
 				if (SteppedPlatform == 0) 
 				{
-				  TempPlatformElevChange = dt*(RetreatRate*PlatformGradient-SLR);
+				  TempPlatformElevChange = dt*(RetreatRate*PlatformGradient-SLRRate);
 				  if (TempPlatformElevChange < 0) TempPlatformElevChange = 0;
 				  PlatformElevation[i] -= TempPlatformElevChange;
 				}
@@ -828,8 +829,8 @@ void RockyCoastCRN::WriteProfile(string OutputFileName, double Time)
 
 void RockyCoastCRN::WriteCRNProfile(string OutputFileName, double Time)
 {
-  //write Sea Level to screen
-  cout << endl << "Sea level = " << SeaLevel << endl;
+  //write Sea Level to screen for debug
+  //cout << endl << "Sea level = " << SeaLevel << endl;
   
   //test if output file already exists
   int FileExists = 0;

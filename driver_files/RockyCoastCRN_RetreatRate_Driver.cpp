@@ -68,31 +68,44 @@ int main()
 	int SteppedPlatformFlag = 0;          //Flag for a stepped platform (1 = steps, 0=no steps)
 	double StepSize = 0.0;                //size of step (0=no steps)
 	
+	// Changing RetreatRates and Platform gradient taken from plot_robocop_CRN_results.py
+	RetreatRate1 = 0.146;
+	PlatformGradient = 0.0095;
 	//Create Platform CRN object
 	RockyCoastCRN RockyCoastCRNModel(RetreatRate1, RetreatRate2, RetreatType, ChangeTime, BeachWidth, BeachType, BermHeight, PlatformGradient, CliffHeight, ElevInit, Amp, SteppedPlatformFlag, StepSize);
 
   //Run the model
   //First for no steps
-  string OutFileName = "RetreatRate1_0.19.xzn";
+  string OutFileName = "RetreatRate1_0.146.xzn";
 	RockyCoastCRNModel.RunModel(OutFileName);
 	
 	//20 cm RetreatRate
-	RetreatRate1 = 0.11;
-	OutFileName = "RetreatRate1_0.11.xzn";
+	RetreatRate1 = 0.089;
+	PlatformGradient = 0.0088;
+	OutFileName = "RetreatRate1_0.089.xzn";
 	RockyCoastCRN RockyCoastCRNModel2(RetreatRate1, RetreatRate2, RetreatType, ChangeTime, BeachWidth, BeachType, BermHeight, PlatformGradient, CliffHeight, ElevInit, Amp, SteppedPlatformFlag, StepSize);
 	RockyCoastCRNModel2.RunModel(OutFileName);
 	
 	//10 cm RetreatRate
-	RetreatRate1 = 0.085;
-	OutFileName = "RetreatRate1_0.085.xzn";
+	RetreatRate1 = 0.076;
+	PlatformGradient = 0.0081;
+	OutFileName = "RetreatRate1_0.076.xzn";
 	RockyCoastCRN RockyCoastCRNModel3(RetreatRate1, RetreatRate2, RetreatType, ChangeTime, BeachWidth, BeachType, BermHeight, PlatformGradient, CliffHeight, ElevInit, Amp, SteppedPlatformFlag, StepSize);
 	RockyCoastCRNModel3.RunModel(OutFileName);
 	
 	//5 cm RetreatRate
-	RetreatRate1 = 0.077;
-	OutFileName = "RetreatRate1_0.077.xzn";
+	RetreatRate1 = 0.073;
+	PlatformGradient = 0.0078;
+	OutFileName = "RetreatRate1_0.073.xzn";
 	RockyCoastCRN RockyCoastCRNModel4(RetreatRate1, RetreatRate2, RetreatType, ChangeTime, BeachWidth, BeachType, BermHeight, PlatformGradient, CliffHeight, ElevInit, Amp, SteppedPlatformFlag, StepSize);
 	RockyCoastCRNModel4.RunModel(OutFileName);
+	
+	//5 cm RetreatRate
+	RetreatRate1 = 0.072;
+	PlatformGradient = 0.0073;
+	OutFileName = "RetreatRate1_0.072.xzn";
+	RockyCoastCRN RockyCoastCRNModel5(RetreatRate1, RetreatRate2, RetreatType, ChangeTime, BeachWidth, BeachType, BermHeight, PlatformGradient, CliffHeight, ElevInit, Amp, SteppedPlatformFlag, StepSize);
+	RockyCoastCRNModel5.RunModel(OutFileName);
 	
 	cout << endl;
 	

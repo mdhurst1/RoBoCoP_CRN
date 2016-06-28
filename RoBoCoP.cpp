@@ -114,7 +114,7 @@ void RoBoCoP::Initialise(double dZ, double PlatformGradient, double CliffPositio
   printf("\nRoBoCoP.Initialise: Initialised a RoBoCoP as planar, sloped platform backed by a cliff\n");
   
   //Declare stuff
-  NoNodes = 1+round(30./dZ);
+  NoNodes = 1+round(20./dZ);
   NDV = -9999;
   
   //declare an array of zeros for assignment of x and z vectors
@@ -125,7 +125,7 @@ void RoBoCoP::Initialise(double dZ, double PlatformGradient, double CliffPositio
 	//Loop through array and calculate X and Z
 	for (int i=0; i<NoNodes; ++i) 
 	{
-	  Z[i] = 15.-i*dZ;
+	  Z[i] = 10.-i*dZ;
 	  if (Z[i] < 0) X[i] = CliffPositionX-(Z[i]/PlatformGradient);
 	  else X[i] = CliffPositionX;
   }
@@ -165,14 +165,14 @@ void RoBoCoP::InitialiseTides(double TidalAmplitude, double TidalPeriod)
   }  
 }
 
-void RoBoCoP::InitialiseWaves(double MeanWaveHeight, double StdWaveHeight double MeanWavePeriod, double StdWavePeriod)
+void RoBoCoP::InitialiseWaves(double WaveHeight_Mean, double WaveHeight_StD, double WavePeriod_Mean, double WavePeriod_StD)
 {
   /* intialise waves as a single wave */
 
-  MeanWavePeriod = MeanWavePeriod;
-  StdWavePeriod = StdWavePeriod;
-  MeanWaveHeight = MeanWaveHeight;
-  StdWaveHeight = StdWaveHeight;
+  MeanWavePeriod = WavePeriod_Mean;
+  StdWavePeriod = WavePeriod_StD;
+  MeanWaveHeight = WaveHeight_Mean;
+  StdWaveHeight = WaveHeight_StD;
 }
 
 void RoBoCoP::GetWave()

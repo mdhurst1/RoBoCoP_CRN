@@ -23,13 +23,13 @@ rc('xtick.major',pad=5)
 padding = 5
 plt.figure(1,figsize=(6,6))
 
-FileName = "../driver_files/ShoreProfile.xz"
+FileName = "../data/RoBoCoP/ShoreProfile.xz"
 f = open(FileName,'r')
 ProfileLines = f.readlines()
 NoLines = len(ProfileLines)
 
 #now plot CRN concentration through time
-FileName = "../driver_files/CRNConcentrations.xn"
+FileName = "../data/RoBoCoP/CRNConcentrations.xn"
 f = open(FileName,'r')
 ConcentrationLines = f.readlines()
 NoLines = len(ConcentrationLines)
@@ -41,9 +41,12 @@ ax2 = plt.axes([0.12,0.1,0.86,0.55])
 #Place holder lists for time and retreat rate
 Times = []
 RetreatRate = []
+PrintTime = []
+AverageRetreatRate = []
+PlatformGradient = []
 
 #Plotting control, plot every 1000 years
-PlotTime = 0.
+PlotTime = 1000.
 PlotInterval = 1000.
 EndTime = 5000.
 TimeOld = 0
@@ -61,14 +64,23 @@ for j in range(1,NoLines,2):
     #read in concentration data
     X2 = np.array((ConcentrationLines[j].strip().split(" "))[1:],dtype="float64")
     N = np.array((ConcentrationLines[j+1].strip().split(" "))[1:],dtype="float64")
-
+    
+    if j==1: 
+        CliffPositionX = X[0]
+        TimeOld = Time
+        CliffPositionXOld = CliffPositionX
+                   
+        #plot profiles
+        Color=0.2
+        ax1.plot(X,Z,'-',color=cm.binary(Color), lw=1.5)
+        datestring = '%.1f' % (Time/1000.)
+        ax1.text(X[0]-4,6,datestring+" ka",rotation=270,color=cm.binary(Color))
+        continue
+    
     #only plot every plottime
     if (Time == PlotTime):
         #Get color for plotting
-        if Time == 0:
-            Color=0.2
-        else:
-            Color = PlotTime/EndTime
+        Color = PlotTime/EndTime
         
         #plot profiles
         ax1.plot(X,Z,'-',color=cm.binary(Color), lw=1.5)
@@ -80,6 +92,29 @@ for j in range(1,NoLines,2):
         
         #update plot time
         PlotTime += PlotInterval        
+    
+        # Work out parameters to output
+        # time
+        PrintTime.append(Time)
+        
+        # Average retreat rate
+        RR = (CliffPositionXOld-X[0])/(TimeOld-Time)
+        AverageRetreatRate.append(RR)
+        
+        # Platform gradient, clip to cliff junction
+        XClip = X[X>X[0]+1]
+        ZClip = Z[X>X[0]+1]
+        
+        #Clip the last 200 m off too
+        XClip = XClip[XClip<np.max(XClip)-200]
+        ZClip = ZClip[XClip<np.max(XClip)-200]
+        
+        # find edge of platform as minimum gradient in X
+        ind = np.argmin(np.gradient(XClip))
+        ax1.plot(XClip[ind],ZClip[ind],'ro')
+        
+        #Calculate platform gradient
+        PlatformGradient.append((ZClip[0]-ZClip[ind])/(XClip[0]-XClip[ind]))
     
     elif (Time > EndTime):
         break
@@ -133,25 +168,29 @@ ax3.text(4000,3,"(c)")
 
 #get average retreat rates at each time interval
 MilleniaTimes = [1000,2000,3000,4000,5000]
-AverageRate = [np.mean(RetreatRate[5:10]),np.mean(RetreatRate[10:20]),np.mean(RetreatRate[20:30]),np.mean(RetreatRate[30:40]),np.mean(RetreatRate[40:50])]
-print AverageRate
+AverageRate = [np.mean(RetreatRate[0:10]),np.mean(RetreatRate[10:20]),np.mean(RetreatRate[20:30]),np.mean(RetreatRate[30:40]),np.mean(RetreatRate[40:50])]
 
-##Plot equillibrium retreat results
-#RetreatRates = [0.3,0.2,0.19,0.11,0.1,0.085,0.077]
-#XNorms = [-700,-750,-750,-860,-870,-1000,-1100]
-#
-#for i in range(0,len(RetreatRates)):
-#    FileName = "../driver_files/RetreatRate1_"+str(RetreatRates[i])+".xzn"
-#    f = open(FileName,'r')
-#    Lines = f.readlines()
-#    NoLines = len(Lines)
-#       
-#    X = np.array((Lines[NoLines-2].strip().split(" "))[1:],dtype="float64")
-#    N = np.array((Lines[NoLines-1].strip().split(" "))[1:],dtype="float64")
-#        
-#    Color = float(i)/float(len(RetreatRates))
-#    ax2.plot(X+XNorms[i],N,'-',color=cm.Reds(Color),label=str(RetreatRate[i]))
-#    
-#
-plt.savefig("RoBoCoP_CRN.pdf")
+print PrintTime
+print AverageRetreatRate
+print PlatformGradient
+
+
+#Plot equillibrium retreat results
+RetreatRates = [0.146,0.089,0.76,0.073,0.072]
+XNorms = [-700,-750,-750,-860,-870,-1000,-1100]
+
+for i in range(0,len(RetreatRates)):
+    FileName = "../driver_files/RetreatRate1_"+str(RetreatRates[i])+".xzn"
+    f = open(FileName,'r')
+    Lines = f.readlines()
+    NoLines = len(Lines)
+       
+    X = np.array((Lines[NoLines-2].strip().split(" "))[1:],dtype="float64")
+    N = np.array((Lines[NoLines-1].strip().split(" "))[1:],dtype="float64")
+        
+    Color = float(i)/float(len(RetreatRates))
+    ax2.plot(X+XNorms[i],N,'-',color=cm.Reds(Color),label=str(RetreatRate[i]))
+    
+
+plt.savefig("../figures/RoBoCoP_CRN.pdf")
 plt.show()

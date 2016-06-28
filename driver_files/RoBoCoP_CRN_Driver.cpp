@@ -59,7 +59,7 @@ int main()
   double CliffPositionX = 0.;
   
   //Rate of sea level rise
-  double SLR = 0.0002;
+  double SLR = 0.0;
   
   	// Time Control
 	double EndTime = 10000.;
@@ -80,9 +80,11 @@ int main()
 	
 	//Initialise Waves
 	//Single Wave for now but could use the waveclimate object from COVE!?
-	double WaveHeight = 1.2;
-	double WavePeriod = 8.;
-	PlatformModel.InitialiseWaves(WaveHeight,WavePeriod);
+	double MeanWaveHeight = 1.2;
+	double StdWaveHeight = 0.2;
+	double MeanWavePeriod = 8.;
+	double StdWavePeriod = 1.;
+	PlatformModel.InitialiseWaves(MeanWaveHeight, StdWaveHeight, MeanWavePeriod, StdWavePeriod);
 	
 	//Print Control
 	double PrintInterval = 100.;
@@ -99,6 +101,9 @@ int main()
 	{
 	  //Update Sea Level
 	  PlatformModel.UpdateSeaLevel(SLR);
+	  
+	  //Get a new wave
+	  PlatformModel.GetWave();
 	  
 	  //Evolve the coast
 	  PlatformModel.EvolveCoast();
