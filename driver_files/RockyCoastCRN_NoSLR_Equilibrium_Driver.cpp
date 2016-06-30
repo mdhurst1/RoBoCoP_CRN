@@ -72,13 +72,16 @@ int main()
 	string OutputFileName;
 	ostringstream strs;
 	
-	double RetreatRates[] = {0.1528, 0.0723, 0.0473, 0.0351, 0.0279, 0.0231, 0.0197, 0.0172, 0.0153, 0.0137};
+	// instantaneous retreat rates double RetreatRates[] = {0.1528, 0.0723, 0.0473, 0.0351, 0.0279, 0.0231, 0.0197, 0.0172, 0.0153, 0.0137};
+	// median of previous 100 years double RetreatRates[] = {0.3045, 0.0950, 0.0560, 0.0397, 0.0307, 0.0250, 0.0211, 0.0183, 0.0161, 0.0144};
+	// median of all retreat 
+	double RetreatRates[] = {0.3045, 0.1452, 0.0950, 0.0705, 0.0560, 0.0465, 0.0397, 0.0346, 0.0307, 0.0276};
 	double PlatformGradients[] = {0.00513,0.00446, 0.00414, 0.00394, 0.00380, 0.00370, 0.00361, 0.00354, 0.00348, 0.00343};
 
 	//Declare model
 	RockyCoastCRN RockyCoastCRNModel(RetreatRate1, RetreatRate2, RetreatType, ChangeTime,	
 											BeachWidth, BeachType, BermHeight, PlatformGradient, CliffHeight, 		
-											ElevInit, Amp, SLR, SteppedPlatformFlag, StepSize);
+											ElevInit, SLR, Amp, SteppedPlatformFlag, StepSize);
 											
 	//Run the model for each setup	
 	for (int i=0; i<10; ++i)
@@ -94,9 +97,11 @@ int main()
 		//Create Platform CRN, reinitialise with new parameters
 		RockyCoastCRNModel.UpdateParameters(RetreatRate1, RetreatRate2, RetreatType, 
 											ChangeTime, BeachWidth, BeachType, BermHeight, PlatformGradient, 	
-											CliffHeight, ElevInit, Amp, SLR, SteppedPlatformFlag, StepSize);
+											CliffHeight, ElevInit, SLR, Amp, SteppedPlatformFlag, StepSize);
 				
 		//Setup output file
+		strs.str("");
+		
 		strs << RetreatRate1;
 		OutputFileName = "RetreatRate1_" + strs.str() + ".xzn";
 		

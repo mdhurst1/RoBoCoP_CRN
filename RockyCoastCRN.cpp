@@ -351,7 +351,7 @@ void RockyCoastCRN::RunModel(string outfilename, int WriteResultsFlag)
 	
 	//Time control
 	Time = 0;			//time in years
-	dt = 1;		    //time step
+	dt = 5;		    //time step
 	XMax = 1000.; 	    //Distance from cliff
 	
 	//Write output control
@@ -372,10 +372,10 @@ void RockyCoastCRN::RunModel(string outfilename, int WriteResultsFlag)
 	  exit(EXIT_SUCCESS);
 	}
 
-  //limit start time to 7ka
-	//if (MaxTime > 7000)	Time = 7000;
-	//else Time = MaxTime;
-
+  //limit start time to 10ka
+	//MaxTime = 10000;
+	
+	cout << "Start time is " << MaxTime << " ka" << endl;
 	Time = MaxTime;
 	WriteTime = MaxTime;
 	

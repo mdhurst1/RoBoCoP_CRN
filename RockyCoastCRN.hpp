@@ -217,9 +217,9 @@ class RockyCoastCRN
 		/// @param tidalamplitude Amplitude of diurnal tides
 	  ///	@author Martin D. Hurst 
     /// @date 14/09/2015
-		void UpdateParameters(double retreatrate1, double retreatrate2, int retreattype, double changetime, double beachwidth, int beachtype, double bermheight, double platformgradient, double cliffheight, double junctionelevation, double tidalamplitude, double slr, int steppedplatform=0, double stepsize=0)
+		void UpdateParameters(double retreatrate1, double retreatrate2, int retreattype, double changetime, double beachwidth, int beachtype, double bermheight, double platformgradient, double cliffheight, double junctionelevation, double slr, double tidalamplitude, int steppedplatform=0, double stepsize=0)
 		{
-			Initialise(retreatrate1, retreatrate2, retreattype, changetime, beachwidth, beachtype, bermheight, platformgradient, cliffheight, junctionelevation, tidalamplitude, slr, steppedplatform, stepsize);
+			Initialise(retreatrate1, retreatrate2, retreattype, changetime, beachwidth, beachtype, bermheight, platformgradient, cliffheight, junctionelevation, slr, tidalamplitude, steppedplatform, stepsize);
 		}
 		
 		
