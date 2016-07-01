@@ -103,9 +103,11 @@ for j in range(1,NoLines,2):
         Grad = np.abs((Z[TopInd]-Z[BottomInd])/(X[TopInd]-X[BottomInd]))
         PlatformGradient.append(Grad)
         
-        if (Time == PlotTime):
-            ax1.plot(X,Z,'-',lw=1.5,color=cm.gray_r((Time+1000)/(EndTime+1000)))
-            ax2.plot(X2-X2[0],N,'-',lw=1.5,color=cm.gray_r((Time+1000)/(EndTime+1000)))
+        if (Time == PlotTime):            
+            print Time
+            print Time/1000.
+            ax1.plot(X,Z,'-',lw=1.5,color=cm.gray_r((Time+1000)/(EndTime+1000)),label=(int(Time/1000.)))
+            ax2.plot(X2-X2[0],N,'-',lw=1.5,color=cm.gray_r((Time+1000)/(EndTime+1000)),label=("%.3f" % -np.median(RetreatRate)))
             ax5.plot(X2-X2[0],N,'-',lw=1.5,color=cm.gray_r((Time+1000)/(EndTime+1000)))
             
             PeakN1.append(np.max(N))
@@ -119,7 +121,6 @@ for j in range(1,NoLines,2):
 ax3.semilogy(np.array(Times)/1000,np.abs(RetreatRate),'k-')
 ax4.plot(np.array(Times)/1000,np.abs(PlatformGradient),'k-')
 
-print Times
 # tweak the plot
 #ax1.set_xticklabels([])
 ax1.set_xlabel("Distance (m)")
@@ -139,6 +140,17 @@ ax2.text(20,23000,'(b)')
 ax3.text(0.6,4,'(c)')
 ax4.text(8.8,0.01,'(d)')
 
+#Display legend
+plt.rcParams.update({'legend.labelspacing':0.1}) 
+plt.rcParams.update({'legend.columnspacing':1.0}) 
+plt.rcParams.update({'legend.numpoints':1}) 
+plt.rcParams.update({'legend.frameon':False}) 
+plt.rcParams.update({'legend.handlelength':1.0}) 
+plt.rcParams.update({'legend.fontsize':8})
+ax1.legend(loc=3,ncol=2,title="time (Kyr)")
+ax2.legend(loc=1,ncol=2,title="Median Retreat Rate (m yr$^{-1}$)")
+
+# Median retreat rates taken from data in figure 12
 RetreatRates = [0.3045, 0.1452, 0.0950, 0.0705, 0.0560, 0.0465, 0.0397, 0.0346, 0.0307, 0.0276]
 
 PeakN2 = []
@@ -169,10 +181,11 @@ ax5.set_xlim(0,1000)
 ax5.set_xlabel("Distance (m)")
 ax5.set_ylabel('Concentration (atoms g$^{-1}$)')
 
-print len(PeakN1), len(PeakN2)
+#loop through data to vary color and plot
 for i in range(0,len(PeakN1)):
     Color = (float(i)+1)/(float(len(PeakN1))+1)
-    print Color
+    ax5.plot(PeakX1[i], PeakN1[i], 'o', ms=5, mfc=cm.gray_r(Color),zorder=10)
+    ax5.plot(PeakX2[i], PeakN2[i], 'o', ms=5, mfc=cm.gray_r(Color),zorder=10)
     ax6.plot(PeakN1[i], PeakN2[i], 'o', mfc=cm.gray_r(Color),zorder=10)
     ax7.plot(PeakX1[i], PeakX2[i], 'o', mfc=cm.gray_r(Color))
 
@@ -193,4 +206,6 @@ ax5.text(20,23000,'(a)')
 ax6.text(1500,22000,'(b)')
 ax7.text(220,425,'(c)')
 
+fig12.savefig("../results/RoBoCoP/No_SLR/Fig12_Transient_NoSLR.pdf")
+fig13.savefig("../results/RoBoCoP/No_SLR/Fig13_Transient_vs_Steady_NoSLR.pdf")
 plt.show()
