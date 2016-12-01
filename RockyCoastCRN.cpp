@@ -139,9 +139,10 @@ void RockyCoastCRN::Initialise(double retreatrate1, double retreatrate2, int ret
 		
 	//initialise tides, geomag and RSL data
 	InitialiseTides(TidalAmplitude,TidalPeriod);
-	InitialiseGeomagData();
-	InitialiseRSLData();
-	
+	//InitialiseGeomagData();
+	//InitialiseRSLData();
+	//Initialise Geomagnetic Scaling as constant
+	GeoMagScalingFactor = 1;
 	//Initialise Platform
 	InitialisePlanarPlatformMorphology();
 }
@@ -243,19 +244,23 @@ void RockyCoastCRN::InitialiseGeomagData()
 	ifstream GeoMagIn(GeoMagFilename.c_str());
 	if (!GeoMagIn)
 	{
-	  printf("RockyCoastCRN::%s: line %d GeoMag data file \"%s\" doesn't exist\n\n", __func__, __LINE__, GeoMagFilename.c_str());
-	  exit(EXIT_SUCCESS);
+		printf("RockyCoastCRN::%s: line %d GeoMag data file \"%s\" doesn't exist\n\n", __func__, __LINE__, GeoMagFilename.c_str());
+		printf("Setting Geomagnetic scaling factor to 1");
+		GeoMagScalingFactor = 1;	
 	}
-	GeoMagIn >> Dummy;
-	GeoMagIn >> Dummy;
-	while (!GeoMagIn.eof())
+	else
 	{
-	  GeoMagIn >> indata;
-	  GeoMagTime.push_back(indata);
-	  GeoMagIn >> indata;
-	  GeoMagScalingFactors.push_back(indata);
+		GeoMagIn >> Dummy;
+		GeoMagIn >> Dummy;
+		while (!GeoMagIn.eof())
+		{
+		  GeoMagIn >> indata;
+		  GeoMagTime.push_back(indata);
+		  GeoMagIn >> indata;
+		  GeoMagScalingFactors.push_back(indata);
+		}
+		GeoMagIn.close();
 	}
-	GeoMagIn.close();
 }
 
 void RockyCoastCRN::InitialiseRSLData()
@@ -270,18 +275,21 @@ void RockyCoastCRN::InitialiseRSLData()
 	if (!GIAIn)
 	{
 	  printf("RockyCoastCRN::%s: line %d Relative Sea Level data file \"%s\" doesn't exist\n\n", __func__, __LINE__, GIAFilename.c_str());
-	  exit(EXIT_SUCCESS);
+	  printf("Setting Realtive Sea Level to zero");
 	}
-	GIAIn >> Dummy;
-	GIAIn >> Dummy;
-	while (!GIAIn.eof())
+	else
 	{
-	  GIAIn >> indata;
-	  RSLTime.push_back(indata);
-	  GIAIn >> indata;
-	  RSLRate.push_back(indata);
+		GIAIn >> Dummy;
+		GIAIn >> Dummy;
+		while (!GIAIn.eof())
+		{
+		  GIAIn >> indata;
+		  RSLTime.push_back(indata);
+		  GIAIn >> indata;
+		  RSLRate.push_back(indata);
+		}
+		GIAIn.close();
 	}
-	GIAIn.close();
 }
 	
 void RockyCoastCRN::UpdateParameters( double RetreatRate1_Test, double RetreatRate2_Test, 
@@ -716,14 +724,14 @@ double RockyCoastCRN::GetGeoMagScalingFactor(double Time)
 	October 2014
 	*/
 
-  double GeoMagScalingFactor = 1;
+	double GeoMagScalingFactor = 1;
   
 	//interpolate to get value
 	int TimeCondition = 0;
 	int ind = 0;
 	
 	//if too far back in the past return 1
-	if (Time > GeoMagTime[GeoMagTime.size()-1]) return GeoMagScalingFactor;
+	if (GeoMagTime.size() == 0) return GeoMagScalingFactor;
 	
 	while (TimeCondition == 0)
 	{
@@ -745,26 +753,28 @@ double RockyCoastCRN::GetSeaLevelRise(double Time)
 	December 2014
 	*/
 
-  double Rate = 0.001;
-  
-	//interpolate to get value
-	double Factor;
-	int TimeCondition = 0;
-	int ind = 0;
-	while (TimeCondition == 0)
+	if (RSLTime.size() == 0) return SLRRate;
+	else
 	{
-		if (Time > RSLTime[RSLTime.size()-1])
+	  	//interpolate to get value
+		double Factor, Rate;
+		int TimeCondition = 0;
+		int ind = 0;
+		while (TimeCondition == 0)
 		{
-			TimeCondition = 1;
-			ind = RSLTime.size()-1;
+			if (Time > RSLTime[RSLTime.size()-1])
+			{
+				TimeCondition = 1;
+				ind = RSLTime.size()-1;
+			}
+			else if (Time > RSLTime[ind]) ++ind;
+			else TimeCondition = 1;
 		}
-		else if (Time > RSLTime[ind]) ++ind;
-		else TimeCondition = 1;
-	}
-	Factor = (Time-RSLTime[ind-1])/(RSLTime[ind]-RSLTime[ind-1]);
-	Rate = RSLRate[ind-1]+Factor*(RSLRate[ind]-RSLRate[ind-1]);
+		Factor = (Time-RSLTime[ind-1])/(RSLTime[ind]-RSLTime[ind-1]);
+		Rate = RSLRate[ind-1]+Factor*(RSLRate[ind]-RSLRate[ind-1]);
 
-	return -Rate;
+		return -Rate;
+	}
 }
 
 void RockyCoastCRN::GetSinWaveBeachWidth(double Time)
