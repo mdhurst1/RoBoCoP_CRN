@@ -27,23 +27,31 @@ using namespace std;
 //Sea level high latitude production rates
 ///@brief   10Be spallation reference production rate.
 ///@details Spallation (a/g/yr) calibrated 10Be production rate (Lifton et al. 2014).
-float Po_Spal = 4.007166;
+float Po_10Be_Spal = 4.007166;
+
+///@brief   14C spallation reference production rate.
+///@details Spallation (a/g/yr) calibrated 14C production rate (add ref).
+float Po_14C_Spal = 4.007166;
+
+///@brief   26Al spallation reference production rate.
+///@details Spallation (a/g/yr) calibrated 26Al production rate (add ref).
+float Po_26Al_Spal = 4.007166;
+
+///@brief   36Cl spallation reference production rate.
+///@details Spallation (a/g/yr) calibrated 36Cl production rate (add_ref).
+float Po_36Cl_Spal = 4.007166;
+
 
 ///@brief   10Be muogneic reference produciton rate.
 ///@details Total muogenic production rate (a/g/yr) following Braucher et al. (2013).
-float Po_Muon = 0.028;
+float Po_10Be_Muon = 0.028;
 
 // Attenuation Lengths
 ///@brief Spallogenic attenuation length (kg/m^2).
 float Lamb_Spal = 1600.0;
+
 ///@brief Muogenic attenuation length (kg/m^2) following Braucher et al. (2013).
 float Lamb_Muon = 42000.0;	
-
-//Densities
-///@brief Rock (chalk) density (kg/m^3) from Mortimore et al. (2004).
-float rho_r = 1800.0;
-///@brief	Density of sea water (kg/m^3)	
-float rho_w = 1035.0;
 
 //Decay length scales
 float z_rs = Lamb_Spal/rho_r;		//Decay length scale chalk spallation
@@ -52,7 +60,16 @@ float z_rm = Lamb_Muon/rho_r;		//Decay length scale chalk muons
 float z_wm = Lamb_Muon/rho_w;		//Decay length scale sea water muons
 
 ///@brief Half life of 10Be (Korschineck et al. 2010).
-float Lambda = 4.99*pow(10.,-7);
+float Lambda_10Be = 4.99*pow(10.,-7);
+
+///@brief Half life of 14C (ref).
+float Lambda_14C = 4.99*pow(10.,-7);
+
+///@brief Half life of 26Al (ref).
+float Lambda_26Al = 4.99*pow(10.,-7);
+
+///@brief Half life of 36Cl (ref).
+float Lambda_36Cl = 4.99*pow(10.,-7);
 
 //float Po_Spal = 4.34;				//Spallation (a/g/yr) to match Regard et al (2012)
 //float Po_Fast = 0.039;			//Fast Muons (a/g/yr) to match Regard et al (2012)
