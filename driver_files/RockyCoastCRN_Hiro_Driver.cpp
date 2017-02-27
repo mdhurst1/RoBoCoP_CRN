@@ -45,8 +45,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <fstream>
 #include <sstream>
 #include <cstdlib>
+#include <algorithm>
 #include <omp.h>
 #include <unistd.h>
+
 #include "../RockyCoastCRN.hpp"
 
 using namespace std;
@@ -60,21 +62,18 @@ int main(int nNumberofArgs,char *argv[])
 	if (nNumberofArgs!=3)
 	{
 		cout << "The program requires two inputs" << endl;
-		cout << "\t- The input morphology file name" << endl;
+		cout << "\t- The input morphology file name (without extension)" << endl;
 		cout << "\t- The tidal range (in metres)" << endl;
 		exit(EXIT_SUCCESS);
 	}
 	
 	//Parse arguments
-	string FileName = argv[1];
-	float TidalRange = argv[2];
-	float TidalAmp = 0.5*TidalRange;
+	string Name = argv[1];
+	string FileName = Name+".txt";
+	float TidalRange = atof(argv[2]);
 	
-	//Input parameters
-	float CliffHeight = 0.;             //Cliff height for shielding
-	
-	//Initialise Tides
-	PlatformCRN.InitialiseTides(TidalAmplitude, TidalPeriod);
+	//setup tides
+	float TidalAmplitude = 0.5*TidalRange;
 	float TidalPeriod = 12.42;
 	
 	// Time Control
@@ -82,10 +81,22 @@ int main(int nNumberofArgs,char *argv[])
 	float Time = 0.;
 	float TimeInterval = 1.;
 	
+	//Print Control
+	double PrintInterval = 100.;
+	double PrintTime = PrintInterval;
+	string OutputProfileFileName = Name+"_ShoreProfile.xz";
+	string OutputConcentrationFileName = Name+"_CRNConcentrations.xn";
+	
 	// Declare X and Z
 	vector<double> X;
 	vector<double> Z;
-	for (float i=0; i<=750; ++i) Z[i] = 37.5-i*0.1;
+	for (float i=0; i<750-1; ++i) Z.push_back(37.5-i*0.1);
+	
+	// Declare the model object
+	RockyCoastCRN PlatformCRN = RockyCoastCRN();
+	
+	//Initialise Tides
+	PlatformCRN.InitialiseTides(TidalAmplitude, TidalPeriod);
 	
 	// Read time series of coastal change from file
 	// File format is each row represents 1 year, there are 750 columns each representing 
@@ -97,8 +108,7 @@ int main(int nNumberofArgs,char *argv[])
 	string Line;
 	// declare a float to hold the newly read value
 	float Value;
-	// declare a string stream for converting the line into values
-	stringstream PositionString;
+	char Comma;
 	
 	//Loop through time
 	while (Time < EndTime)
@@ -106,8 +116,11 @@ int main(int nNumberofArgs,char *argv[])
 		//Get a new morphology from input file
 		X.clear();
 		getline(ReadProfileIn, Line);	
-		PositionString(Line);
-		while (PositionString >> Value) X.pushback(Value);
+		istringstream PositionString(Line);
+		
+		//We take the negative value as Hiro's model works opposite
+		while (PositionString >> Value >> Comma) X.push_back(-Value);
+		reverse(X.begin(), X.end());
 		
 		//Update the morphology inside RockyCoastCRN
 		PlatformCRN.UpdateMorphology(X,Z);
@@ -121,11 +134,12 @@ int main(int nNumberofArgs,char *argv[])
 		//print?
 		if (Time >= PrintTime)
 		{
-		 PlatformModel.WriteProfile(OutputMorphologyFileName, Time);
-		 PlatformCRN.WriteCRNProfile(OutputConcentrationFileName, Time);
-		 PrintTime += PrintInterval;
+			PlatformCRN.WriteProfile(OutputProfileFileName, Time);
+			PlatformCRN.WriteCRNProfile(OutputConcentrationFileName, Time);
+			PrintTime += PrintInterval;
+			cout << "Time is " << Time << endl;
 		}
-		//cout << "Time is " << Time << endl;
+		
 	}
 }
 

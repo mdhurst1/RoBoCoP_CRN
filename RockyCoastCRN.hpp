@@ -92,7 +92,7 @@ class RockyCoastCRN
 		int NZNodes;	//Number of nodes depth
 		
 		double dX;    //Nodes spacing in cross shore (m)
-		double dY;    //Node spacing in vertical (m)
+		double dZ;    //Node spacing in vertical (m)
 				
 		vector<double> SurfaceN;						//CRN surface concentrations	(a/g)
 		
@@ -325,7 +325,7 @@ class RockyCoastCRN
 		/// @param X vector<double> of horizontal position
 		/// @param Z vector<double> of platform elevation
     	/// @date 26/02/2017
-		void RockyCoastCRN::UpdateMorphology(vector<double> X, vector<double> Z)
+		void UpdateMorphology(vector<double> X, vector<double> Z);
 		
 		/// @brief Writes the platform morphology to file
 		/// @details This function writes the elevations of the platform surface at the current time to

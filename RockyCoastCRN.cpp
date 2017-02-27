@@ -66,8 +66,11 @@ void RockyCoastCRN::Initialise()
 	cliffheight is the height of the adjacent cliff (m)
 	tidalamplitude is the average tidal amplitude for diurnal tides. */
 	
-  double NDV = -9999;
-  RetreatRate1 = NDV;
+	cout << "Warning: You have initialised an empty RockCoastCRN object." << endl;
+	cout << "This is only appropriate when reading in platform morphology from a file" << endl;
+	
+	double NDV = -9999;
+	RetreatRate1 = NDV;
 	RetreatRate2 = NDV;
 	ChangeTime = NDV;
 	PlatformGradient = NDV;
@@ -76,6 +79,43 @@ void RockyCoastCRN::Initialise()
 	BermHeight = NDV;
 	JunctionElevation = NDV;
 	TidalAmplitude = NDV;
+	
+	XMin = -1;
+	XMax = -1;
+	double ZMax = 5;
+  	double ZMin = -20;
+  	
+  	//Cliff is at the start of the vector
+	CliffHeight = 10.;
+	CliffPositionX = -1;
+	CliffPositionInd = 0;
+		
+	//Setup CRN domain
+	dX = 0.2;
+	dZ = 0.1;
+	NXNodes = (XMax-XMin)/dX + 1;
+	NZNodes = (ZMax-ZMin)/dZ + 1;
+	
+	//Setup CRN Arrays
+	vector<double> EmptyX(NXNodes,-1.);
+	vector<double> EmptyZ(NZNodes,0.0);
+	vector<double> EmptyXNDV(NXNodes,NDV);
+	vector< vector<double> > EmptyVV(NXNodes,EmptyZ);
+	X = EmptyX;
+	Z = EmptyZ;
+	PlatformElevation = EmptyXNDV;
+	PlatformElevationOld = EmptyXNDV;
+	SurfaceElevation = EmptyXNDV;
+	SurfaceN = EmptyX;
+	N = EmptyVV;
+
+  for (int j=0; j<NZNodes; ++j) Z[j] = (((ZMax-ZMin)/2.)-j*((ZMax-ZMin)/(NZNodes-1)));	
+    
+  //Initialise Geomagnetic Scaling as constant
+  GeoMagScalingFactor = 1;
+  
+  //Set Sea level to zero
+  SeaLevel = 0;
 }
 
 void RockyCoastCRN::Initialise(double retreatrate, double beachwidth, int beachtype, double bermheight, double platformgradient, double cliffheight, double junctionelevation, double tidalamplitude, double slr, int steppedplatform, double stepsize)
@@ -552,8 +592,8 @@ void RockyCoastCRN::UpdateCRNs()
 				else WaterDepths[a] = 0;
 
 				//Calculate Production for this profile
-				P_Spal[i] += GeoMagScalingFactor*TopoShieldingFactor*Po_Spal*exp(-WaterDepths[a]/z_ws);
-				P_Muon[i] += TopoShieldingFactor*Po_Muon*exp(-WaterDepths[a]/z_wm);
+				P_Spal[i] += GeoMagScalingFactor*TopoShieldingFactor*Po_10Be_Spal*exp(-WaterDepths[a]/z_ws);
+				P_Muon[i] += TopoShieldingFactor*Po_10Be_Muon*exp(-WaterDepths[a]/z_wm);
 			}
 
 			//find mean production rate at surface
@@ -585,7 +625,7 @@ void RockyCoastCRN::UpdateCRNs()
 				  N[i][j] += dt*P_Muon[i]*exp((Z[j]-SurfaceElevation[i])/z_rm);	//muons
 				  
 				  //remove atoms due to radioactive decay
-				  N[i][j] -= dt*Lambda;
+				  N[i][j] -= dt*Lambda_10Be;
 			  }
 		  }
 		}
@@ -692,9 +732,9 @@ void RockyCoastCRN::UpdateMorphology(vector<double> XCoast, vector<double> ZCoas
 	
 	// Find cliff position
 	XMin = XCoast[0];
-	XMax = XCoast[NoNodes-1];
+	XMax = XCoast[NoCoastNodes-1];
   
-	CliffPositionX = XMin;
+	CliffPositionX = XCoast[0];
 	CliffPositionInd = 0;
   
 	PlatformElevationOld = PlatformElevation;
@@ -717,8 +757,8 @@ void RockyCoastCRN::UpdateMorphology(vector<double> XCoast, vector<double> ZCoas
 	SurfaceElevation[0] = CliffHeight;
 	for (int i=1; i<NXNodes; ++i)
 	{
-		 while ((XCoast[Ind] < X[i]) && (Ind < RoBoCoPCoast.NoNodes)) ++Ind;
-		 if (XCoast[Ind] == XCoast[i]) SurfaceElevation[i] = RoBoCoPCoast.Z[Ind];
+		 while ((XCoast[Ind] < X[i]) && (Ind < NoCoastNodes)) ++Ind;
+		 if (XCoast[Ind] == XCoast[i]) SurfaceElevation[i] = ZCoast[Ind];
 		 else SurfaceElevation[i] 	= ZCoast[Ind-1] 
 		 									+ (ZCoast[Ind]-ZCoast[Ind-1])*((X[i]-XCoast[Ind-1])/(XCoast[Ind]-XCoast[Ind-1]));
 	}
@@ -726,9 +766,7 @@ void RockyCoastCRN::UpdateMorphology(vector<double> XCoast, vector<double> ZCoas
 	// Copy Z to SurfaceElevation
 	// Do we need both?
 	PlatformElevation = SurfaceElevation;
-  
-	// Copy sea level
-	SeaLevel = RoBoCoPCoast.SeaLevel;
+	
 }
 
 double RockyCoastCRN::GetTopographicShieldingFactor(double X, double CliffHeight)
@@ -745,7 +783,7 @@ double RockyCoastCRN::GetTopographicShieldingFactor(double X, double CliffHeight
 
 	//##### Cliff Shielding paramters #####
 	double d_theta_phi = (M_PI/180.)*5.0;			//azimuth and angle stepping
-	double FMax = 2.0*M_PI*Po_Spal/(3.3);			//Maximum Intensity
+	double FMax = 2.0*M_PI*Po_10Be_Spal/(3.3);			//Maximum Intensity
 
 	double Viewshed;
 	double F = 0;
@@ -753,7 +791,7 @@ double RockyCoastCRN::GetTopographicShieldingFactor(double X, double CliffHeight
 	for (double Az=-90; Az<=90.; Az+= 5.) 
 	{
 		Viewshed = atan(CliffHeight*cos((M_PI/180.)*Az)/X);
-		F+= d_theta_phi*Po_Spal/(3.3)*pow(sin(Viewshed),3.3);
+		F+= d_theta_phi*Po_10Be_Spal/(3.3)*pow(sin(Viewshed),3.3);
 	}
 
 	 return (FMax-F)/FMax;
