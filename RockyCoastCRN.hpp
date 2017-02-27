@@ -314,8 +314,18 @@ class RockyCoastCRN
 		///   of the platform surface based on an iteration of the RoBoCoP coast object.
 		///	@author Martin D. Hurst
 		/// @param RoBoCoPCoast A RoBoCoP Coastal model object
-    /// @date 14/03/2016
+    	/// @date 14/03/2016
 		void UpdateMorphology(RoBoCoP RoBoCoPCoast);
+		
+		/// @brief Updates the platform morphology based on recieving X and Z vectors
+		/// @details This function updates the platform morphology based on a profile passed through
+		/// vectors X and Z. These can be provided from model output from an alternative model such
+		/// as that of Matsumoto et al. (2016)
+		/// @author Martin D. Hurst
+		/// @param X vector<double> of horizontal position
+		/// @param Z vector<double> of platform elevation
+    	/// @date 26/02/2017
+		void RockyCoastCRN::UpdateMorphology(vector<double> X, vector<double> Z)
 		
 		/// @brief Writes the platform morphology to file
 		/// @details This function writes the elevations of the platform surface at the current time to

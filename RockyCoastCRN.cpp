@@ -685,6 +685,52 @@ void RockyCoastCRN::UpdateMorphology(RoBoCoP RoBoCoPCoast)
   SeaLevel = RoBoCoPCoast.SeaLevel;
 }
 
+void RockyCoastCRN::UpdateMorphology(vector<double> XCoast, vector<double> ZCoast)
+{
+	//Get number of nodes in coastal morphology
+	int NoCoastNodes = XCoast.size();
+	
+	// Find cliff position
+	XMin = XCoast[0];
+	XMax = XCoast[NoNodes-1];
+  
+	CliffPositionX = XMin;
+	CliffPositionInd = 0;
+  
+	PlatformElevationOld = PlatformElevation;
+  
+	// Add nodes to front of RockyCoastCRN as required
+	vector<double> EmptyZ(NZNodes,0.0);
+	while (XMin < X[0]) 
+	{
+		X.insert(X.begin(),X[0]-dX);
+		SurfaceElevation.insert(SurfaceElevation.begin(), NDV);
+		PlatformElevation.insert(PlatformElevation.begin(), NDV);
+		PlatformElevationOld.insert(PlatformElevationOld.begin(), NDV);
+		SurfaceN.insert(SurfaceN.begin(),0);
+		N.insert(N.begin(),EmptyZ);
+		++NXNodes;
+	}
+  
+	// Get surface morphology from RoBoCoP
+	int Ind = 0;
+	SurfaceElevation[0] = CliffHeight;
+	for (int i=1; i<NXNodes; ++i)
+	{
+		 while ((XCoast[Ind] < X[i]) && (Ind < RoBoCoPCoast.NoNodes)) ++Ind;
+		 if (XCoast[Ind] == XCoast[i]) SurfaceElevation[i] = RoBoCoPCoast.Z[Ind];
+		 else SurfaceElevation[i] 	= ZCoast[Ind-1] 
+		 									+ (ZCoast[Ind]-ZCoast[Ind-1])*((X[i]-XCoast[Ind-1])/(XCoast[Ind]-XCoast[Ind-1]));
+	}
+	
+	// Copy Z to SurfaceElevation
+	// Do we need both?
+	PlatformElevation = SurfaceElevation;
+  
+	// Copy sea level
+	SeaLevel = RoBoCoPCoast.SeaLevel;
+}
+
 double RockyCoastCRN::GetTopographicShieldingFactor(double X, double CliffHeight)
 {
 	/* 
