@@ -69,7 +69,7 @@ void RockyCoastCRN::Initialise()
 	cout << "Warning: You have initialised an empty RockCoastCRN object." << endl;
 	cout << "This is only appropriate when reading in platform morphology from a file" << endl;
 	
-	double NDV = -9999;
+	NDV = -9999;
 	RetreatRate1 = NDV;
 	RetreatRate2 = NDV;
 	ChangeTime = NDV;
@@ -91,8 +91,10 @@ void RockyCoastCRN::Initialise()
 	CliffPositionInd = 0;
 		
 	//Setup CRN domain
-	dX = 0.2;
+	dX = 1.0;
 	dZ = 0.1;
+	dt = 1;
+	
 	NXNodes = (XMax-XMin)/dX + 1;
 	NZNodes = (ZMax-ZMin)/dZ + 1;
 	
@@ -576,7 +578,7 @@ void RockyCoastCRN::UpdateCRNs()
 	for (int i=CliffPositionInd; i<NXNodes; ++i)
 	{
 		//only work on active nodes
-		if ((X[i] >= CliffPositionX) && (X[i] <= XMax))
+		if ((X[i] > CliffPositionX) && (X[i] <= XMax))
 		{
 			//Get topographic shielding factor
 			TopoShieldingFactor = GetTopographicShieldingFactor(X[i]-CliffPositionX, CliffHeight);
@@ -752,7 +754,7 @@ void RockyCoastCRN::UpdateMorphology(vector<double> XCoast, vector<double> ZCoas
 		++NXNodes;
 	}
   
-	// Get surface morphology from RoBoCoP
+	// Get surface morphology from X and Z vectors
 	int Ind = 0;
 	SurfaceElevation[0] = CliffHeight;
 	for (int i=1; i<NXNodes; ++i)
