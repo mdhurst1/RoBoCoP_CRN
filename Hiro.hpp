@@ -88,12 +88,14 @@ class Hiro
 	  /* MEMBER DECLARATIONS */
 		
 		// SPATIAL DOMAIN DECLARATIONS
-		int NoNodes;	                      // Number of nodes across the coastline
+		int NoNodes;	                     // Number of nodes across the coastline
 		double NDV;                         // No data value
 		double dZ;                          // Vertical spacing of nodes
-		vector<double> X;		          			// cross shore distance (m)
-		vector<double> Z;										// elevation (m)
-		vector<double> Erosion;             //Total erosion at each elevation;
+		
+		vector<double> X;		          		// cross shore distance (m)
+		vector<double> Z;							// elevation (m)
+		vector< vector<int> > MorphologyArray;		// array to store morphology
+		vector< vector<double> > ResistanceArray;		// array to store resistance
 		
 		// SEA LEVEL DECLARATIONS
 		vector<double> RSLTime;             //Times for relative sea level elevations
@@ -109,11 +111,7 @@ class Hiro
 		int NTideValues;                //number of tidal values (.size() of tidelevels vector)
 		
 		// WAVE DECLARATIONS
-		double MeanWavePeriod;
-		double StdWavePeriod;
-		double MeanWaveHeight;
-		double StdWaveHeight;
-		double WavePeriod;
+		double WaveHeight;
 		double BreakingWaveHeight;
 		double BreakingWaveWaterDepth;
 		
@@ -129,6 +127,9 @@ class Hiro
 		static const double g = 9.81;
 		static const double k = 0.02;
 		static const double M = 0.0001;
+		
+		double WeatheringRate;
+		double CliffWeatheringRate;
 	
     /* FUNCTION DECLARATIONS */
 
@@ -147,7 +148,7 @@ class Hiro
 
 		/// @brief Empty initialisation function for Hiro
 	  ///	@author Martin D. Hurst 
-    /// @date 25/02/2016
+    /// @date 27/02/2017
 		Hiro()	{
 			Initialise();
 		}
@@ -184,30 +185,37 @@ class Hiro
 		//Sample a wave
 		void GetWave();
 		
-    /// @brief Launch the main program loop to evolve Hiro coast
+		/// @brief Launch the main program loop to evolve Hiro coast
 		/// @details This function evolves a rocky coastal platform through time.
 		///	@author Martin D. Hurst 
-    /// @date 25/02/2016
-    void EvolveCoast();
+		/// @date 27/02/2017
+		void EvolveCoast();
+		
+		void CalculateBackWearingForce();
+		void CalculateDownWearingForce();
+		void ErodeBackWearing();
+		void ErodeDownWearing();
+		void MassFailure();
+		void Weathering();
 		
 		/// @brief Writes the platform morphology to file
 		/// @details This function writes the elevations of the platform surface at the current time to
 		///   a file. If the file exists, this is appended.
 		///	@author Martin D. Hurst 
-    /// @date 25/02/2016
+		/// @date 27/02/2017
 		void WriteProfile(string OutputFileName, double Time);
 		void WriteErosion(string OutputFileName, double Time);
 		
 		/// @brief Get X coordinates
 		/// @return X coordinates
 		///	@author Martin D. Hurst 
-    /// @date 25/02/2016
+		/// @date 27/02/2017
 		vector<double> get_X() const { return X; }
 		
 		/// @brief Get surface CRN concentration
 		/// @return Surface CRN concentration
 		///	@author Martin D. Hurst 
-    /// @date 25/02/2016
+		/// @date 27/02/2017
 		vector<double> get_Z() const { return Z; }
 		
 };
