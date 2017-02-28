@@ -61,29 +61,34 @@ void Hiro::Initialise()
   printf("\nHiro.Initialise: Initialised an empty Hiro object\n");
 }
 
-void Hiro::Initialise(double dZ)
+void Hiro::Initialise(double dZ_in)
 {
-  /* initialise a verictal cliff Hiro object */
-  printf("\nHiro.Initialise: Initialised a Hiro as a vertical cliff\n");
-  
-  //Declare stuff
-  NoNodes = round(30./dZ)+1;
-  NDV = -9999;
-  
-  //declare an array of zeros for assignment of x and z vectors
-  vector<double> Empty(NoNodes,0.0);
-	X = Empty;
-	Z = Empty;
+	/* initialise a verictal cliff Hiro object */
+	printf("\nHiro.Initialise: Initialised a Hiro as a vertical cliff\n");
 	
-	//Loop through array and calculate X and Z
-	for (int i=0; i<NoNodes; ++i) 
-	{
-	  Z[i] = 20.-i*dZ;
-	  X[i] = 0;
-  }
-  
-  //default time interval
-  dt = 1.;
+	//Declare spatial stuff
+	dZ = dZ_in;
+	dX = dZ_in;
+	NXNodes = round(500./dX)+1;
+	NZNodes = round(75./dZ)+1;	
+
+	//declare an array of zeros for assignment of Z vector
+	Z = vector<double>(NZNodes,0.0);
+	for (int i=0; i<NZNodes; ++i) Z[i] = 0.5*NZNodes-i*dZ;
+
+	//declare an array of ones for assignment of X vector
+	vector<double> Ones(NXNodes,1.0);
+	X = Empty;
+
+	//declare an array of ones for assignment of the Morphology Array
+	MorphologyArray = vector< vector<int> >(NZNodes,vector<int>(NXNodes,1));
+	ResistanceArray = vector< vector<int> >(NZNodes,vector<int>(NXNodes,0));
+		
+	//default time interval
+	dt = 1.;
+	
+	//Set sea level to zero to begin with
+	SeaLevel = 0;	
 }
 
 void Hiro::Initialise(double dZ, double PlatformGradient)

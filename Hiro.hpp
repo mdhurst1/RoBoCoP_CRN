@@ -88,8 +88,7 @@ class Hiro
 	  /* MEMBER DECLARATIONS */
 		
 		// SPATIAL DOMAIN DECLARATIONS
-		int NoNodes;	                     // Number of nodes across the coastline
-		double NDV;                         // No data value
+		int NXNodes, NZNodes;               // Number of nodes across the coastline
 		double dZ;                          // Vertical spacing of nodes
 		
 		vector<double> X;		          		// cross shore distance (m)
@@ -104,7 +103,7 @@ class Hiro
 		
 		// TIDES DECLARATIONS
 		double TidalPeriod;                 //Tidal Period
-		double TidalAmplitude;              //Tidal Amplitude
+		double TidalRange;              //Tidal Amplitude
 		vector<double> TideLevels;          //Vector of tide levels
 		vector<double> WaterLevels;         //vector containing water levels
 		vector<double> WaterDepths;         //vector containing water depths
@@ -115,10 +114,6 @@ class Hiro
 		double BreakingWaveHeight;
 		double BreakingWaveWaterDepth;
 		
-		//CLIFF POSITION DECLARATIONS
-		double CliffPositionX;        //tracks the cliff position in X
-		int CliffPositionInd;         //tracks the index of the cliff position in X
-				
 		//TIME CONTROL PARAMETERS
 		double Time, MaxTime, dt;
 		
@@ -130,15 +125,14 @@ class Hiro
 		
 		double WeatheringRate;
 		double CliffWeatheringRate;
+		
+		static const double NDV = -9999;    // No data value
 	
     /* FUNCTION DECLARATIONS */
 
 		//Initialise Functions
 		void Initialise();
 		void Initialise(double dZ);
-		void Initialise(double dZ, double PlatformGradient);
-		void Initialise(double dZ, double PlatformGradient, double CliffPositionX, double TimeInterval=1.);
-		void Initialise(string FileNameIn);
 		
 	protected:
 
@@ -147,9 +141,10 @@ class Hiro
 		/* PlatformCRN Initialisation functions */
 
 		/// @brief Empty initialisation function for Hiro
-	  ///	@author Martin D. Hurst 
-    /// @date 27/02/2017
-		Hiro()	{
+		/// @author Martin D. Hurst 
+		/// @date 27/02/2017
+		Hiro()	
+		{
 			Initialise();
 		}
 		
@@ -158,21 +153,7 @@ class Hiro
 			Initialise(dZ);
 		}
 		
-    Hiro(double dZ, double PlatformGradient)
-		{
-			Initialise(dZ, PlatformGradient);
-		}
-		
-		Hiro(double dZ, double PlatformGradient, double CliffPositionX, double TimeInterval=1.)
-		{
-			Initialise(dZ, PlatformGradient, CliffPositionX, TimeInterval);
-		}
-		
-		Hiro(string FileNameIn)
-		{
-			Initialise(FileNameIn);
-		}
-		
+    		
 		//Initialise Tides
 		void InitialiseTides(double TidalAmplitude, double TidalPeriod);
 		
