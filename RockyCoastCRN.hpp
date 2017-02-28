@@ -94,14 +94,16 @@ class RockyCoastCRN
 		double dX;    //Nodes spacing in cross shore (m)
 		double dZ;    //Node spacing in vertical (m)
 				
-		vector<double> SurfaceN;						//CRN surface concentrations	(a/g)
+		vector<double> SurfaceN_10Be;					//CRN surface concentrations	(a/g)
+		vector<double> SurfaceN_14C;					//CRN surface concentrations	(a/g)
 		
 		vector<double> PlatformElevation;		  //Platform Surface Elevations (m)
 		vector<double> PlatformElevationOld;	//Platform Surface Elevations Old (m)
 		vector<double> SurfaceElevation;		  //Surface Elevations (including beach cover) (m)
 		
-		vector< vector<double> > N;					//concentration of nuclides (a/g) as a function of position and depth
-		
+		vector< vector<double> > N_10Be;			//concentration of nuclides (a/g) as a function of position and depth
+		vector< vector<double> > N_14C;			//concentration of nuclides (a/g) as a function of position and depth
+				
 		vector<double> GeoMagTime;
 		vector<double> GeoMagScalingFactors;  //Holds data from Lifton et al. (2014) Geomag model
 		vector<double> RSLTime;
@@ -112,8 +114,7 @@ class RockyCoastCRN
 		double NDV;													//No Data Value placeholder
 		
 		//CRN
-		//double P_Spal, P_Muon;		//local production rates for spallation and muons
-		vector<double> P_Spal, P_Muon;
+		vector<double> P_Spal, P_Muon_Fast, P_Muon_Slow; //local production rates for spallation and muons for any nuclide
 		
 		//TIDES
 		double TidalPeriod;
