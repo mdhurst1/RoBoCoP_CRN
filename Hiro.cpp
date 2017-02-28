@@ -91,67 +91,6 @@ void Hiro::Initialise(double dZ_in)
 	SeaLevel = 0;	
 }
 
-void Hiro::Initialise(double dZ, double PlatformGradient)
-{
-	/* initialise a sloped platform Hiro object */
-	printf("\nHiro.Initialise: Initialised a Hiro as a planar, sloped platform\n");
-	
-  //Declare stuff
-  NoNodes = 1+round(30./dZ);
-  NDV = -9999;
-  
-  //declare an array of zeros for assignment of x and z vectors
-  vector<double> Empty(NoNodes,0.0);
-	X = Empty;
-	Z = Empty;
-	
-	//Loop through array and calculate X and Z
-	for (int i=0; i<NoNodes; ++i) 
-	{
-	  Z[i] = 15.-i*dZ;
-	  X[i] = -Z[i]/PlatformGradient;
-  }
-  
-  //default time interval
-  dt = 1.;
-}
-
-void Hiro::Initialise(double dZ, double PlatformGradient, double CliffPositionX, double TimeInterval)
-{
-	/* initialise a sloped platform backed by a vertical cliff Hiro object */
-  printf("\nHiro.Initialise: Initialised a Hiro as planar, sloped platform backed by a cliff\n");
-  
-  //Declare stuff
-  NoNodes = 1+round(20./dZ);
-  NDV = -9999;
-  
-  //declare an array of zeros for assignment of x and z vectors
-  vector<double> Empty(NoNodes,0.0);
-	X = Empty;
-	Z = Empty;
-	
-	//Loop through array and calculate X and Z
-	for (int i=0; i<NoNodes; ++i) 
-	{
-	  Z[i] = 10.-i*dZ;
-	  if (Z[i] < 0) X[i] = CliffPositionX-(Z[i]/PlatformGradient);
-	  else X[i] = CliffPositionX;
-  }
-  
-  //default time interval
-  dt = TimeInterval;
-  
-}	
-
-void Hiro::Initialise(string FileNameIn)
-{
-  /* read coastal profile from file to Hiro object */
-  
-  //Declare stuff
-  NoNodes = 1+round(20./dZ);
-  NDV = -9999;
-}
-
 void Hiro::InitialiseTides(double TidalAmplitude, double TidalPeriod)
 {
   /* intialise the tides as a simple cosine wave (i.e. simple diurnal/semidiurnal) */
