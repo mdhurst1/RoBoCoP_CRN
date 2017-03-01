@@ -71,16 +71,20 @@ void Hiro::Initialise(double dZ_in, double dX_in)
 	//Declare spatial stuff
 	dZ = dZ_in;
 	dX = dZ_in;
-	NXNodes = round(500./dX)+1;
-	NZNodes = round(75./dZ)+1;	
+	NXNodes = round(500./dX);
+	NZNodes = round(75./dZ);	
 
 	//declare an array of zeros for assignment of Z vector
 	Z = vector<double>(NZNodes,0.0);
-	for (int i=0; i<NZNodes; ++i) Z[i] = 0.5*NZNodes-i*dZ;
+	for (int i=0; i<NZNodes; ++i) Z[i] = dZ*(0.5*NZNodes-i);
 
-	//declare an array of ones for assignment of X vector
-	vector<double> Ones(NXNodes,1.0);
-	X = Ones;
+	//declare arrays of zeros to initalise various other vectors
+	vector<double> ZZeros(NZNodes,0);
+	vector<double> XZeros(NXNodes,0);
+	X = ZZeros;
+	Bw_Erosion = ZZeros;
+	Dw_Erosion = XZeros;
+	Weathering = ZZeros;
 
 	//declare an array of ones for assignment of the Morphology Array
 	MorphologyArray = vector< vector<int> >(NZNodes,vector<int>(NXNodes,1));
@@ -114,35 +118,36 @@ void Hiro::Initialise(double dZ_in, double dX_in)
 //  }  
 //}
 
-//void Hiro::InitialiseWaves(double WaveHeight_Mean, double WaveHeight_StD, double WavePeriod_Mean, double WavePeriod_StD)
-//{
-//  /* intialise waves as a single wave */
+void Hiro::InitialiseWaves(double WaveHeight_Mean, double WaveHeight_StD, double WavePeriod_Mean, double WavePeriod_StD)
+{
+  /* intialise waves as a single wave */
 
-//  MeanWavePeriod = WavePeriod_Mean;
-//  StdWavePeriod = WavePeriod_StD;
-//  MeanWaveHeight = WaveHeight_Mean;
-//  StdWaveHeight = WaveHeight_StD;
-//}
+  MeanWavePeriod = WavePeriod_Mean;
+  StdWavePeriod = WavePeriod_StD;
+  MeanWaveHeight = WaveHeight_Mean;
+  StdWaveHeight = WaveHeight_StD;
+}
 
-//void Hiro::GetWave()
-//{
+void Hiro::GetWave()
+{
+	//declare temp variables
+	double OffshoreWaveHeight;
+	double rand1, rand2;
 
-//	//declare temp variables
-//	double OffshoreWaveHeight;
-//	double rand1, rand2;
-//	
-//	//Get two random numbers and generate wave data
-//	rand1 = (double)rand()/RAND_MAX; rand2 = (double)rand()/RAND_MAX;
-//	WavePeriod = MeanWavePeriod + StdWavePeriod*sqrt(-2.*log(rand1))*cos(2.*M_PI*(rand2));
-//	rand1 = (double)rand()/RAND_MAX; rand2 = (double)rand()/RAND_MAX;
-//	OffshoreWaveHeight = MeanWaveHeight + StdWaveHeight*sqrt(-2.*log(rand1))*cos(2.*M_PI*(rand2));
-//	
-//  //Breaking Wave Height calculated following Komar and Gaughan (1972)
-//  BreakingWaveHeight = 0.39*pow(g,0.2)*pow(WavePeriod,0.4)*pow(OffshoreWaveHeight,2.4);
-//  
-//  //Water depth of breaking wave
-//  BreakingWaveWaterDepth = BreakingWaveHeight/0.78;
-//}
+	//Get two random numbers and generate wave data
+	rand1 = (double)rand()/RAND_MAX; rand2 = (double)rand()/RAND_MAX;
+	WavePeriod = MeanWavePeriod + StdWavePeriod*sqrt(-2.*log(rand1))*cos(2.*M_PI*(rand2));
+	rand1 = (double)rand()/RAND_MAX; rand2 = (double)rand()/RAND_MAX;
+	OffshoreWaveHeight = MeanWaveHeight + StdWaveHeight*sqrt(-2.*log(rand1))*cos(2.*M_PI*(rand2));
+
+	//Breaking Wave Height calculated following Komar and Gaughan (1972)
+	BreakingWaveHeight = 0.39*pow(g,0.2)*pow(WavePeriod,0.4)*pow(OffshoreWaveHeight,2.4);
+	BreakingWaveDist = BreakingWaveHeight/2.;
+
+	//Water depth of breaking wave
+	BreakingWaveWaterDepth = BreakingWaveHeight/0.78;
+	
+}
 
 //void Hiro::UpdateSeaLevel(double SLRRate)
 //{
@@ -150,6 +155,51 @@ void Hiro::Initialise(double dZ_in, double dX_in)
 //	SeaLevel += SLRRate*dt;
 //}
 
+Hiro::Backwear()
+{
+	//Reset backwear vector
+	vector<double> ZZeros(NZNodes,0);
+	Bw_Erosion = ZZeros;
+	
+	//Loop across all intertidal elevations
+	LowTideInd = SeaLeveli-0.5*TidalRange/dZ;
+	HighTideInd = SeaLeveli+0.5*TidalRange/dZ;
+	for (int i=LowTideInd; i<=HighTideInd; ++i)
+	{
+		//Estimate horizontal breaking point
+		//Elevation of breaker point
+		SurfZoneBottomZ = Z[i]-BreakingWaveWaterDepth;
+		
+		bool SurfZone=false;
+		int ii=i;
+		while (SurfZone == false)
+		{
+			if (Z[ii] < SurfZoneBottomZ)
+			{
+				//Find Position X of Surfzone 
+				BreakingPointX = Xz[ii];
+				SurfZone = true;
+			}
+			--ii;
+		}
+		
+		//Set Wave Type
+		if (X[i] == 1) WaveType = 1;
+		else if (X[i]-BreakingPointX<0) WaveType = 1;
+		else if ((X[i]-BreakingPointX)<BreakingWaveDist) WaveType = 2;
+		else WaveType = 3;
+	}
+	
+	//Determine Surfzone Width
+	//Talk to Hiro about this
+	
+	//Determine Backwear erosion 
+}
+
+Hiro::Downwear()
+{
+
+}
 //void Hiro::EvolveCoast()
 //{
 //  /* Function to evolve the coastal profile through time following
@@ -223,111 +273,50 @@ void Hiro::Initialise(double dZ_in, double dX_in)
 //  }
 //}
 
-//void Hiro::WriteProfile(string OutputFileName, double Time)
-//{
-//  /* Writes a coastline object X and Z coordinates to file for a given time
-//		If the file already exists the data will be ed else a new file is
-//		created.
+void Hiro::WriteProfile(string OutputFileName, double Time)
+{
+  /* Writes a Hiro object X coordinates to file, each value spans dZ in elevation
+		File format is 	
+		
+		StartZ dZ
+		Time | X[0] | X[1] | X[2] =====> X[NoNodes] */
+      
+  
+	//Print to screen
+	cout.flush();
+	cout << "Hiro: Writing output at Time " << setprecision(0) << fixed << Time << " years\r";
 
-//		File format is 	Time | X[0] | X[1] | X[2] =====> X[NoNodes]
-//								Time | Z[0] | Z[1] | Z[2] =====> Z[NoNodes]   */
-//      
-//  
-//	//Print to screen
-//	cout.flush();
-//	cout << "Hiro: Time is " << setprecision(2) << fixed << Time << " years\r";
+	//test if output file already exists
+	int FileExists = 0;
+	ifstream oftest(OutputFileName.c_str());
+	if (oftest) FileExists = 1;
+	oftest.close();
 
-//	//test if output file already exists
-//	int FileExists = 0;
-//	ifstream oftest(OutputFileName.c_str());
-//	if (oftest) FileExists = 1;
-//	oftest.close();
+	//open the output filestream and write headers
+	ofstream WriteCoastFile;
+	if (FileExists == 0)
+	{
+		WriteCoastFile.open(OutputFileName.c_str());
+		if (WriteCoastFile.is_open()) WriteCoastFile << Z[0] << " " << dZ << endl;
+	}
+	WriteCoastFile.close();
 
-//	//open the output filestream and write headers
-//	ofstream WriteCoastFile;
-//	if (FileExists == 0)
-//	{
-//		WriteCoastFile.open(OutputFileName.c_str());
-//		if (WriteCoastFile.is_open()) WriteCoastFile << "Header :)" << endl;
-//	}
-//	WriteCoastFile.close();
+	//open output filestream again to  coastline data
+	WriteCoastFile.open(OutputFileName.c_str(), fstream::app|fstream::out);
 
-//	//open output filestream again to  coastline data
-//	WriteCoastFile.open(OutputFileName.c_str(), fstream::app|fstream::out);
-
-//	//Check if file exists if not open a new one and write headers
-//	if (WriteCoastFile.is_open())
-//	{
-//		//write X
-//		WriteCoastFile << setprecision(4) << Time;
-//		for (int i=0; i<NoNodes; ++i) WriteCoastFile << setprecision(10) << " " << X[i];
-//		WriteCoastFile << endl;
-
-//		//write Y
-//		WriteCoastFile << setprecision(4) << Time;
-//		for (int i=0; i< NoNodes; ++i) WriteCoastFile << setprecision(10) << " " << Z[i];
-//		WriteCoastFile << endl;
-//	}
-//	
-//	else
-//	{
-//		//report errors
-//		cout << "Hiro.WriteCoast: Error, the file " << OutputFileName << " is not open or cannot be read." << endl;
-//		exit(EXIT_FAILURE);
-//	}
-//}
-
-//void Hiro::WriteErosion(string OutputFileName, double Time)
-//{
-//  /* Writes a coastline object X and Z coordinates to file for a given time
-//		If the file already exists the data will be ed else a new file is
-//		created.
-
-//		File format is 	Time | X[0] | X[1] | X[2] =====> X[NoNodes]
-//								Time | Z[0] | Z[1] | Z[2] =====> Z[NoNodes]   */
-//      
-//  
-//	//Print to screen
-//	cout.flush();
-//	cout << "Hiro: Time is " << setprecision(2) << fixed << Time << " years\r";
-
-//	//test if output file already exists
-//	int FileExists = 0;
-//	ifstream oftest(OutputFileName.c_str());
-//	if (oftest) FileExists = 1;
-//	oftest.close();
-
-//	//open the output filestream and write headers
-//	ofstream WriteCoastFile;
-//	if (FileExists == 0)
-//	{
-//		WriteCoastFile.open(OutputFileName.c_str());
-//		if (WriteCoastFile.is_open()) WriteCoastFile << "Header :)" << endl;
-//	}
-//	WriteCoastFile.close();
-
-//	//open output filestream again to  coastline data
-//	WriteCoastFile.open(OutputFileName.c_str(), fstream::app|fstream::out);
-
-//	//Check if file exists if not open a new one and write headers
-//	if (WriteCoastFile.is_open())
-//	{
-//		//write Erosion
-//		WriteCoastFile << setprecision(4) << Time;
-//		for (int i=0; i<NoNodes; ++i) WriteCoastFile << setprecision(10) << " " << Erosion[i];
-//		WriteCoastFile << endl;
-
-//		//write Y
-//		WriteCoastFile << setprecision(4) << Time;
-//		for (int i=0; i< NoNodes; ++i) WriteCoastFile << setprecision(10) << " " << Z[i];
-//		WriteCoastFile << endl;
-//	}
-//	
-//	else
-//	{
-//		//report errors
-//		cout << "Hiro.WriteCoast: Error, the file " << OutputFileName << " is not open or cannot be read." << endl;
-//		exit(EXIT_FAILURE);
-//	}
-//}
+	//Check if file exists if not open a new one and write headers
+	if (WriteCoastFile.is_open())
+	{
+		//write X
+		WriteCoastFile << setprecision(4) << Time;
+		for (int i=0; i<NZNodes; ++i) WriteCoastFile << setprecision(10) << " " << X[i];
+		WriteCoastFile << endl;
+	}
+	else
+	{
+		//report errors
+		cout << "Hiro.WriteCoast: Error, the file " << OutputFileName << " is not open or cannot be read." << endl;
+		exit(EXIT_FAILURE);
+	}
+}
 #endif

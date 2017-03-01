@@ -61,26 +61,31 @@ int main()
 	double dZ = 0.1;
 	double dX = 0.1;
 
+	//Time control parameters
+	double EndTime = 10000.;
+	double Time = 0.;
+	double TimeInterval = 1;
+
 	//initialise Hiro Model
 	Hiro PlatformModel = Hiro(dZ, dX);
-	cout << "Model initialisation successful" << endl;
+	
+	//write initial conditions to file
+	string OutputFileName = "TestProfile.xz";
+	PlatformModel.WriteProfile(OutputFileName, Time);
 	
 //	//Initialise Tides
 //	double TidalAmplitude = 1.;
 //	double TidalPeriod = 12.42;
 //	PlatformModel.InitialiseTides(TidalAmplitude, TidalPeriod);
 //	
-//	//Initialise Waves
-//	//Single Wave for now but could use the waveclimate object from COVE!?
-//	double WaveHeight = 1.2;
-//	double WavePeriod = 6.;
-//	PlatformModel.InitialiseWaves(WaveHeight,WavePeriod);
-//	
-//	// Time Control
-//	double EndTime = 10000.;
-//	double Time = 0.;
-//	double TimeInterval = 1;
-//	
+	//Initialise Waves
+	//Single Wave for now but could use the waveclimate object from COVE!?
+	double WaveHeight_Mean = 1.;
+	double WaveHeight_StD = 0;
+	double WavePeriod_Mean = 6.;
+	double WavePeriod_StD = 0;
+	Hiro.InitialiseWaves(WaveHeight_Mean, WaveHeight_StD, WavePeriod_Mean, WavePeriod_StD);
+
 //	//Print Control
 //	double PrintInterval = 100.;
 //	double PrintTime = Time;

@@ -93,10 +93,19 @@ class Hiro
 		int NXNodes, NZNodes;               // Number of nodes across the coastline
 		double dZ, dX;                      // Vertical and horizontal spacing of nodes
 		
-		vector<double> X;		          		// cross shore distance (m)
-		vector<double> Z;							// elevation (m)
+		vector<double> Z;			// elevation (m)
+		vector<double> Xz;	   // cross shore distance at each elevation (m)
+		
+		vector <double> X;		// cross shore distance (m)
+		vector <double> Zx;		// elevation at each cross shore distance(m)
+		
 		vector< vector<int> > MorphologyArray;		// array to store morphology
-		vector< vector<double> > ResistanceArray;		// array to store resistance
+		vector< vector<double> > ResistanceArray;	// array to store resistance
+		
+		// PROCSES DOMAIN DECLARTIONS
+		vector<double> Bw_Erosion;		//Back wear erosion
+		vector<double> Dw_Erosion;		//Down wear erosion
+		vector<double> Weathering;		//Wearthering erosion
 		
 		// SEA LEVEL DECLARATIONS
 		vector<double> RSLTime;             //Times for relative sea level elevations
@@ -114,6 +123,7 @@ class Hiro
 		// WAVE DECLARATIONS
 		double WaveHeight;
 		double BreakingWaveHeight;
+		double BreakingWaveDist;
 		double BreakingWaveWaterDepth;
 		
 		//TIME CONTROL PARAMETERS
