@@ -178,6 +178,7 @@ Hiro::Backwear()
 			{
 				//Find Position X of Surfzone 
 				BreakingPointX = Xz[ii];
+				BreakingPointInd = ii;
 				SurfZone = true;
 			}
 			--ii;
@@ -188,12 +189,48 @@ Hiro::Backwear()
 		else if (X[i]-BreakingPointX<0) WaveType = 1;
 		else if ((X[i]-BreakingPointX)<BreakingWaveDist) WaveType = 2;
 		else WaveType = 3;
+		
+		//Determine Surfzone Width
+		//Get surf zone mean platform gradient
+		if (X[i-1] != X[BreakingPointInd+1]) SurfZoneGradient = abs((Zx[i-1]-Zx[BreakingPointInd+1])/(X[i-1]-X[BreakingPointInd+1]));
+		else SurfZoneGradient = 100000;
+		
+		SurfZoneWidth = WaveHeight/SurfZoneGradient;
+		
+		//Set the wave attenuation constant
+		k2 = -log(SurfZoneWidth)/SurfZoneWidth;
+		
+		//Determine Backwear erosion
+		//Standing wave
+		if (WaveType == 1)
+		{
+			// Wave force calc, how is wave pressure calculated?
+			WaveForce = StandingWaveConst*WaveHeight*ErosionShapeFunction[i]*UnbrokenWavePressure[some_ind];
+			Bw_Erosion += Force;
+		}
+		//Breaking wave
+		else if (WaveType == 2)
+		{
+			k1 = ;
+			k2 = ;
+			
+			// Wave force calc, how is wave pressure calculated?
+			// what is jump?
+			WaveForce = StandingWaveConst*WaveHeight*ErosionShapeFunction[i]*UnbrokenWavePressure[some_ind];
+			Bw_Erosion += Force;
+		}
+		//Broken wave
+		else if (WaveType == 3)
+		{
+			k = 0;
+			k1 = ;
+			k2 = ;
+			
+			// Wave force calc, how is wave pressure calculated?
+			WaveForce = StandingWaveConst*WaveHeight*ErosionShapeFunction[i]*UnbrokenWavePressure[some_ind];
+			Bw_Erosion += Force;
+		}
 	}
-	
-	//Determine Surfzone Width
-	//Talk to Hiro about this
-	
-	//Determine Backwear erosion 
 }
 
 Hiro::Downwear()
