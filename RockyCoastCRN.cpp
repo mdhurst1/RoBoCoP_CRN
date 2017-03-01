@@ -557,79 +557,83 @@ void RockyCoastCRN::GetRetreatRate()
 
 void RockyCoastCRN::UpdateCRNs()
 {
-  /*
-  Function to update the concentrations of cosmogenic radionuclides at and below 
-  the platform surface. Currently for 10Be only.
-  
-  Martin Hurst
-  February 2016
-  */
+	/*
+	Function to update the concentrations of cosmogenic radionuclides at and below 
+	the platform surface. Currently for 10Be only.
 
-  //Temp parameters
-  vector<double> EmptyVector(NXNodes,0);
-  P_Spal = EmptyVector;
-  P_Muon = EmptyVector;
-  
-  // variation in production on the platform at depth as a function of a tidal period
+	Martin Hurst
+	February 2016
+	*/
+
+	//Temp parameters
+	vector<double> EmptyVector(NXNodes,0);
+	P_Spal = EmptyVector;
+	P_Muon = EmptyVector;
+
+	// variation in production on the platform at depth as a function of a tidal period
 	// First get a Tidal Sequence of Water Levels, clipping for negative depths
 	for (int i=0, NN=WaterLevels.size(); i<NN;++i) WaterLevels[i] = SeaLevel+TideLevels[i];
-		
-  //LOOP ACROSS THE ACTIVE PART OF THE PLATFORM
-	for (int i=CliffPositionInd; i<NXNodes; ++i)
-	{
-		//only work on active nodes
-		if ((X[i] > CliffPositionX) && (X[i] <= XMax))
+
+	//FOR EACH NUCLIDE OF INTEREST
+	for (int n=0; n<NoNuclides; ++n)
+	{		
+		//LOOP ACROSS THE ACTIVE PART OF THE PLATFORM
+		for (int i=CliffPositionInd; i<NXNodes; ++i)
 		{
-			//Get topographic shielding factor
-			TopoShieldingFactor = GetTopographicShieldingFactor(X[i]-CliffPositionX, CliffHeight);
-
-			//get water levels for this profile
-			//reset production params
-			P_Spal[i] = 0;
-			P_Muon[i] = 0;
-
-			for (int a=0, NN=WaterLevels.size(); a<NN; ++a)
+			//only work on active nodes
+			if ((X[i] > CliffPositionX) && (X[i] <= XMax))
 			{
-				if (WaterLevels[a] >= SurfaceElevation[i]) WaterDepths[a] = WaterLevels[a]-SurfaceElevation[i];
-				else WaterDepths[a] = 0;
+				//Get topographic shielding factor
+				TopoShieldingFactor = GetTopographicShieldingFactor(X[i]-CliffPositionX, CliffHeight);
 
-				//Calculate Production for this profile
-				P_Spal[i] += GeoMagScalingFactor*TopoShieldingFactor*Po_10Be_Spal*exp(-WaterDepths[a]/z_ws);
-				P_Muon[i] += TopoShieldingFactor*Po_10Be_Muon*exp(-WaterDepths[a]/z_wm);
-			}
+				//get water levels for this profile
+				//reset production params
+				P_Spal[i] = 0;
+				P_Muon[i] = 0;
 
-			//find mean production rate at surface
-			P_Spal[i] /= NTidalValues;
-			P_Muon[i] /= NTidalValues;
+				for (int a=0, NN=WaterLevels.size(); a<NN; ++a)
+				{
+					if (WaterLevels[a] >= SurfaceElevation[i]) WaterDepths[a] = WaterLevels[a]-SurfaceElevation[i];
+					else WaterDepths[a] = 0;
+
+					//Calculate Production for this profile
+					P_Spal[i] += GeoMagScalingFactor*TopoShieldingFactor*Po_10Be_Spal*exp(-WaterDepths[a]/z_ws);
+					P_Muon[i] += TopoShieldingFactor*Po_10Be_Muon*exp(-WaterDepths[a]/z_wm);
+				}
+
+				//find mean production rate at surface
+				P_Spal[i] /= NTidalValues;
+				P_Muon[i] /= NTidalValues;
 		
-		  //loop through depths and update concentrations
-		  int Top = 0;
-		  for (int j=0; j<NZNodes; ++j)
-		  {
-			  //cout << Z[j] << " " << SurfaceElevation[i] << " " << i << " " << j << endl;
-			  if ((Z[j] < PlatformElevation[i]) && (Z[j] > PlatformElevation[i]-20.))
+			  //loop through depths and update concentrations
+			  int Top = 0;
+			  for (int j=0; j<NZNodes; ++j)
 			  {
-				  if (Top == 0)
-				  {	
-					  //linearly interpolate to get concentration at the surface
-					  if (PlatformElevationOld[i] == -9999) SurfaceN[i] = 0;
-					  else if (SurfaceN[i] > 0) SurfaceN[i] -= (((PlatformElevationOld[i]-PlatformElevation[i])/(PlatformElevationOld[i]-Z[j]))*(SurfaceN[i]-N[i][j]));
-					  
-					  //update concentration at the platform surface, accounting for beach cover
-					  SurfaceN[i] += dt*P_Spal[i]*exp((0-((SurfaceElevation[i]-PlatformElevation[i])))/z_rs);
-					  Top = 1;
-				  }
+				  //cout << Z[j] << " " << SurfaceElevation[i] << " " << i << " " << j << endl;
+				  if ((Z[j] < PlatformElevation[i]) && (Z[j] > PlatformElevation[i]-20.))
+				  {
+					  if (Top == 0)
+					  {	
+						  //linearly interpolate to get concentration at the surface
+						  if (PlatformElevationOld[i] == -9999) SurfaceN[i] = 0;
+						  else if (SurfaceN[i] > 0) SurfaceN[i][n] -= (((PlatformElevationOld[i]-PlatformElevation[i])/(PlatformElevationOld[i]-Z[j]))*(SurfaceN[i]-N[i][j]));
+						  
+						  //update concentration at the platform surface, accounting for beach cover
+						  SurfaceN[i][n] += dt*P_Spal[i]*exp((0-((SurfaceElevation[i]-PlatformElevation[i])))/z_rs);
+						  Top = 1;
+					  }
 				
-				  //update concentrations at depth
-				  //This is kept as SurfaceElevation not Platform Elevation for now
-				  //NB This assumes that material density of the beach is the same as the bedrock!
-				  N[i][j] += dt*P_Spal[i]*exp((Z[j]-SurfaceElevation[i])/z_rs);	//spallation
-				  N[i][j] += dt*P_Muon[i]*exp((Z[j]-SurfaceElevation[i])/z_rm);	//muons
-				  
-				  //remove atoms due to radioactive decay
-				  N[i][j] -= dt*Lambda_10Be;
+					  //update concentrations at depth
+					  //This is kept as SurfaceElevation not Platform Elevation for now
+					  //NB This assumes that material density of the beach is the same as the bedrock!
+					  N[i][j][n] += dt*P_Spal[i]*exp((Z[j]-SurfaceElevation[i])/z_rs);	//spallation
+					  N[i][j][n] += dt*P_Muon[i]*exp((Z[j]-SurfaceElevation[i])/z_rm);	//muons
+					  
+					  //remove atoms due to radioactive decay
+					  N[i][j][n] -= dt*Lambda_10Be;
+				  }
 			  }
-		  }
+			}
 		}
 	}
 }

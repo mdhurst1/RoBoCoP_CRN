@@ -44,7 +44,13 @@ float Po_14C_Spal = 12.29;
 
 ///@brief   10Be muogneic reference produciton rate.
 ///@details Total muogenic production rate (a/g/yr) following Braucher et al. (2013).
-float Po_10Be_Muon = 0.028;
+float Po_10Be_Muon_Fast = 0.028;
+float Po_10Be_Muon_Slow = 0;
+
+///@brief   14C muogneic reference produciton rate.
+///@details Total muogenic production rate (a/g/yr) following Braucher et al. (2013).
+float Po_14C_Muon_Fast = 3.34;
+float Po_14C_Muon_Slow = 0.44;
 
 // Attenuation Lengths
 ///@brief Spallogenic attenuation length (kg/m^2).

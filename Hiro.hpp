@@ -11,7 +11,9 @@
 	Martin D. Hurst, University of Glasgow
 	Hironori Matsumoto, University of Auckland
 
-	Copyright (C) 2016, Martin Hurst
+	February 2017
+	
+	Copyright (C) 2017, Martin Hurst
 	
 	Developer can be contacted
 	martin.hurst@glasgow.ac.uk
@@ -89,7 +91,7 @@ class Hiro
 		
 		// SPATIAL DOMAIN DECLARATIONS
 		int NXNodes, NZNodes;               // Number of nodes across the coastline
-		double dZ;                          // Vertical spacing of nodes
+		double dZ, dX;                      // Vertical and horizontal spacing of nodes
 		
 		vector<double> X;		          		// cross shore distance (m)
 		vector<double> Z;							// elevation (m)
@@ -132,7 +134,7 @@ class Hiro
 
 		//Initialise Functions
 		void Initialise();
-		void Initialise(double dZ);
+		void Initialise(double dZ, double dX);
 		
 	protected:
 
@@ -148,9 +150,9 @@ class Hiro
 			Initialise();
 		}
 		
-		Hiro(double dZ)
+		Hiro(double dZ, double dX)
 		{
-			Initialise(dZ);
+			Initialise(dZ, dX);
 		}
 		
     		
