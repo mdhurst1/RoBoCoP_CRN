@@ -149,11 +149,11 @@ void Hiro::GetWave()
 	
 }
 
-//void Hiro::UpdateSeaLevel(double SLRRate)
-//{
-//	/*Update sea level based on a constant sea level rise rate*/
-//	SeaLevel += SLRRate*dt;
-//}
+void Hiro::UpdateSeaLevel(double SLRRate)
+{
+	/*Update sea level based on a constant sea level rise rate*/
+	SeaLevel += SLRRate*dt;
+}
 
 Hiro::Backwear()
 {
@@ -164,11 +164,13 @@ Hiro::Backwear()
 	//Loop across all intertidal elevations
 	LowTideInd = SeaLeveli-0.5*TidalRange/dZ;
 	HighTideInd = SeaLeveli+0.5*TidalRange/dZ;
+	
 	for (int i=LowTideInd; i<=HighTideInd; ++i)
 	{
 		//Estimate horizontal breaking point
 		//Elevation of breaker point
 		SurfZoneBottomZ = Z[i]-BreakingWaveWaterDepth;
+		//BreakingPointInd = i-round(BreakingWaveWaterDepth*dZ);?
 		
 		bool SurfZone=false;
 		int ii=i;
@@ -186,49 +188,60 @@ Hiro::Backwear()
 		
 		//Set Wave Type
 		if (X[i] == 1) WaveType = 1;
-		else if (X[i]-BreakingPointX<0) WaveType = 1;
+		else if (X[i]-BreakingPointX<=0) WaveType = 1;
 		else if ((X[i]-BreakingPointX)<BreakingWaveDist) WaveType = 2;
 		else WaveType = 3;
 		
 		//Determine Surfzone Width
 		//Get surf zone mean platform gradient
+		//Set it to super steep if vertical.
 		if (X[i-1] != X[BreakingPointInd+1]) SurfZoneGradient = abs((Zx[i-1]-Zx[BreakingPointInd+1])/(X[i-1]-X[BreakingPointInd+1]));
 		else SurfZoneGradient = 100000;
 		
 		SurfZoneWidth = WaveHeight/SurfZoneGradient;
 		
-		//Set the wave attenuation constant
-		k2 = -log(SurfZoneWidth)/SurfZoneWidth;
+		//Set the wave attenuation constant #2
+		WaveAttenuationConst = -log(SurfZoneWidth)/SurfZoneWidth;
 		
 		//Determine Backwear erosion
 		//Standing wave
 		if (WaveType == 1)
 		{
-			// Wave force calc, how is wave pressure calculated?
-			WaveForce = StandingWaveConst*WaveHeight*ErosionShapeFunction[i]*UnbrokenWavePressure[some_ind];
-			Bw_Erosion += Force;
+			//Loop across pressure distribution function
+			//This may have some problems!
+			for (int ii=i-PressureDistZ1/dZ+1; ii>i+PressureDistZ2/dZ-1; ++ii)
+			{
+				// Calculate wave force and update backwear at each elevation
+				WaveForce = StandingWaveConst*WaveHeight*ErosionShapeFunction[i]*UnbrokenWavePressure[ii];
+				Bw_Erosion[ii] += WaveForce;
+			}
 		}
 		//Breaking wave
+		//For a breaking wave, first deal with backwear for the standing wave part, 
+		// then the breaking part
 		else if (WaveType == 2)
 		{
-			k1 = ;
-			k2 = ;
-			
-			// Wave force calc, how is wave pressure calculated?
-			// what is jump?
-			WaveForce = StandingWaveConst*WaveHeight*ErosionShapeFunction[i]*UnbrokenWavePressure[some_ind];
-			Bw_Erosion += Force;
+			//Loop across pressure distribution function 
+			//This may have some problems!
+			for (int ii=i-PressureDistZ1/dZ+1; ii>i+PressureDistZ2/dZ-1; ++ii)
+			{
+				if (X[ii] < BreakingPointX) WaveForce = StandingWaveConst*WaveHeight*ErosionShapeFunction[i]*UnbrokenWavePressure[ii];
+				else WaveForce = BrokenWaveConst*WaveHeight*BreakingWaveDecay*ErosionShapeFinction[i]*BreakingWavePressure[ii]*exp(-WaveAttenuationConst*(X[ii]-BreakingWaveDist));
+				Bw_Erosion[ii] += WaveForce;
+			}			
 		}
 		//Broken wave
 		else if (WaveType == 3)
 		{
-			k = 0;
-			k1 = ;
-			k2 = ;
-			
-			// Wave force calc, how is wave pressure calculated?
-			WaveForce = StandingWaveConst*WaveHeight*ErosionShapeFunction[i]*UnbrokenWavePressure[some_ind];
-			Bw_Erosion += Force;
+			//Loop across pressure distribution function 
+			//This may have some problems!
+			for (int ii=i-PressureDistZ1/dZ+1; ii>i+PressureDistZ2/dZ-1; ++ii)
+			{
+				if (X[ii] < BreakingPointX) WaveForce = StandingWaveConst*WaveHeight*ErosionShapeFunction[i]*UnbrokenWavePressure[ii];
+				else if (X[ii]<(BreakingPointX+BreakingWaveDist)) WaveForce = BreakingWaveConst*WaveHeight*BreakingWaveDecay*ErosionShapeFinction[i]*BrokenWavePressure[ii]*exp(-WaveAttenuationConst*(X[ii]-BreakingWaveDist));
+				else force = BrokenWaveConst*WaveHeight*ErosionShapeFunction[i]*BrokenWavePressure*exp(-WaveAttenuationConst*(X[i]-(BreakingPointX+BreakingWaveDist)));
+				Bw_Erosion[ii] += WaveForce;
+			}
 		}
 	}
 }
@@ -236,6 +249,11 @@ Hiro::Backwear()
 Hiro::Downwear()
 {
 
+}
+
+Hiro::Weathering()
+{
+	
 }
 //void Hiro::EvolveCoast()
 //{
