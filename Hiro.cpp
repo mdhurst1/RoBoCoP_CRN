@@ -225,6 +225,7 @@ Hiro::Backwear()
 			//This may have some problems!
 			for (int ii=i-PressureDistZ1/dZ+1; ii>i+PressureDistZ2/dZ-1; ++ii)
 			{
+				//need to add for condition where changes to broken wave above water level in pressure distribution function
 				if (X[ii] < BreakingPointX) WaveForce = StandingWaveConst*WaveHeight*ErosionShapeFunction[i]*UnbrokenWavePressure[ii];
 				else WaveForce = BrokenWaveConst*WaveHeight*BreakingWaveDecay*ErosionShapeFinction[i]*BreakingWavePressure[ii]*exp(-WaveAttenuationConst*(X[ii]-BreakingWaveDist));
 				Bw_Erosion[ii] += WaveForce;
@@ -271,11 +272,13 @@ Hiro::Downwear()
 				WaveForce = StandingWaveConst*WaveHeight*ErosionShapeFunction[i]*UnbrokenWavePressure;
 				DepthDecay = -log(SubmarineDecayConst)/WaveHeight;
 			}	
+			//Breaking Waves
 			else if (X[i]<(BreakingPointX+BreakingWaveDist))
 			{
 				WaveForce = BreakingWaveConst*WaveHeight*ErosionShapeFunction[i]*BreakingWavePressure*exp(-BreakingWaveDecay*(X[i]-BreakingPointX));
 				DepthDecay = -log(SubmarineDecayConst)/(WaveHeight*exp(-BreakingWaveDecay*(X[i]-BreakingPointX)));
 			}
+			//Broken Waves
 			else
 			{
 				WaveForce = BrokenWaveConst*WaveHeight*ErosionShapeFunction[i]*BrokenWavePressure*exp(-BrokenWaveDecay*(X[i]-(BreakingPointX+BreakingWaveDist));
@@ -289,6 +292,38 @@ Hiro::Downwear()
 
 Hiro::Weathering()
 {
+	//Reset weathering vector
+	vector<double> ZZeros(NZNodes,0);
+	Weathering = ZZeros;
+	
+	//Loop across the tidal range
+	
+	//Find surficial cells in intertidal zone
+	//Loop across all intertidal elevations
+	LowTideInd = SeaLeveli-0.5*TidalRange/dZ;
+	HighTideInd = SeaLeveli+0.5*TidalRange/dZ;
+	
+	for (int i=LowTideInd; i<=HighTideInd; ++i)
+	{
+		//Calculate Weathering
+		WeatheringForce = WeatheringConst*WeatheringEfficacy[i];
+		
+		//How are we going to get j? i.e. x-position in the array?
+		//Need a loop in here moving from bottom to top of tidal range in x-position
+		RemainingResistance = ResistanceArray[i][j];
+		ResistanceArray[i][j] -= WeatheringForce; 
+		
+		//If resistance is less than zero then cell is lost to weathering erosion
+		//excess weathering force is applied to the block behind
+		if (ResistanceArray[i][j] < 0)
+		{
+			MorphologyArray[i][j] = 0;
+			ResistanceArray[i][j] = 0;
+			WeatheringForce -= RemainingResistance;
+		}
+	
+	}
+	ResistanceArray;
 	
 }
 //void Hiro::EvolveCoast()
