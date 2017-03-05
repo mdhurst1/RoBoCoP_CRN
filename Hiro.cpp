@@ -248,7 +248,43 @@ Hiro::Backwear()
 
 Hiro::Downwear()
 {
-
+	//Reset downwear vector
+	vector<double> ZZeros(NZNodes,0);
+	Dw_Erosion = ZZeros;
+	
+	//Find surficial cells in intertidal zone
+	//Loop across all intertidal elevations
+	LowTideInd = SeaLeveli-0.5*TidalRange/dZ;
+	HighTideInd = SeaLeveli+0.5*TidalRange/dZ;
+	
+	for (int i=LowTideInd; i<=HighTideInd; ++i)
+	{
+		//Get wave function needs to calculate a bunch of stuff?
+		GetWave();
+		
+		//Loop from water level down and determine force
+		for (int ii=i; ii<Something; --ii)
+		{
+			//Standing Waves
+			if (X[i]<BreakingPointX)
+			{
+				WaveForce = StandingWaveConst*WaveHeight*ErosionShapeFunction[i]*UnbrokenWavePressure;
+				DepthDecay = -log(SubmarineDecayConst)/WaveHeight;
+			}	
+			else if (X[i]<(BreakingPointX+BreakingWaveDist))
+			{
+				WaveForce = BreakingWaveConst*WaveHeight*ErosionShapeFunction[i]*BreakingWavePressure*exp(-BreakingWaveDecay*(X[i]-BreakingPointX));
+				DepthDecay = -log(SubmarineDecayConst)/(WaveHeight*exp(-BreakingWaveDecay*(X[i]-BreakingPointX)));
+			}
+			else
+			{
+				WaveForce = BrokenWaveConst*WaveHeight*ErosionShapeFunction[i]*BrokenWavePressure*exp(-BrokenWaveDecay*(X[i]-(BreakingPointX+BreakingWaveDist));
+				DepthDecay = -log(SubmarineDecayConst)/(WaveHeight*exp(-BrokenWaveDecay*(X[i]-(BreakingPointX+BreakingWaveDist))));
+			}
+			WaterDepth = Z[i]-Z[ii];
+			Dw_Erosion += WaveForce*exp(-DepthDecay*WaterDepth);
+		}
+	}
 }
 
 Hiro::Weathering()
