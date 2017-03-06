@@ -310,22 +310,28 @@ Hiro::Weathering()
 		
 		//How are we going to get j? i.e. x-position in the array?
 		//Need a loop in here moving from bottom to top of tidal range in x-position
-		RemainingResistance = ResistanceArray[i][j];
-		ResistanceArray[i][j] -= WeatheringForce; 
-		
-		//If resistance is less than zero then cell is lost to weathering erosion
-		//excess weathering force is applied to the block behind
-		if (ResistanceArray[i][j] < 0)
+		for (int j=LowTideXInd; j<=HighTideXInd; ++j)
 		{
-			MorphologyArray[i][j] = 0;
-			ResistanceArray[i][j] = 0;
-			WeatheringForce -= RemainingResistance;
+			//Check we're at a a surface cell
+			if ((MorphologyArray[i][j] == 1) && ((MorphologyArray[i-1][j] == 0) || (MorphologyArray[i][j+1] == 0)))
+			{
+				RemainingResistance = ResistanceArray[i][j];
+				ResistanceArray[i][j] -= WeatheringForce; 
+		
+				//If resistance is less than zero then cell is lost to weathering erosion
+				//excess weathering force is applied to the block behind
+				if (ResistanceArray[i][j] < 0)
+				{
+					MorphologyArray[i][j] = 0;
+					ResistanceArray[i][j] = 0;
+					WeatheringForce -= RemainingResistance;
+				}
+			}
 		}
-	
 	}
-	ResistanceArray;
-	
 }
+
+
 //void Hiro::EvolveCoast()
 //{
 //  /* Function to evolve the coastal profile through time following
