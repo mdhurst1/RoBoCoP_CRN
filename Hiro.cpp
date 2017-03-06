@@ -290,7 +290,7 @@ Hiro::Downwear()
 	}
 }
 
-Hiro::Weathering()
+Hiro::InterTidalWeathering()
 {
 	//Reset weathering vector
 	vector<double> ZZeros(NZNodes,0);
@@ -329,6 +329,32 @@ Hiro::Weathering()
 			}
 		}
 	}
+}
+
+
+Hiro::DoBackwear()
+{
+	//is there any reason why this needs to be a separate function?
+}
+
+Hiro::DoDownwear()
+{
+	//is there any reason why this needs to be a separate function?
+}
+Hiro::SupratidalWeathering()
+{
+	//add this later
+}
+
+Hiro::UpdateMorphology()
+{
+	//function to update vectors
+	//add this later
+}
+
+Hiro::MassFailure()
+{
+	//add this later
 }
 
 
