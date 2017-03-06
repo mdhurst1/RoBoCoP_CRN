@@ -335,12 +335,56 @@ Hiro::InterTidalWeathering()
 Hiro::DoBackwear()
 {
 	//is there any reason why this needs to be a separate function?
+	
+	//Loop over all wet cells
+	//Loop across all intertidal elevations
+	LowTideYInd = SeaLeveli-0.5*TidalRange/dZ;
+	HighTideYInd = SeaLeveli+0.5*TidalRange/dZ;
+	for (int i=0, i<HighTideYInd; ++i)
+	{
+		//Find j ind somehow
+		
+		//Check Backwear Force vs Resistance
+		if (Bw_Erosion[i] >= ResistanceArray[i][j])
+		{
+			//For now assume that only one block can be removed at a time
+			//Hiro has code that allows multiple blocks to be removed
+			MorphologyArray[i][j] = 0;
+			ResistanceArray[i][j] = 0;
+			
+			//Hiro then has some code to count the number of blocks removed
+			//but not clear why this is needed
+			
+			//May also need soemthing to move ix_max landward by 1
+		}
+	}
 }
 
 Hiro::DoDownwear()
 {
 	//is there any reason why this needs to be a separate function?
+	//Loop over all cells that get wet
+	for (int j=0; j<MaxTideXInd; ++j)
+	{
+		WaterDepth = SeaLevel-Zx[j];
+		
+		// find i somewhow
+		
+		// Check Downwear Force vs Resistance
+		if (Dw_Erosion[j] >= ResistanceArray[i][j])
+		{
+			//For now assume that only one block can be removed at a time
+			//Hiro has code that allows multiple blocks to be removed
+			//I doubt this happens very often with downwear
+			MorphologyArray[i][j] = 0;
+			ResistanceArray[i][j] = 0;
+			
+			//Hiro then has some code to count the number of blocks removed
+			//but not clear why this is needed
+		}
+	}
 }
+
 Hiro::SupratidalWeathering()
 {
 	//add this later
