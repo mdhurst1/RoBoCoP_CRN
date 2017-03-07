@@ -74,6 +74,7 @@ int main()
 	PlatformModel.WriteProfile(OutputFileName, Time);
 	
 //	//Initialise Tides
+// //This will become setting up the erosion shape function
 //	double TidalAmplitude = 1.;
 //	double TidalPeriod = 12.42;
 //	PlatformModel.InitialiseTides(TidalAmplitude, TidalPeriod);

@@ -155,17 +155,18 @@ void Hiro::UpdateSeaLevel(double SLRRate)
 	SeaLevel += SLRRate*dt;
 }
 
-Hiro::Backwear()
+void Hiro::CalculateBackwearing()
 {
+	//Declare temporary variables
+	double WaveForce, SurfZoneBottomZ, SurfZoneBottomX;
+	int WaveType;
+	
 	//Reset backwear vector
 	vector<double> ZZeros(NZNodes,0);
 	Bw_Erosion = ZZeros;
 	
 	//Loop across all intertidal elevations
-	LowTideInd = SeaLeveli-0.5*TidalRange/dZ;
-	HighTideInd = SeaLeveli+0.5*TidalRange/dZ;
-	
-	for (int i=LowTideInd; i<=HighTideInd; ++i)
+	for (int i=MinTideYInd; i<=MaxTideYInd; ++i)
 	{
 		//Estimate horizontal breaking point
 		//Elevation of breaker point
@@ -180,7 +181,7 @@ Hiro::Backwear()
 			{
 				//Find Position X of Surfzone 
 				BreakingPointX = Xz[ii];
-				BreakingPointInd = ii;
+				BreakingPointXInd = ii;
 				SurfZone = true;
 			}
 			--ii;
@@ -195,7 +196,7 @@ Hiro::Backwear()
 		//Determine Surfzone Width
 		//Get surf zone mean platform gradient
 		//Set it to super steep if vertical.
-		if (X[i-1] != X[BreakingPointInd+1]) SurfZoneGradient = abs((Zx[i-1]-Zx[BreakingPointInd+1])/(X[i-1]-X[BreakingPointInd+1]));
+		if (X[i-1] != X[BreakingPointXInd+1]) SurfZoneGradient = abs((Zx[i-1]-Zx[BreakingPointXInd+1])/(X[i-1]-X[BreakingPointXInd+1]));
 		else SurfZoneGradient = 100000;
 		
 		SurfZoneWidth = WaveHeight/SurfZoneGradient;
@@ -207,12 +208,12 @@ Hiro::Backwear()
 		//Standing wave
 		if (WaveType == 1)
 		{
-			//Loop across pressure distribution function
+			//Loop across pressure distribution function, currently a const
 			//This may have some problems!
-			for (int ii=i-PressureDistZ1/dZ+1; ii>i+PressureDistZ2/dZ-1; ++ii)
+			for (int ii=i-PressureDistMinInd/dZ+1; ii>i+PressureDistMaxInd/dZ-1; ++ii)
 			{
 				// Calculate wave force and update backwear at each elevation
-				WaveForce = StandingWaveConst*WaveHeight*ErosionShapeFunction[i]*UnbrokenWavePressure[ii];
+				WaveForce = StandingWaveConst*WaveHeight*ErosionShapeFunction[i]*StandingWavePressure_Bw;
 				Bw_Erosion[ii] += WaveForce;
 			}
 		}
@@ -223,11 +224,11 @@ Hiro::Backwear()
 		{
 			//Loop across pressure distribution function 
 			//This may have some problems!
-			for (int ii=i-PressureDistZ1/dZ+1; ii>i+PressureDistZ2/dZ-1; ++ii)
+			for (int ii=i-PressureDistMinInd/dZ+1; ii>i+PressureDistMaxInd/dZ-1; ++ii)
 			{
 				//need to add for condition where changes to broken wave above water level in pressure distribution function
-				if (X[ii] < BreakingPointX) WaveForce = StandingWaveConst*WaveHeight*ErosionShapeFunction[i]*UnbrokenWavePressure[ii];
-				else WaveForce = BrokenWaveConst*WaveHeight*BreakingWaveDecay*ErosionShapeFinction[i]*BreakingWavePressure[ii]*exp(-WaveAttenuationConst*(X[ii]-BreakingWaveDist));
+				if (X[ii] < BreakingPointX) WaveForce = StandingWaveConst*WaveHeight*ErosionShapeFunction[i]*StandingWavePressure_Bw;
+				else WaveForce = BrokenWaveConst*WaveHeight*BreakingWaveDecay*ErosionShapeFunction[i]*BreakingWavePressure_Bw*exp(-WaveAttenuationConst*(X[ii]-BreakingWaveDist));
 				Bw_Erosion[ii] += WaveForce;
 			}			
 		}
@@ -236,81 +237,76 @@ Hiro::Backwear()
 		{
 			//Loop across pressure distribution function 
 			//This may have some problems!
-			for (int ii=i-PressureDistZ1/dZ+1; ii>i+PressureDistZ2/dZ-1; ++ii)
+			for (int ii=i-PressureDistMinInd/dZ+1; ii>i+PressureDistMaxInd/dZ-1; ++ii)
 			{
-				if (X[ii] < BreakingPointX) WaveForce = StandingWaveConst*WaveHeight*ErosionShapeFunction[i]*UnbrokenWavePressure[ii];
-				else if (X[ii]<(BreakingPointX+BreakingWaveDist)) WaveForce = BreakingWaveConst*WaveHeight*BreakingWaveDecay*ErosionShapeFinction[i]*BrokenWavePressure[ii]*exp(-WaveAttenuationConst*(X[ii]-BreakingWaveDist));
-				else force = BrokenWaveConst*WaveHeight*ErosionShapeFunction[i]*BrokenWavePressure*exp(-WaveAttenuationConst*(X[i]-(BreakingPointX+BreakingWaveDist)));
+				if (X[ii] < BreakingPointX) WaveForce = StandingWaveConst*WaveHeight*ErosionShapeFunction[i]*StandingWavePressure_Bw;
+				else if (X[ii]<(BreakingPointX+BreakingWaveDist)) WaveForce = BreakingWaveConst*WaveHeight*BreakingWaveDecay*ErosionShapeFunction[i]*BrokenWavePressure_Bw*exp(-WaveAttenuationConst*(X[ii]-BreakingWaveDist));
+				else WaveForce = BrokenWaveConst*WaveHeight*ErosionShapeFunction[i]*BrokenWavePressure_Bw*exp(-WaveAttenuationConst*(X[i]-(BreakingPointX+BreakingWaveDist)));
 				Bw_Erosion[ii] += WaveForce;
 			}
 		}
 	}
 }
 
-Hiro::Downwear()
+void Hiro::CalculateDownwearing()
 {
+	//Declare temporary variables
+	double WaveForce, WaterDepth;
+	
 	//Reset downwear vector
 	vector<double> ZZeros(NZNodes,0);
 	Dw_Erosion = ZZeros;
 	
-	//Find surficial cells in intertidal zone
-	//Loop across all intertidal elevations
-	LowTideInd = SeaLeveli-0.5*TidalRange/dZ;
-	HighTideInd = SeaLeveli+0.5*TidalRange/dZ;
-	
-	for (int i=LowTideInd; i<=HighTideInd; ++i)
+	for (int i=MinTideYInd; i<=MaxTideYInd; ++i)
 	{
 		//Get wave function needs to calculate a bunch of stuff?
 		GetWave();
 		
 		//Loop from water level down and determine force
-		for (int ii=i; ii<Something; --ii)
+		for (int ii=WaterLevelYInd; ii>0; --ii)
 		{
 			//Standing Waves
 			if (X[i]<BreakingPointX)
 			{
-				WaveForce = StandingWaveConst*WaveHeight*ErosionShapeFunction[i]*UnbrokenWavePressure;
+				WaveForce = StandingWaveConst*WaveHeight*ErosionShapeFunction[i]*StandingWavePressure_Dw;
 				DepthDecay = -log(SubmarineDecayConst)/WaveHeight;
 			}	
 			//Breaking Waves
 			else if (X[i]<(BreakingPointX+BreakingWaveDist))
 			{
-				WaveForce = BreakingWaveConst*WaveHeight*ErosionShapeFunction[i]*BreakingWavePressure*exp(-BreakingWaveDecay*(X[i]-BreakingPointX));
+				WaveForce = BreakingWaveConst*WaveHeight*ErosionShapeFunction[i]*BreakingWavePressure_Dw*exp(-BreakingWaveDecay*(X[i]-BreakingPointX));
 				DepthDecay = -log(SubmarineDecayConst)/(WaveHeight*exp(-BreakingWaveDecay*(X[i]-BreakingPointX)));
 			}
 			//Broken Waves
 			else
 			{
-				WaveForce = BrokenWaveConst*WaveHeight*ErosionShapeFunction[i]*BrokenWavePressure*exp(-BrokenWaveDecay*(X[i]-(BreakingPointX+BreakingWaveDist));
+				WaveForce = BrokenWaveConst*WaveHeight*ErosionShapeFunction[i]*BrokenWavePressure_Dw*exp(-BrokenWaveDecay*(X[i]-(BreakingPointX+BreakingWaveDist)));
 				DepthDecay = -log(SubmarineDecayConst)/(WaveHeight*exp(-BrokenWaveDecay*(X[i]-(BreakingPointX+BreakingWaveDist))));
 			}
 			WaterDepth = Z[i]-Z[ii];
-			Dw_Erosion += WaveForce*exp(-DepthDecay*WaterDepth);
+			Dw_Erosion[i] += WaveForce*exp(-DepthDecay*WaterDepth);
 		}
 	}
 }
 
-Hiro::InterTidalWeathering()
+void Hiro::IntertidalWeathering()
 {
+	//Declare temporay variables
+	double RemainingResistance, WeatheringForce;
+	
 	//Reset weathering vector
 	vector<double> ZZeros(NZNodes,0);
 	Weathering = ZZeros;
 	
 	//Loop across the tidal range
-	
-	//Find surficial cells in intertidal zone
-	//Loop across all intertidal elevations
-	LowTideInd = SeaLeveli-0.5*TidalRange/dZ;
-	HighTideInd = SeaLeveli+0.5*TidalRange/dZ;
-	
-	for (int i=LowTideInd; i<=HighTideInd; ++i)
+	for (int i=MinTideYInd; i<=MaxTideYInd; ++i)
 	{
 		//Calculate Weathering
 		WeatheringForce = WeatheringConst*WeatheringEfficacy[i];
 		
 		//How are we going to get j? i.e. x-position in the array?
 		//Need a loop in here moving from bottom to top of tidal range in x-position
-		for (int j=LowTideXInd; j<=HighTideXInd; ++j)
+		for (int j=MinTideXInd; j<=MaxTideXInd; ++j)
 		{
 			//Check we're at a a surface cell
 			if ((MorphologyArray[i][j] == 1) && ((MorphologyArray[i-1][j] == 0) || (MorphologyArray[i][j+1] == 0)))
@@ -332,71 +328,82 @@ Hiro::InterTidalWeathering()
 }
 
 
-Hiro::DoBackwear()
+void Hiro::ErodeBackwearing()
 {
-	//is there any reason why this needs to be a separate function?
-	
 	//Loop over all wet cells
-	//Loop across all intertidal elevations
-	LowTideYInd = SeaLeveli-0.5*TidalRange/dZ;
-	HighTideYInd = SeaLeveli+0.5*TidalRange/dZ;
-	for (int i=0, i<HighTideYInd; ++i)
+	for (int i=0; i<MaxTideYInd; ++i)
 	{
 		//Find j ind somehow
-		
-		//Check Backwear Force vs Resistance
-		if (Bw_Erosion[i] >= ResistanceArray[i][j])
+		//loop across the active shoreface
+		for (int j=MinTideXInd; j<MaxTideXInd; ++j)
 		{
-			//For now assume that only one block can be removed at a time
-			//Hiro has code that allows multiple blocks to be removed
-			MorphologyArray[i][j] = 0;
-			ResistanceArray[i][j] = 0;
+			//Check Backwear Force vs Resistance
+			if (Bw_Erosion[i] >= ResistanceArray[i][j])
+			{
+				//For now assume that only one block can be removed at a time
+				//Hiro has code that allows multiple blocks to be removed
+				MorphologyArray[i][j] = 0;
+				ResistanceArray[i][j] = 0;
 			
-			//Hiro then has some code to count the number of blocks removed
-			//but not clear why this is needed
+				//Hiro then has some code to count the number of blocks removed
+				//but not clear why this is needed
 			
-			//May also need soemthing to move ix_max landward by 1
+				//May also need soemthing to move ix_max landward by 1
+			}
 		}
 	}
 }
 
-Hiro::DoDownwear()
+void Hiro::ErodeDownwearing()
 {
+	//temp declarations
+	double WaterDepth;
+	
 	//is there any reason why this needs to be a separate function?
 	//Loop over all cells that get wet
 	for (int j=0; j<MaxTideXInd; ++j)
 	{
 		WaterDepth = SeaLevel-Zx[j];
 		
-		// find i somewhow
-		
-		// Check Downwear Force vs Resistance
-		if (Dw_Erosion[j] >= ResistanceArray[i][j])
+		// loop over the tidal range?
+		for (int i=MinTideYInd; i<=MaxTideYInd; ++i)
 		{
-			//For now assume that only one block can be removed at a time
-			//Hiro has code that allows multiple blocks to be removed
-			//I doubt this happens very often with downwear
-			MorphologyArray[i][j] = 0;
-			ResistanceArray[i][j] = 0;
+			// Check Downwear Force vs Resistance
+			if (Dw_Erosion[j] >= ResistanceArray[i][j])
+			{
+				//For now assume that only one block can be removed at a time
+				//Hiro has code that allows multiple blocks to be removed
+				//I doubt this happens very often with downwear
+				MorphologyArray[i][j] = 0;
+				ResistanceArray[i][j] = 0;
 			
-			//Hiro then has some code to count the number of blocks removed
-			//but not clear why this is needed
+				//Hiro then has some code to count the number of blocks removed
+				//but not clear why this is needed
+			}
 		}
 	}
 }
 
-Hiro::SupratidalWeathering()
+void Hiro::SupratidalWeathering()
 {
 	//add this later
 }
 
-Hiro::UpdateMorphology()
+void Hiro::UpdateMorphology()
 {
 	//function to update vectors
 	//add this later
+	// This is going to be really important
+	
+	//Loop across all intertidal elevations
+	SeaLevelInd = 0;
+	MinTideYInd = SeaLevelInd-0.5*TidalRange/dZ;
+	MaxTideYInd = SeaLevelInd+0.5*TidalRange/dZ;
+	
+	
 }
 
-Hiro::MassFailure()
+void Hiro::MassFailure()
 {
 	//add this later
 }

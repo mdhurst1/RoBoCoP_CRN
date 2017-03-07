@@ -102,6 +102,12 @@ class Hiro
 		vector< vector<int> > MorphologyArray;		// array to store morphology
 		vector< vector<double> > ResistanceArray;	// array to store resistance
 		
+		//Positions of min and max tide in X and Y
+		int MinTideXInd, MaxTideXInd, MinTideYInd, MaxTideYInd;
+		
+		//
+		double SurfZoneGradient;
+		double SurfZoneWidth;
 		// PROCSES DOMAIN DECLARTIONS
 		vector<double> Bw_Erosion;		//Back wear erosion
 		vector<double> Dw_Erosion;		//Down wear erosion
@@ -111,6 +117,7 @@ class Hiro
 		vector<double> RSLTime;             //Times for relative sea level elevations
 		vector<double> RSLRate;             //Relative sea level elevations, will be length[1] if constant?
 		double SeaLevel;
+		int SeaLevelInd;
 		
 		// TIDES DECLARATIONS
 		double TidalPeriod;                 //Tidal Period
@@ -119,12 +126,17 @@ class Hiro
 		vector<double> WaterLevels;         //vector containing water levels
 		vector<double> WaterDepths;         //vector containing water depths
 		int NTideValues;                //number of tidal values (.size() of tidelevels vector)
+		int WaterLevelYInd, WaterLevelXInd;
 		
 		// WAVE DECLARATIONS
 		double WaveHeight;
 		double BreakingWaveHeight;
 		double BreakingWaveDist;
 		double BreakingWaveWaterDepth;
+		double WaveAttenuationConst;
+		double BreakingPointX, BreakingPointY;
+		int BreakingPointXInd, BreakingPointYInd;
+		
 		
 		//TIME CONTROL PARAMETERS
 		double Time, MaxTime, dt;
@@ -132,11 +144,35 @@ class Hiro
 		//PHYSICAL CONSTANTS
 		static const double rho_w = 1025.;
 		static const double g = 9.81;
-		static const double k = 0.02;
-		static const double M = 0.0001;
 		
-		double WeatheringRate;
+		//Define these in an input parameter file?
+		static const double SubmarineDecayConst = 0.1;
+		static const double StandingWaveConst = 0.01;
+		static const double BreakingWaveConst = 10.;
+		static const double BrokenWaveConst = 0.1;
+		static const double BreakingWaveDecay = 0.1;
+		static const double BrokenWaveDecay = 0.01;
+		static const double WeatheringConst = 0.05;
+		
+		//downwear decay const as a function of water depth
+		//depends on wave height so defined inline
+		double DepthDecay; 	
+		
 		double CliffWeatheringRate;
+		
+		//This will need to be populated in the initialise tides function
+		vector<double> WeatheringEfficacy;
+		vector<double> ErosionShapeFunction;
+		
+		//Wave pressure parameters, check these with Hiro at some point
+		double StandingWavePressure_Bw = 1.;
+		double BreakingWavePressure_Bw = 1.;
+		double BrokenWavePressure_Bw = 1.;
+		double StandingWavePressure_Dw = 1.;
+		double BreakingWavePressure_Dw = 1.;
+		double BrokenWavePressure_Dw = 1.;
+		int PressureDistMinInd, PressureDistMaxInd;
+		
 		
 		static const double NDV = -9999;    // No data value
 	
@@ -184,12 +220,17 @@ class Hiro
 		/// @date 27/02/2017
 		void EvolveCoast();
 		
-		void CalculateBackWearingForce();
-		void CalculateDownWearingForce();
-		void ErodeBackWearing();
-		void ErodeDownWearing();
+		void CalculateBackwearing();
+		void CalculateDownwearing();
+		
+		void ErodeBackwearing();
+		void ErodeDownwearing();
 		void MassFailure();
-		void Weathering();
+		
+		void IntertidalWeathering();
+		void SupratidalWeathering();
+		
+		void UpdateMorphology();
 		
 		/// @brief Writes the platform morphology to file
 		/// @details This function writes the elevations of the platform surface at the current time to
