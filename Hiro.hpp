@@ -115,18 +115,19 @@ class Hiro
 		vector<double> Weathering;		//Wearthering erosion
 		
 		// SEA LEVEL DECLARATIONS
-		vector<double> RSLTime;             //Times for relative sea level elevations
-		vector<double> RSLRate;             //Relative sea level elevations, will be length[1] if constant?
+		//vector<double> RSLTime;             //Times for relative sea level elevations
+		//vector<double> RSLRate;             //Relative sea level elevations, will be length[1] if constant?
+		double SeaLevelRise;
 		double SeaLevel;
 		int SeaLevelInd;
 		
 		// TIDES DECLARATIONS
-		double TidalPeriod;                 //Tidal Period
-		double TidalRange;              //Tidal Amplitude
-		vector<double> TideLevels;          //Vector of tide levels
-		vector<double> WaterLevels;         //vector containing water levels
-		vector<double> WaterDepths;         //vector containing water depths
-		int NTideValues;                //number of tidal values (.size() of tidelevels vector)
+		double TidalRange;              		//Tidal Range in metres
+//		double TidalPeriod;                 //Tidal Period
+//		vector<double> TideLevels;          //Vector of tide levels
+//		vector<double> WaterLevels;         //vector containing water levels
+//		vector<double> WaterDepths;         //vector containing water depths
+//		int NTideValues;                //number of tidal values (.size() of tidelevels vector)
 		int WaterLevelYInd, WaterLevelXInd;
 		
 		// WAVE DECLARATIONS
@@ -210,7 +211,7 @@ class Hiro
 		
     		
 		//Initialise Tides
-		void InitialiseTides(double TidalAmplitude, double TidalPeriod);
+		void InitialiseTides(double TideRange);
 		
 		//Initialise Waves
 		void InitialiseWaves(double WaveHeight_Mean, double WaveHeight_StD, double WavePeriod_Mean, double WavePeriod_StD);

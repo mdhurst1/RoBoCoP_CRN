@@ -75,6 +75,8 @@ int main()
 //	double TidalAmplitude = 1.;
 //	double TidalPeriod = 12.42;
 //	PlatformModel.InitialiseTides(TidalAmplitude, TidalPeriod);
+	double TidalRange = 1;
+	PlatformModel.InitialiseTides(TidalRange);
 
 	//Initialise Waves
 	//Single Wave for now but could use the waveclimate object from COVE!?

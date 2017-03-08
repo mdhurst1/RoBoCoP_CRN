@@ -95,28 +95,18 @@ void Hiro::Initialise(double dZ_in, double dX_in)
 	
 	//Set sea level to zero to begin with
 	SeaLevel = 0;	
+	
+	//Populate geometric metrics
+	UpdateMorphology();
+	
 }
 
-//void Hiro::InitialiseTides(double TidalAmplitude, double TidalPeriod)
-//{
-//  /* intialise the tides as a simple cosine wave (i.e. simple diurnal/semidiurnal) */
-
-//  //Tidal Timestep (in hours)
-//  double dT = 0.01;    
-//  double TideTime;
-//  
-//  //Setup tide water levels array
-//  NTideValues = (int)(TidalPeriod/(2.*dT));
-//  vector<double> Empty(NTideValues,-9999);
-//  WaterLevels = Empty;
-//  
-//  //loop through and calculate water levels
-//  for (int i=0, N=WaterLevels.size(); i<N; ++i)
-//  {
-//    TideTime = i*dT;
-//    WaterLevels[i] = -TidalAmplitude*cos(2.*M_PI*TideTime/TidalPeriod);
-//  }  
-//}
+void Hiro::InitialiseTides(double TideRange)
+{
+	/* intialise the tides as a simple cosine wave (i.e. simple diurnal/semidiurnal) */
+	TidalRange = TideRange;
+	UpdateMorphology(); 
+}
 
 void Hiro::InitialiseWaves(double WaveHeight_Mean, double WaveHeight_StD, double WavePeriod_Mean, double WavePeriod_StD)
 {
@@ -149,10 +139,10 @@ void Hiro::GetWave()
 	
 }
 
-void Hiro::UpdateSeaLevel(double SLRRate)
+void Hiro::UpdateSeaLevel(double SeaLevelRise)
 {
 	/*Update sea level based on a constant sea level rise rate*/
-	SeaLevel += SLRRate*dt;
+	SeaLevel += SeaLevelRise*dt;
 }
 
 void Hiro::CalculateBackwearing()
@@ -389,9 +379,22 @@ void Hiro::UpdateMorphology()
 	//function to update vectors
 	//add this later
 	// This is going to be really important
+	 
+	// Find Sea Level in vertical
+	// Only need to do this once if sea level isnt changing
+	if ((SeaLevelInd == 0) || (SeaLevelRise != 0))
+	{
+		for (int i=0; i<NZNodes; ++i)
+		{
+			if (Z[i] < SeaLevel)
+			{
+				SeaLevelInd = i-1;
+				break;
+			}
+		}
+	}
 	
 	//Loop across all intertidal elevations
-	SeaLevelInd = 0;
 	MinTideYInd = SeaLevelInd-0.5*TidalRange/dZ;
 	MaxTideYInd = SeaLevelInd+0.5*TidalRange/dZ;
 	
