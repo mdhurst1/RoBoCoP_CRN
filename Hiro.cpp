@@ -356,15 +356,10 @@ void Hiro::ErodeBackwearing()
 
 void Hiro::ErodeDownwearing()
 {
-	//temp declarations
-	double WaterDepth;
-	
 	//is there any reason why this needs to be a separate function?
 	//Loop over all cells that get wet
 	for (int j=0; j<MaxTideXInd; ++j)
 	{
-		WaterDepth = SeaLevel-Zx[j];
-		
 		// loop over the tidal range?
 		for (int i=MinTideYInd; i<=MaxTideYInd; ++i)
 		{
@@ -409,78 +404,15 @@ void Hiro::MassFailure()
 }
 
 
-//void Hiro::EvolveCoast()
-//{
-//  /* Function to evolve the coastal profile through time following
-//      Trenhaile (2000)  */
-//  
-//  //declarations
-//  double SurfZoneTopZ, SurfZoneBottomZ, SurfZoneTopX, SurfZoneBottomX, SurfZoneWidth, SurfForce, WaterDepth;
-//  
-//  //vector to sum erosion
-//  vector<double> Empty(NoNodes,0);
-//  Erosion = Empty;
-//  
-//  //Determine surf zone width
-//  for (int t=0, T=WaterLevels.size(); t<T; ++t)
-//  {
-//    //Elevation of surf zone limits
-//    SurfZoneBottomZ = SeaLevel+WaterLevels[t]-BreakingWaveWaterDepth;
-//    SurfZoneTopZ = SeaLevel+WaterLevels[t];
-//    
-//    //find horizontal extent of surfzone
-//    bool SurfZone=false;
-//    int i=NoNodes-1;
-//    while (SurfZone == false)
-//    {
-//      if (Z[i] > SurfZoneBottomZ)
-//      {
-//        //Find Position X of Surfzone bottom by interpolating
-//        SurfZoneBottomX = X[i] + (X[i+1]-X[i])*(Z[i]-SurfZoneBottomZ)/(Z[i+1]-Z[i]);
-//        SurfZone = true;
-//      }
-//      --i;
-//    }
-//    while (SurfZone == true)
-//    {
-//      if (Z[i] > SurfZoneTopZ)
-//      {
-//        //Find Position X of Surfzone bottom by interpolating
-//        SurfZoneTopX = X[i] + (X[i+1]-X[i])*(Z[i]-SurfZoneTopZ)/(Z[i+1]-Z[i]);
-//        SurfZone = false;
-//        ++i;
-//      }
-//      --i;
-//    }
-//    
-//    //Calculate Surf Zone width
-//    SurfZoneWidth = SurfZoneBottomX-SurfZoneTopX;
-//    
-//    //Calculate Surf Force reaching the water line
-//    SurfForce = 0.5*rho_w*(BreakingWaveWaterDepth)*exp(-k*SurfZoneWidth);
-//    
-//    //Loop offshore and calculate erosion
-//    while (i < NoNodes)
-//    {
-//      WaterDepth = SeaLevel+WaterLevels[t]-Z[i];
-//      if (fabs(WaterDepth)<0.0001) WaterDepth=0;
-//      else if (WaterDepth < 0) WaterDepth = 100.;
-
-//      Erosion[i] += M*SurfForce*exp(-0.5*WaterDepth);
-//      ++i;
-//    }
-//  }
-//  //Do the erosion/update the profile
-//  double XCliff = X[NoNodes-1];
-//  for (int i=NoNodes-1; i>-1; --i)
-//  {
-//    X[i] -= Erosion[i]*dt;
-//    
-//    //check for overhangs and remove
-//    if (X[i] > XCliff) X[i] = XCliff;
-//    XCliff = X[i];
-//  }
-//}
+void Hiro::EvolveCoast()
+{
+  /* Function to evolve the coastal profile through time following
+     Matsumoto et al. 2016 */
+  
+  //This is unedited and needs work
+  
+  
+}
 
 void Hiro::WriteProfile(string OutputFileName, double Time)
 {

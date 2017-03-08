@@ -108,6 +108,7 @@ class Hiro
 		//
 		double SurfZoneGradient;
 		double SurfZoneWidth;
+		
 		// PROCSES DOMAIN DECLARTIONS
 		vector<double> Bw_Erosion;		//Back wear erosion
 		vector<double> Dw_Erosion;		//Down wear erosion
@@ -129,6 +130,11 @@ class Hiro
 		int WaterLevelYInd, WaterLevelXInd;
 		
 		// WAVE DECLARATIONS
+		double MeanWavePeriod;
+		double StdWavePeriod;
+	  	double MeanWaveHeight;
+  		double StdWaveHeight;
+  		double WavePeriod;
 		double WaveHeight;
 		double BreakingWaveHeight;
 		double BreakingWaveDist;
@@ -165,12 +171,13 @@ class Hiro
 		vector<double> ErosionShapeFunction;
 		
 		//Wave pressure parameters, check these with Hiro at some point
-		double StandingWavePressure_Bw = 1.;
-		double BreakingWavePressure_Bw = 1.;
-		double BrokenWavePressure_Bw = 1.;
-		double StandingWavePressure_Dw = 1.;
-		double BreakingWavePressure_Dw = 1.;
-		double BrokenWavePressure_Dw = 1.;
+		static const double StandingWavePressure_Bw = 1.;
+		static const double BreakingWavePressure_Bw = 1.;
+		static const double BrokenWavePressure_Bw = 1.;
+		static const double StandingWavePressure_Dw = 1.;
+		static const double BreakingWavePressure_Dw = 1.;
+		static const double BrokenWavePressure_Dw = 1.;
+
 		int PressureDistMinInd, PressureDistMaxInd;
 		
 		

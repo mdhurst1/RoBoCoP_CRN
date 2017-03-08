@@ -62,58 +62,65 @@ int main()
 	double dX = 0.1;
 
 	//Time control parameters
-	double EndTime = 10000.;
+	double EndTime = 1.;
 	double Time = 0.;
 	double TimeInterval = 1;
 
 	//initialise Hiro Model
 	Hiro PlatformModel = Hiro(dZ, dX);
 	
-	//write initial conditions to file
-	string OutputFileName = "TestProfile.xz";
-	PlatformModel.WriteProfile(OutputFileName, Time);
 	
 //	//Initialise Tides
 // //This will become setting up the erosion shape function
 //	double TidalAmplitude = 1.;
 //	double TidalPeriod = 12.42;
 //	PlatformModel.InitialiseTides(TidalAmplitude, TidalPeriod);
-//	
+
 	//Initialise Waves
 	//Single Wave for now but could use the waveclimate object from COVE!?
 	double WaveHeight_Mean = 1.;
 	double WaveHeight_StD = 0;
 	double WavePeriod_Mean = 6.;
 	double WavePeriod_StD = 0;
-	Hiro.InitialiseWaves(WaveHeight_Mean, WaveHeight_StD, WavePeriod_Mean, WavePeriod_StD);
+	PlatformModel.InitialiseWaves(WaveHeight_Mean, WaveHeight_StD, WavePeriod_Mean, WavePeriod_StD);
 
-//	//Print Control
-//	double PrintInterval = 100.;
-//	double PrintTime = Time;
-//	string OutputFileName = "ShoreProfile.xz";
-//	string ErosionFileName = "Erosion.ez";
-//	
-//	//Loop through time
-//	while (Time < EndTime)
-//	{
-//	  //Update Sea Level
-//	  PlatformModel.UpdateSeaLevel(SLR,TimeInterval);
-//	  
-//	  //Evolve the coast
-//	  PlatformModel.EvolveCoast(TimeInterval);
-//	  
-//	  //print?
-//	  if (Time >= PrintTime)
-//	  {
-//	    PlatformModel.WriteProfile(OutputFileName, Time);
-//	    PlatformModel.WriteErosion(ErosionFileName, Time);
-//	    PrintTime += PrintInterval;
-//	    cout << "Time is " << Time << endl;
-//	  }
-//	  
-//	  //update time
-//	  Time += TimeInterval;
-//	}
+	//Sea elevel rise?
+	double SLR = 0;
+	
+	//Print Control
+	double PrintInterval = 100.;
+	double PrintTime = Time+PrintInterval;
+	string OutputFileName = "ShoreProfile.xz";
+	PlatformModel.WriteProfile(OutputFileName, Time);
+
+	//Loop through time
+	while (Time < EndTime)
+	{
+	  //Update Sea Level
+	  PlatformModel.UpdateSeaLevel(SLR);
+	  
+	  //Calculate forces acting on the platform
+	  PlatformModel.CalculateBackwearing();
+	  PlatformModel.CalculateDownwearing();
+	  
+	  //Update the morphology
+	  PlatformModel.ErodeBackwearing();
+	  PlatformModel.ErodeDownwearing();
+	  
+	  //Implement Weathering
+	  PlatformModel.IntertidalWeathering();
+	  
+	  //print?
+	  if (Time >= PrintTime)
+	  {
+	    PlatformModel.WriteProfile(OutputFileName, Time);
+	    PrintTime += PrintInterval;
+	    cout << "Time is " << Time << endl;
+	  }
+	  
+	  //update time
+	  Time += TimeInterval;
+	}
 		
 	//a few blank lines to finish
 	cout << endl << endl;
