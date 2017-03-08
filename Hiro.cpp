@@ -81,7 +81,10 @@ void Hiro::Initialise(double dZ_in, double dX_in)
 	//declare arrays of zeros to initalise various other vectors
 	vector<double> ZZeros(NZNodes,0);
 	vector<double> XZeros(NXNodes,0);
-	X = ZZeros;
+	X = XZeros;
+	Zx = XZeros;
+	Xz = ZZeros;
+	
 	Bw_Erosion = ZZeros;
 	Dw_Erosion = XZeros;
 	Weathering = ZZeros;
@@ -376,9 +379,7 @@ void Hiro::SupratidalWeathering()
 
 void Hiro::UpdateMorphology()
 {
-	//function to update vectors
-	//add this later
-	// This is going to be really important
+	//function to update morphology vectors and indices
 	 
 	// Find Sea Level in vertical
 	// Only need to do this once if sea level isnt changing
@@ -398,7 +399,37 @@ void Hiro::UpdateMorphology()
 	MinTideYInd = SeaLevelInd-0.5*TidalRange/dZ;
 	MaxTideYInd = SeaLevelInd+0.5*TidalRange/dZ;
 	
+	//Populate vector of X values in Z 
+	for (int i=0; i<NZNodes; ++i)
+	{
+		int j=0;
+		while (j<NXNodes)
+		{
+			if (MorphologyArray[i][j] == 1) 
+			{
+				Xz[i] = X[j];
+				break;
+			}
+			++j;
+		}
+	}
 	
+	//Populate vector of Z values in X 
+	for (int j=0; j<NXNodes; ++j)
+	{
+		int i=0;
+		while (i<NZNodes)
+		{
+			if (MorphologyArray[i][j] == 1)
+			{
+				Zx[j] = Z[i]; 
+				break;
+			}
+			++i;
+		}	
+	}
+
+	//What's next? :)	
 }
 
 void Hiro::MassFailure()
