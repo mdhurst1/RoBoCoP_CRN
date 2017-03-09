@@ -127,7 +127,7 @@ class Hiro
 //		vector<double> TideLevels;          //Vector of tide levels
 //		vector<double> WaterLevels;         //vector containing water levels
 //		vector<double> WaterDepths;         //vector containing water depths
-//		int NTideValues;                //number of tidal values (.size() of tidelevels vector)
+		int NTideValues;                //number of tidal values (.size() of tidelevels vector)
 		int WaterLevelYInd, WaterLevelXInd;
 		
 		// WAVE DECLARATIONS
