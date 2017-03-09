@@ -62,7 +62,7 @@ int main()
 	double dX = 0.1;
 
 	//Time control parameters
-	double EndTime = 1.;
+	double EndTime = 100.;
 	double Time = 0.;
 	double TimeInterval = 1;
 
@@ -86,17 +86,17 @@ int main()
 	double WavePeriod_StD = 0;
 	PlatformModel.InitialiseWaves(WaveHeight_Mean, WaveHeight_StD, WavePeriod_Mean, WavePeriod_StD);
 
-	//Sea elevel rise?
+	//Sea level rise?
 	double SLR = 0;
 	
 	//Print Control
-	double PrintInterval = 100.;
+	double PrintInterval = 10.;
 	double PrintTime = Time+PrintInterval;
 	string OutputFileName = "ShoreProfile.xz";
 	PlatformModel.WriteProfile(OutputFileName, Time);
 
 	//Loop through time
-	while (Time < EndTime)
+	while (Time <= EndTime)
 	{
 	  //Update Sea Level
 	  PlatformModel.UpdateSeaLevel(SLR);
@@ -117,7 +117,6 @@ int main()
 	  {
 	    PlatformModel.WriteProfile(OutputFileName, Time);
 	    PrintTime += PrintInterval;
-	    cout << "Time is " << Time << endl;
 	  }
 	  
 	  //update time

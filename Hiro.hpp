@@ -149,40 +149,33 @@ class Hiro
 		double Time, MaxTime, dt;
 		
 		//PHYSICAL CONSTANTS
-		static const double rho_w = 1025.;
-		static const double g = 9.81;
+		double rho_w;
+		double g;
 		
-		//Define these in an input parameter file?
-		static const double SubmarineDecayConst = 0.1;
-		static const double StandingWaveConst = 0.01;
-		static const double BreakingWaveConst = 10.;
-		static const double BrokenWaveConst = 0.1;
-		static const double BreakingWaveDecay = 0.1;
-		static const double BrokenWaveDecay = 0.01;
-		static const double WeatheringConst = 0.05;
+		//Constants and controlling parameters
+		//These should be read from an input file?
+		double SubmarineDecayConst, StandingWaveConst;
+		double BreakingWaveConst, BrokenWaveConst;
+		double BreakingWaveDecay, BrokenWaveDecay;
+		double WeatheringConst;
+		
+		//Wave pressure parameters, check these with Hiro at some point
+		double StandingWavePressure_Bw, BreakingWavePressure_Bw, BrokenWavePressure_Bw;
+		double StandingWavePressure_Dw, BreakingWavePressure_Dw, BrokenWavePressure_Dw;
 		
 		//downwear decay const as a function of water depth
 		//depends on wave height so defined inline
-		double DepthDecay; 	
-		
+		double DepthDecay;		
 		double CliffWeatheringRate;
 		
 		//This will need to be populated in the initialise tides function
 		vector<double> WeatheringEfficacy;
 		vector<double> ErosionShapeFunction;
 		
-		//Wave pressure parameters, check these with Hiro at some point
-		static const double StandingWavePressure_Bw = 1.;
-		static const double BreakingWavePressure_Bw = 1.;
-		static const double BrokenWavePressure_Bw = 1.;
-		static const double StandingWavePressure_Dw = 1.;
-		static const double BreakingWavePressure_Dw = 1.;
-		static const double BrokenWavePressure_Dw = 1.;
-
 		int PressureDistMinInd, PressureDistMaxInd;
 		
 		
-		static const double NDV = -9999;    // No data value
+		double NDV;    // No data value
 	
     /* FUNCTION DECLARATIONS */
 
@@ -223,7 +216,7 @@ class Hiro
 		void GetWave();
 		
 		// Function to initialise weathering shape function 
-		void IntitialiseWeathering();
+		void InitialiseWeathering();
 		
 		/// @brief Launch the main program loop to evolve Hiro coast
 		/// @details This function evolves a rocky coastal platform through time.

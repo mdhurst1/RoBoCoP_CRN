@@ -68,9 +68,30 @@ void Hiro::Initialise(double dZ_in, double dX_in)
 	/* initialise a verictal cliff Hiro object */
 	printf("\nHiro.Initialise: Initialised a Hiro as a vertical cliff\n");
 	
+	//PHYSICAL CONSTANTS
+	rho_w = 1025.;
+	g = 9.81;
+
+	//Define these in an input parameter file?
+	SubmarineDecayConst = 0.1;
+	StandingWaveConst = 0.01;
+	BreakingWaveConst = 10.;
+	BrokenWaveConst = 0.1;
+	BreakingWaveDecay = 0.1;
+	BrokenWaveDecay = 0.01;
+	WeatheringConst = 0.05;
+	
+	//Wave pressure parameters, check these with Hiro at some point
+	StandingWavePressure_Bw = 1.;
+	BreakingWavePressure_Bw = 1.;
+	BrokenWavePressure_Bw = 1.;
+	StandingWavePressure_Dw = 1.;
+	BreakingWavePressure_Dw = 1.;
+	BrokenWavePressure_Dw = 1.;
+		
 	//Declare spatial stuff
 	dZ = dZ_in;
-	dX = dZ_in;
+	dX = dX_in;
 	NXNodes = round(500./dX);
 	NZNodes = round(75./dZ);	
 
@@ -100,6 +121,9 @@ void Hiro::Initialise(double dZ_in, double dX_in)
 	SeaLevel = 0;
 	SeaLevelInd = 0;
 	
+	//Initialise weathering shape function
+	InitialiseWeathering();
+	
 	//Populate geometric metrics
 	UpdateMorphology();
 	
@@ -117,7 +141,7 @@ void Hiro::InitialiseTides(double TideRange)
 	
 	// Make erosion shape function based on tidal duration
 	NTideValues = (int)(TidalRange/dZ)+1;
-	vector<double> EmptyTideVec(NTideValues,TideRange/2.);	
+	vector<double> EmptyTideVec(NTideValues,TidalRange/2.);	
 	ErosionShapeFunction = EmptyTideVec;
 	
 	// Loop over tidal range and assign weights
@@ -141,7 +165,7 @@ void Hiro::InitialiseTides(double TideRange)
 		}
 		for (int i=0.45*NTideValues; i<NTideValues; ++i)
 		{
-			ErosionShapeFunction[i] += sin((i-0.45*TideRange)*M_PI/(0.55*TidalRange));
+			ErosionShapeFunction[i] += sin((i-0.45*TidalRange)*M_PI/(0.55*TidalRange));
 			Total += ErosionShapeFunction[i];
 		}
 	}
@@ -154,12 +178,17 @@ void Hiro::InitialiseWeathering()
 {
 	/* Weathering Efficacy Function following Trenhaile and Kanayay (2005) */
 	
+	// Make erosion shape function based on tidal duration
+	NTideValues = (int)(TidalRange/dZ)+1;
+	vector<double> EmptyTideVec(NTideValues,TidalRange/2.);	
+	WeatheringEfficacy = EmptyTideVec;
+	
 	if (dZ == 0.1)
 	{
 		for (int i=0; i<NTideValues ;++i)
 		{
-			if (i<TidalRange/4.) WeatheringEfficacy[i] = exp(-((i-(0.25*TidalRange))^2.)/(0.5*TidalRange));
-			else WeatheringEfficacy[i] = exp(-((i-(0.25*TidalRange))^2.)/((TidalRange^2.)/10)));
+			if (i<TidalRange/4.) WeatheringEfficacy[i] = exp(-(i-pow(0.25*TidalRange,2.))/(0.5*TidalRange));
+			else WeatheringEfficacy[i] = exp(-((i-pow(0.25*TidalRange,2.))/(pow(TidalRange,2.)/10.)));
 		} 
 	}
 }
@@ -204,7 +233,7 @@ void Hiro::UpdateSeaLevel(double SeaLevelRise)
 void Hiro::CalculateBackwearing()
 {
 	//Declare temporary variables
-	double WaveForce, SurfZoneBottomZ, SurfZoneBottomX;
+	double WaveForce, SurfZoneBottomZ; //, SurfZoneBottomX;
 	int WaveType;
 	
 	//Reset backwear vector
