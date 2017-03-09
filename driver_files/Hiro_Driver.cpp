@@ -62,7 +62,7 @@ int main()
 	double dX = 0.1;
 
 	//Time control parameters
-	double EndTime = 100.;
+	double EndTime = 10000.;
 	double Time = 0.;
 	double TimeInterval = 1;
 
@@ -101,6 +101,9 @@ int main()
 	  //Update Sea Level
 	  PlatformModel.UpdateSeaLevel(SLR);
 	  
+	  //Get the wave conditions
+	  PlatformModel.GetWave();
+	  
 	  //Calculate forces acting on the platform
 	  PlatformModel.CalculateBackwearing();
 	  PlatformModel.CalculateDownwearing();
@@ -122,7 +125,10 @@ int main()
 	  //update time
 	  Time += TimeInterval;
 	}
-		
+	
+	string ResistanceFileName = "ResistanceArray.xz";
+	PlatformModel.WriteResistance(ResistanceFileName, Time);
+	
 	//a few blank lines to finish
 	cout << endl << endl;
 	

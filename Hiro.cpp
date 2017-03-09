@@ -93,7 +93,7 @@ void Hiro::Initialise(double dZ_in, double dX_in)
 	dZ = dZ_in;
 	dX = dX_in;
 	NXNodes = round(500./dX);
-	NZNodes = round(75./dZ);	
+	NZNodes = round(75./dZ)+1;	
 
 	//declare an array of zeros for assignment of Z vector
 	Z = vector<double>(NZNodes,0.0);
@@ -112,7 +112,7 @@ void Hiro::Initialise(double dZ_in, double dX_in)
 
 	//declare an array of ones for assignment of the Morphology Array
 	MorphologyArray = vector< vector<int> >(NZNodes,vector<int>(NXNodes,1));
-	ResistanceArray = vector< vector<double> >(NZNodes,vector<double>(NXNodes,0));
+	ResistanceArray = vector< vector<double> >(NZNodes,vector<double>(NXNodes,1));
 		
 	//default time interval
 	dt = 1.;
@@ -206,17 +206,18 @@ void Hiro::InitialiseWaves(double WaveHeight_Mean, double WaveHeight_StD, double
 void Hiro::GetWave()
 {
 	//declare temp variables
-	double OffshoreWaveHeight;
-	double rand1, rand2;
+	//double OffshoreWaveHeight;
+	//double rand1, rand2;
 
 	//Get two random numbers and generate wave data
-	rand1 = (double)rand()/RAND_MAX; rand2 = (double)rand()/RAND_MAX;
-	WavePeriod = MeanWavePeriod + StdWavePeriod*sqrt(-2.*log(rand1))*cos(2.*M_PI*(rand2));
-	rand1 = (double)rand()/RAND_MAX; rand2 = (double)rand()/RAND_MAX;
-	OffshoreWaveHeight = MeanWaveHeight + StdWaveHeight*sqrt(-2.*log(rand1))*cos(2.*M_PI*(rand2));
+	//rand1 = (double)rand()/RAND_MAX; rand2 = (double)rand()/RAND_MAX;
+	//WavePeriod = MeanWavePeriod + StdWavePeriod*sqrt(-2.*log(rand1))*cos(2.*M_PI*(rand2));
+	//rand1 = (double)rand()/RAND_MAX; rand2 = (double)rand()/RAND_MAX;
+	//OffshoreWaveHeight = MeanWaveHeight + StdWaveHeight*sqrt(-2.*log(rand1))*cos(2.*M_PI*(rand2));
 
 	//Breaking Wave Height calculated following Komar and Gaughan (1972)
-	BreakingWaveHeight = 0.39*pow(g,0.2)*pow(WavePeriod,0.4)*pow(OffshoreWaveHeight,2.4);
+	//BreakingWaveHeight = 0.39*pow(g,0.2)*pow(WavePeriod,0.4)*pow(OffshoreWaveHeight,2.4);
+	BreakingWaveHeight = MeanWaveHeight;
 	BreakingWaveDist = BreakingWaveHeight/2.;
 
 	//Water depth of breaking wave
@@ -263,18 +264,18 @@ void Hiro::CalculateBackwearing()
 		}
 		
 		//Set Wave Type
-		if (X[i] == 1) WaveType = 1;
-		else if (X[i]-BreakingPointX<=0) WaveType = 1;
-		else if ((X[i]-BreakingPointX)<BreakingWaveDist) WaveType = 2;
+		if (Xz[i] == 0) WaveType = 1;
+		else if (Xz[i]-BreakingPointX<=0) WaveType = 1;
+		else if ((Xz[i]-BreakingPointX)<BreakingWaveDist) WaveType = 2;
 		else WaveType = 3;
 		
 		//Determine Surfzone Width
 		//Get surf zone mean platform gradient
 		//Set it to super steep if vertical.
-		if (X[i-1] != X[BreakingPointXInd+1]) SurfZoneGradient = abs((Zx[i-1]-Zx[BreakingPointXInd+1])/(X[i-1]-X[BreakingPointXInd+1]));
+		if (Xz[i-1] != X[BreakingPointXInd+1]) SurfZoneGradient = abs((Z[i-1]-Z[BreakingPointXInd+1])/(Xz[i-1]-Xz[BreakingPointXInd+1]));
 		else SurfZoneGradient = 100000;
 		
-		SurfZoneWidth = WaveHeight/SurfZoneGradient;
+		SurfZoneWidth = BreakingWaveHeight/SurfZoneGradient;
 		
 		//Set the wave attenuation constant #2
 		WaveAttenuationConst = -log(SurfZoneWidth)/SurfZoneWidth;
@@ -478,8 +479,8 @@ void Hiro::UpdateMorphology()
 	}
 	
 	//Loop across all intertidal elevations
-	MinTideYInd = SeaLevelInd-0.5*TidalRange/dZ;
-	MaxTideYInd = SeaLevelInd+0.5*TidalRange/dZ;
+	MinTideYInd = SeaLevelInd+0.5*TidalRange/dZ;
+	MaxTideYInd = SeaLevelInd-0.5*TidalRange/dZ;
 	
 	//Populate vector of X values in Z 
 	for (int i=0; i<NZNodes; ++i)
@@ -571,6 +572,45 @@ void Hiro::WriteProfile(string OutputFileName, double Time)
 	{
 		//report errors
 		cout << "Hiro.WriteCoast: Error, the file " << OutputFileName << " is not open or cannot be read." << endl;
+		exit(EXIT_FAILURE);
+	}
+}
+
+void  Hiro::WriteResistance(string OutputFileName, double Time)
+{
+  /* Writes a Hiro object Resistance matrix coordinates to file
+		File format is 	
+		
+		Time	
+			X[0][0]     |    X[0][1]    |   X[0][2]     =====>    X[0][NXNodes]
+			X[1][0]     |    X[1][1]    |   X[1][2]     =====>    X[0][NXNodes]
+			X[2][0]     |    X[2][1]    |   X[2][2]     =====>    X[0][NXNodes]
+		      ||               ||             ||                      ||
+		      \/               \/             \/                      \/
+		X[NZNodes][0]  | X[NZNodes][1] | X[NZNodes][2] =====> X[NZNodes][NXNodes] */
+      
+  	//open the output filestream and write headers
+	ofstream WriteFile;
+	WriteFile.open(OutputFileName.c_str());
+	WriteFile << Time << " " << dZ << " " << dX << endl;
+	
+	//Check if file exists if not open a new one and write headers
+	if (WriteFile.is_open())
+	{
+		//write Resistance
+		for (int i=0; i<NZNodes; ++i)
+		{
+			for (int j=0;j<NXNodes; ++j)
+			{
+				WriteFile << setprecision(5) << ResistanceArray[i][j] << " ";
+			}
+			WriteFile << endl;
+		}
+	}
+	else
+	{
+		//report errors
+		cout << "Hiro.WriteResistance: Error, the file " << OutputFileName << " is not open or cannot be read." << endl;
 		exit(EXIT_FAILURE);
 	}
 }
