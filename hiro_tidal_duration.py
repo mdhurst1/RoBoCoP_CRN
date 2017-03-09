@@ -46,7 +46,7 @@ def make_tidal_range(num_tidal_range, start_tide, end_tide, gridsize):
         tr = np.int(num_tidal_range[j])
         print "tr is ", tr
         
-        if ( (tr > 4) and (tr < 20) ):
+        if (tr < 20):
             if (np.ceil(0.5*tr)!=np.floor(0.5*tr)):
                 print "am I here?", tr
                 for i in range(0,np.ceil(0.5*tr)+1):
@@ -74,7 +74,7 @@ def make_tidal_range(num_tidal_range, start_tide, end_tide, gridsize):
             
         elif ( tr >= 20):
             print "or am I here?", tr
-            for i in range(0,np.int(np.ceil(0.55*tr))):
+            for i in range(0,np.int(np.ceil(0.55*tr))+1):
                 tr_esf[i,j] = np.sin((i)*np.pi/np.ceil(tr*0.55))
                 total = total + tr_esf[i,j]*bottom
             

@@ -116,10 +116,31 @@ void Hiro::InitialiseTides(double TideRange)
 	ErosionShapeFunction = EmptyTideVec;
 	
 	// Loop over tidal range and assign weights
-	for (int i=0; i<NTideValues; ++i)
+	// If narrow tidal range just use two separate sin functions
+	// If wide use two overlapping tidal functions
+	if (NTideValues < 20)
 	{
-		
+		for (int i=0; i<NTideValues; ++i)
+		{
+			ErosionShapeFunction[i] = sin(i*M_PI/(0.5*TidalRange));
+			if (i>0.5*TidalRange) ErosionShapeFunction[i] *= -1;
+			Total += ErosionShapeFunction[i];
+		}
 	}
+	else
+	{
+		for (int i=0; i<0.55*NTideValues; ++i)
+		{
+			ErosionShapeFunction[i] = sin(i*M_PI/(0.55*TidalRange));
+			Total += ErosionShapeFunction[i];
+		}
+		for (int i=0.45*NTideValues; i<NTideValues; ++i)
+		{
+			ErosionShapeFunction[i] += sin((i-0.45*TideRange-)*M_PI/(0.55*TidalRange));
+			Total += ErosionShapeFunction[i];
+		}
+	}
+	ErosionShapeFunction /= Total;
 }
 
 void Hiro::InitialiseWaves(double WaveHeight_Mean, double WaveHeight_StD, double WavePeriod_Mean, double WavePeriod_StD)
