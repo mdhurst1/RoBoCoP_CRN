@@ -108,7 +108,18 @@ void Hiro::InitialiseTides(double TideRange)
 {
 	/* intialise the tides as a simple cosine wave (i.e. simple diurnal/semidiurnal) */
 	TidalRange = TideRange;
-	UpdateMorphology(); 
+	UpdateMorphology();
+	
+	// Make erosion shape function based on tidal duration
+	NTideValues = (int)(TidalRange/dZ)+1;
+	vector<double> EmptyTideVec(NTideValues,TideRange/2.);
+	ErosionShapeFunction = EmptyTideVec;
+	
+	// Loop over tidal range and assign weights
+	for (int i=0; i<NTideValues; ++i)
+	{
+		
+	}
 }
 
 void Hiro::InitialiseWaves(double WaveHeight_Mean, double WaveHeight_StD, double WavePeriod_Mean, double WavePeriod_StD)
