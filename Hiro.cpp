@@ -375,7 +375,7 @@ void Hiro::IntertidalWeathering()
 	Weathering = ZZeros;
 	
 	//Loop across the tidal range
-	for (int i=MinTideYInd; i<=MaxTideYInd; ++i)
+	for (int i=MaxTideYInd; i<=MinTideYInd; ++i)
 	{
 		//Calculate Weathering
 		WeatheringForce = WeatheringConst*WeatheringEfficacy[i];
@@ -510,6 +510,23 @@ void Hiro::UpdateMorphology()
 			}
 			++i;
 		}	
+	}
+	
+	//Determine intertidal range indices in X-direction
+	bool LowTideFlag = false;
+	bool HighTideFlag = false;
+	for (int j=0; j<NXNodes; ++j)
+	{
+		if ((MorphologyArray[MaxTideYInd][j] == 1) && (HighTideFlag == false))
+		{
+			MaxTideXInd = j;
+			HighTideFlag = true;
+		}
+		if ((MorphologyArray[MinTideYInd][j] == 1) && (LowTideFlag == false))
+		{
+			 MinTideXInd = j;
+		}
+		if ((HighTideFlag == 1) && (LowTideFlag == 1)) break;
 	}
 }
 
