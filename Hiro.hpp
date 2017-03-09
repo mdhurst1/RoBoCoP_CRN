@@ -222,6 +222,9 @@ class Hiro
 		//Sample a wave
 		void GetWave();
 		
+		// Function to initialise weathering shape function 
+		void IntitialiseWeathering();
+		
 		/// @brief Launch the main program loop to evolve Hiro coast
 		/// @details This function evolves a rocky coastal platform through time.
 		///	@author Martin D. Hurst 

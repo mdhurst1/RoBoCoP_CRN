@@ -96,8 +96,9 @@ void Hiro::Initialise(double dZ_in, double dX_in)
 	//default time interval
 	dt = 1.;
 	
-	//Set sea level to zero to begin with
-	SeaLevel = 0;	
+	//Set sea level to zero to begin with, and the ind, this will get updated later
+	SeaLevel = 0;
+	SeaLevelInd = 0;
 	
 	//Populate geometric metrics
 	UpdateMorphology();
@@ -147,6 +148,20 @@ void Hiro::InitialiseTides(double TideRange)
 	
 	//Normalise values to total
 	for (int i=0; i<NTideValues; ++i) ErosionShapeFunction[i] /= Total;
+}
+
+void Hiro::InitialiseWeathering()
+{
+	/* Weathering Efficacy Function following Trenhaile and Kanayay (2005) */
+	
+	if (dZ == 0.1)
+	{
+		for (int i=0; i<NTideValues ;++i)
+		{
+			if (i<TidalRange/4.) WeatheringEfficacy[i] = exp(-((i-(0.25*TidalRange))^2.)/(0.5*TidalRange));
+			else WeatheringEfficacy[i] = exp(-((i-(0.25*TidalRange))^2.)/((TidalRange^2.)/10)));
+		} 
+	}
 }
 
 void Hiro::InitialiseWaves(double WaveHeight_Mean, double WaveHeight_StD, double WavePeriod_Mean, double WavePeriod_StD)
