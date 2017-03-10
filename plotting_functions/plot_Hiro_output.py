@@ -34,7 +34,7 @@ def make_plot(FileName,ColourMap):
     f = open(ProfileName,'r')
     Lines = f.readlines()
     NoLines = len(Lines)
-    EndTime = NoLines
+    EndTime = float(Lines[-1].strip().split(" ")[0])
     
     # Only plot every 1 000 years
     PlotTime = 0
@@ -43,7 +43,6 @@ def make_plot(FileName,ColourMap):
     ax1 = plt.subplot(111)
 
     #Get header info and setup X coord
-    Header = Lines[0].strip().split(" ")
     for j in range(1,NoLines-1,2):
         
         Line = (Lines[j].strip().split(" "))
@@ -51,22 +50,22 @@ def make_plot(FileName,ColourMap):
         
         #Read morphology
         X = np.array(Line[1:],dtype="float64")
-        Z = np.array((Lines[j+1].strip().split(" "))[1:],dtype="float64")
+        Z = np.arange(37.5,-37.6,-0.1)
         
         if (Time == PlotTime):
-            ax1.plot(X,Z,'-',lw=1.5,color=ColourMap((Time+1000)/(EndTime+1000)))
+            ax1.plot(X,Z,'-',lw=1.5,color=ColourMap((Time)/(EndTime)))
             PlotTime += PlotInterval
                 
-    
     # tweak the plot
     #ax1.set_xticklabels([])
-    ax1.set_xlabel("Distance (m)")
-    ax1.set_ylabel("Elevation (m)")
-    
+    plt.xlabel("Distance (m)")
+    plt.ylabel("Elevation (m)")
+    xmin, xmax = ax1.get_xlim()
+    plt.xlim(xmin-10,xmax)
     plt.show()
 
 if __name__ == "__main__":
     FileName = "../driver_files/"
-    ColourMap = cm.Reds
+    ColourMap = cm.YlGnBu
     make_plot(FileName,ColourMap)
         

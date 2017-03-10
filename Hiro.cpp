@@ -103,6 +103,7 @@ void Hiro::Initialise(double dZ_in, double dX_in)
 	vector<double> ZZeros(NZNodes,0);
 	vector<double> XZeros(NXNodes,0);
 	X = XZeros;
+	for (int j=0; j<NXNodes; ++j) X[j] = dX*j;
 	Zx = XZeros;
 	Xz = ZZeros;
 	
@@ -217,12 +218,16 @@ void Hiro::GetWave()
 
 	//Breaking Wave Height calculated following Komar and Gaughan (1972)
 	//BreakingWaveHeight = 0.39*pow(g,0.2)*pow(WavePeriod,0.4)*pow(OffshoreWaveHeight,2.4);
+	WaveHeight = MeanWaveHeight;
 	BreakingWaveHeight = MeanWaveHeight;
 	BreakingWaveDist = BreakingWaveHeight/2.;
 
 	//Water depth of breaking wave
 	BreakingWaveWaterDepth = BreakingWaveHeight/0.78;
 	
+	//Get Wave Pressure Distribution as Uniform
+	PressureDistMaxInd = -0.5*BreakingWaveHeight/dZ; 
+	PressureDistMinInd = 0.5*BreakingWaveHeight/dZ;
 }
 
 void Hiro::UpdateSeaLevel(double SeaLevelRise)
@@ -260,7 +265,7 @@ void Hiro::CalculateBackwearing()
 				BreakingPointXInd = ii;
 				SurfZone = true;
 			}
-			--ii;
+			++ii;
 		}
 		
 		//Set Wave Type
@@ -285,11 +290,10 @@ void Hiro::CalculateBackwearing()
 		if (WaveType == 1)
 		{
 			//Loop across pressure distribution function, currently a const
-			//This may have some problems!
-			for (int ii=i-PressureDistMinInd/dZ+1; ii>i+PressureDistMaxInd/dZ-1; ++ii)
+			for (int ii=i+PressureDistMaxInd; ii<=i+PressureDistMinInd; ++ii)
 			{
 				// Calculate wave force and update backwear at each elevation
-				WaveForce = StandingWaveConst*WaveHeight*ErosionShapeFunction[i]*StandingWavePressure_Bw;
+				WaveForce = StandingWaveConst*WaveHeight*ErosionShapeFunction[i-MaxTideZInd]*StandingWavePressure_Bw;
 				Bw_Erosion[ii] += WaveForce;
 			}
 		}
@@ -300,11 +304,11 @@ void Hiro::CalculateBackwearing()
 		{
 			//Loop across pressure distribution function 
 			//This may have some problems!
-			for (int ii=i-PressureDistMinInd/dZ+1; ii>i+PressureDistMaxInd/dZ-1; ++ii)
+			for (int ii=i+PressureDistMaxInd; ii<=i+PressureDistMinInd; ++ii)
 			{
 				//need to add for condition where changes to broken wave above water level in pressure distribution function
-				if (X[ii] < BreakingPointX) WaveForce = StandingWaveConst*WaveHeight*ErosionShapeFunction[i]*StandingWavePressure_Bw;
-				else WaveForce = BrokenWaveConst*WaveHeight*BreakingWaveDecay*ErosionShapeFunction[i]*BreakingWavePressure_Bw*exp(-WaveAttenuationConst*(X[ii]-BreakingWaveDist));
+				if (X[ii] < BreakingPointX) WaveForce = StandingWaveConst*WaveHeight*ErosionShapeFunction[i-MaxTideZInd]*StandingWavePressure_Bw;
+				else WaveForce = BrokenWaveConst*WaveHeight*BreakingWaveDecay*ErosionShapeFunction[i-MaxTideZInd]*BreakingWavePressure_Bw*exp(-WaveAttenuationConst*(X[ii]-BreakingWaveDist));
 				Bw_Erosion[ii] += WaveForce;
 			}			
 		}
@@ -313,11 +317,11 @@ void Hiro::CalculateBackwearing()
 		{
 			//Loop across pressure distribution function 
 			//This may have some problems!
-			for (int ii=i-PressureDistMinInd/dZ+1; ii>i+PressureDistMaxInd/dZ-1; ++ii)
+			for (int ii=i+PressureDistMaxInd; ii<=i-PressureDistMinInd; ++ii)
 			{
-				if (X[ii] < BreakingPointX) WaveForce = StandingWaveConst*WaveHeight*ErosionShapeFunction[i]*StandingWavePressure_Bw;
-				else if (X[ii]<(BreakingPointX+BreakingWaveDist)) WaveForce = BreakingWaveConst*WaveHeight*BreakingWaveDecay*ErosionShapeFunction[i]*BrokenWavePressure_Bw*exp(-WaveAttenuationConst*(X[ii]-BreakingWaveDist));
-				else WaveForce = BrokenWaveConst*WaveHeight*ErosionShapeFunction[i]*BrokenWavePressure_Bw*exp(-WaveAttenuationConst*(X[i]-(BreakingPointX+BreakingWaveDist)));
+				if (X[ii] < BreakingPointX) WaveForce = StandingWaveConst*WaveHeight*ErosionShapeFunction[i-MaxTideZInd]*StandingWavePressure_Bw;
+				else if (X[ii]<(BreakingPointX+BreakingWaveDist)) WaveForce = BreakingWaveConst*WaveHeight*BreakingWaveDecay*ErosionShapeFunction[i-MaxTideZInd]*BrokenWavePressure_Bw*exp(-WaveAttenuationConst*(X[ii]-BreakingWaveDist));
+				else WaveForce = BrokenWaveConst*WaveHeight*ErosionShapeFunction[i-MaxTideZInd]*BrokenWavePressure_Bw*exp(-WaveAttenuationConst*(X[i]-(BreakingPointX+BreakingWaveDist)));
 				Bw_Erosion[ii] += WaveForce;
 			}
 		}
@@ -344,19 +348,19 @@ void Hiro::CalculateDownwearing()
 			//Standing Waves
 			if (X[i]<BreakingPointX)
 			{
-				WaveForce = StandingWaveConst*WaveHeight*ErosionShapeFunction[i]*StandingWavePressure_Dw;
+				WaveForce = StandingWaveConst*WaveHeight*ErosionShapeFunction[i-MaxTideZInd]*StandingWavePressure_Dw;
 				DepthDecay = -log(SubmarineDecayConst)/WaveHeight;
 			}	
 			//Breaking Waves
 			else if (X[i]<(BreakingPointX+BreakingWaveDist))
 			{
-				WaveForce = BreakingWaveConst*WaveHeight*ErosionShapeFunction[i]*BreakingWavePressure_Dw*exp(-BreakingWaveDecay*(X[i]-BreakingPointX));
+				WaveForce = BreakingWaveConst*WaveHeight*ErosionShapeFunction[i-MaxTideZInd]*BreakingWavePressure_Dw*exp(-BreakingWaveDecay*(X[i]-BreakingPointX));
 				DepthDecay = -log(SubmarineDecayConst)/(WaveHeight*exp(-BreakingWaveDecay*(X[i]-BreakingPointX)));
 			}
 			//Broken Waves
 			else
 			{
-				WaveForce = BrokenWaveConst*WaveHeight*ErosionShapeFunction[i]*BrokenWavePressure_Dw*exp(-BrokenWaveDecay*(X[i]-(BreakingPointX+BreakingWaveDist)));
+				WaveForce = BrokenWaveConst*WaveHeight*ErosionShapeFunction[i-MaxTideZInd]*BrokenWavePressure_Dw*exp(-BrokenWaveDecay*(X[i]-(BreakingPointX+BreakingWaveDist)));
 				DepthDecay = -log(SubmarineDecayConst)/(WaveHeight*exp(-BrokenWaveDecay*(X[i]-(BreakingPointX+BreakingWaveDist))));
 			}
 			WaterDepth = Z[i]-Z[ii];
@@ -422,7 +426,7 @@ void Hiro::ErodeBackwearing()
 {
 	//Loop over all wet cells
 	int j=0;
-	for (int i=NZNodes-1; i>MaxTideZInd; --i)
+	for (int i=NZNodes-1; i>=MaxTideZInd; --i)
 	{
 		//Find j ind somehow
 		//loop across the active shoreface
@@ -601,7 +605,7 @@ void Hiro::WriteProfile(string OutputFileName, double Time)
 	{
 		//write X
 		WriteCoastFile << setprecision(4) << Time;
-		for (int i=0; i<NZNodes; ++i) WriteCoastFile << setprecision(10) << " " << X[i];
+		for (int i=0; i<NZNodes; ++i) WriteCoastFile << setprecision(10) << " " << Xz[i];
 		WriteCoastFile << endl;
 	}
 	else
@@ -610,9 +614,10 @@ void Hiro::WriteProfile(string OutputFileName, double Time)
 		cout << "Hiro.WriteCoast: Error, the file " << OutputFileName << " is not open or cannot be read." << endl;
 		exit(EXIT_FAILURE);
 	}
+	WriteCoastFile.close();
 }
 
-void  Hiro::WriteResistance(string OutputFileName, double Time)
+void  Hiro::WriteResistanceArray(string OutputFileName, double Time)
 {
   /* Writes a Hiro object Resistance matrix coordinates to file
 		File format is 	
@@ -647,6 +652,45 @@ void  Hiro::WriteResistance(string OutputFileName, double Time)
 	{
 		//report errors
 		cout << "Hiro.WriteResistance: Error, the file " << OutputFileName << " is not open or cannot be read." << endl;
+		exit(EXIT_FAILURE);
+	}
+}
+
+void  Hiro::WriteMorphologyArray(string OutputFileName, double Time)
+{
+  /* Writes a Hiro object Resistance matrix coordinates to file
+		File format is 	
+		
+		Time	
+			X[0][0]     |    X[0][1]    |   X[0][2]     =====>    X[0][NXNodes]
+			X[1][0]     |    X[1][1]    |   X[1][2]     =====>    X[0][NXNodes]
+			X[2][0]     |    X[2][1]    |   X[2][2]     =====>    X[0][NXNodes]
+		      ||               ||             ||                      ||
+		      \/               \/             \/                      \/
+		X[NZNodes][0]  | X[NZNodes][1] | X[NZNodes][2] =====> X[NZNodes][NXNodes] */
+      
+  	//open the output filestream and write headers
+	ofstream WriteFile;
+	WriteFile.open(OutputFileName.c_str());
+	WriteFile << Time << " " << dZ << " " << dX << endl;
+	
+	//Check if file exists if not open a new one and write headers
+	if (WriteFile.is_open())
+	{
+		//write Resistance
+		for (int i=0; i<NZNodes; ++i)
+		{
+			for (int j=0;j<NXNodes; ++j)
+			{
+				WriteFile << setprecision(5) << MorphologyArray[i][j] << " ";
+			}
+			WriteFile << endl;
+		}
+	}
+	else
+	{
+		//report errors
+		cout << "Hiro.WriteMorphology: Error, the file " << OutputFileName << " is not open or cannot be read." << endl;
 		exit(EXIT_FAILURE);
 	}
 }

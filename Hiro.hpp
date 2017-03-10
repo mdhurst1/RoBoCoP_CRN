@@ -248,7 +248,8 @@ class Hiro
 		///   a file.
 		/// @author Martin D. Hurst 
 		/// @date 09/03/2017
-		void WriteResistance(string OutputFileName, double Time);
+		void WriteResistanceArray(string OutputFileName, double Time);
+		void WriteMorphologyArray(string OutputFileName, double Time);
 		
 		/// @brief Get X coordinates
 		/// @return X coordinates

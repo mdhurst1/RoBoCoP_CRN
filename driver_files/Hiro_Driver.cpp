@@ -66,9 +66,13 @@ int main()
 	double Time = 0.;
 	double TimeInterval = 1;
 
+	//Print Control
+	double PrintInterval = 100.;
+	double PrintTime = Time;
+	string OutputFileName = "ShoreProfile.xz";
+	
 	//initialise Hiro Model
 	Hiro PlatformModel = Hiro(dZ, dX);
-	
 	
 //	//Initialise Tides
 // //This will become setting up the erosion shape function
@@ -89,45 +93,46 @@ int main()
 	//Sea level rise?
 	double SLR = 0;
 	
-	//Print Control
-	double PrintInterval = 10.;
-	double PrintTime = Time+PrintInterval;
-	string OutputFileName = "ShoreProfile.xz";
-	PlatformModel.WriteProfile(OutputFileName, Time);
+	
 
 	//Loop through time
 	while (Time <= EndTime)
 	{
-	  //Update Sea Level
-	  PlatformModel.UpdateSeaLevel(SLR);
-	  
-	  //Get the wave conditions
-	  PlatformModel.GetWave();
-	  
-	  //Calculate forces acting on the platform
-	  PlatformModel.CalculateBackwearing();
-	  PlatformModel.CalculateDownwearing();
-	  
-	  //Update the morphology
-	  PlatformModel.ErodeBackwearing();
-	  PlatformModel.ErodeDownwearing();
-	  
-	  //Implement Weathering
-	  PlatformModel.IntertidalWeathering();
-	  
-	  //print?
-	  if (Time >= PrintTime)
-	  {
-	    PlatformModel.WriteProfile(OutputFileName, Time);
-	    PrintTime += PrintInterval;
-	  }
-	  
-	  //update time
-	  Time += TimeInterval;
+		//Update Sea Level
+		PlatformModel.UpdateSeaLevel(SLR);
+
+		//Get the wave conditions
+		PlatformModel.GetWave();
+
+		//Calculate forces acting on the platform
+		PlatformModel.CalculateBackwearing();
+		PlatformModel.CalculateDownwearing();
+
+		//Do erosion
+		PlatformModel.ErodeBackwearing();
+		PlatformModel.ErodeDownwearing();
+
+		//Implement Weathering
+		PlatformModel.IntertidalWeathering();
+
+		//Update the Morphology 
+		PlatformModel.UpdateMorphology();	  
+
+		//print?
+		if (Time >= PrintTime)
+		{
+			PlatformModel.WriteProfile(OutputFileName, Time);
+			PrintTime += PrintInterval;
+		}
+
+		//update time
+		Time += TimeInterval;
 	}
 	
 	string ResistanceFileName = "ResistanceArray.xz";
-	PlatformModel.WriteResistance(ResistanceFileName, Time);
+	string MorphologyFileName = "MorphologyArray.xz";
+	PlatformModel.WriteResistanceArray(ResistanceFileName, Time);
+	PlatformModel.WriteMorphologyArray(MorphologyFileName, Time);
 	
 	//a few blank lines to finish
 	cout << endl << endl;
