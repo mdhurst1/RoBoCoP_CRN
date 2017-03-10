@@ -117,7 +117,10 @@ int main()
 
 		//Update the Morphology 
 		PlatformModel.UpdateMorphology();	  
-
+		
+		//Check for Mass Failure
+		PlatformModel.MassFailure();
+		
 		//print?
 		if (Time >= PrintTime)
 		{

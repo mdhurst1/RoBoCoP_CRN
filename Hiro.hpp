@@ -99,6 +99,9 @@ class Hiro
 		vector <double> X;		// cross shore distance (m)
 		vector <double> Zx;		// elevation at each cross shore distance(m)
 		
+		vector <int> XInd;		//Indices of coastal cells in Z direction
+		vector <int> ZInd;		//Indices of coastal cells in X direction
+		
 		vector< vector<int> > MorphologyArray;		// array to store morphology
 		vector< vector<double> > ResistanceArray;	// array to store resistance
 		

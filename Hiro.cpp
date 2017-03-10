@@ -110,7 +110,11 @@ void Hiro::Initialise(double dZ_in, double dX_in)
 	Bw_Erosion = ZZeros;
 	Dw_Erosion = XZeros;
 	Weathering = ZZeros;
-
+	
+	//Indices trackers
+	XInd = vector<int>(NZNodes,0);
+	ZInd = vector<int>(NXNodes,0);
+	
 	//declare an array of ones for assignment of the Morphology Array
 	MorphologyArray = vector< vector<int> >(NZNodes,vector<int>(NXNodes,1));
 	ResistanceArray = vector< vector<double> >(NZNodes,vector<double>(NXNodes,1));
@@ -507,31 +511,29 @@ void Hiro::UpdateMorphology()
 	//Populate vector of X values in Z 
 	for (int i=0; i<NZNodes; ++i)
 	{
-		int j=0;
-		while (j<NXNodes)
+		for (int j=XInd[i]; j<NXNodes; ++j)
 		{
 			if (MorphologyArray[i][j] == 1) 
 			{
 				Xz[i] = X[j];
+				XInd[i] = j;
 				break;
 			}
-			++j;
 		}
 	}
 	
 	//Populate vector of Z values in X 
 	for (int j=0; j<NXNodes; ++j)
 	{
-		int i=0;
-		while (i<NZNodes)
+		for (int i=ZInd[j]; i<NZNodes; ++i)
 		{
 			if (MorphologyArray[i][j] == 1)
 			{
 				Zx[j] = Z[i]; 
+				ZInd[j] = i;
 				break;
 			}
-			++i;
-		}	
+		}
 	}
 	
 	//Determine intertidal range indices in X-direction
@@ -555,7 +557,35 @@ void Hiro::UpdateMorphology()
 
 void Hiro::MassFailure()
 {
-	//add this later
+	//simple implementation for now, talk to Hiro about this
+	//Cliff position taken from Highest elevation.
+	double XCliff = Xz[0];
+	
+	//Find X position of notch
+	double XMax = 0;
+	int XMaxZInd;
+	
+	for (int i=0;i<NZNodes; ++i)
+	{
+		if (Xz[i] > XMax)
+		{
+			XMax = Xz[i];
+			XMaxZInd = i;
+		}
+	}
+	
+	//if big enough then delete
+	if ((XMax-XCliff) > 10.)
+	{
+		for (int i=0; i<=XMaxZInd; ++i)
+		{
+			for (int j=0; j<XMax/dX; ++j)
+			{
+				MorphologyArray[i][j] = 0;
+				ResistanceArray[i][j] = 0;
+			}
+		}
+	}
 }
 
 

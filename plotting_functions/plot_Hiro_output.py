@@ -61,7 +61,8 @@ def make_plot(FileName,ColourMap):
     plt.xlabel("Distance (m)")
     plt.ylabel("Elevation (m)")
     xmin, xmax = ax1.get_xlim()
-    plt.xlim(xmin-10,xmax)
+    #plt.xlim(xmin-10,xmax)
+    #plt.ylim(-10,10)
     plt.show()
 
 if __name__ == "__main__":
