@@ -102,8 +102,8 @@ class Hiro
 		vector< vector<int> > MorphologyArray;		// array to store morphology
 		vector< vector<double> > ResistanceArray;	// array to store resistance
 		
-		//Positions of min and max tide in X and Y
-		int MinTideXInd, MaxTideXInd, MinTideYInd, MaxTideYInd;
+		//Positions of min and max tide in X and Z
+		int MinTideXInd, MaxTideXInd, MinTideZInd, MaxTideZInd;
 		
 		//
 		double SurfZoneGradient;

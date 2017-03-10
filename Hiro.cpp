@@ -242,7 +242,7 @@ void Hiro::CalculateBackwearing()
 	Bw_Erosion = ZZeros;
 	
 	//Loop across all intertidal elevations
-	for (int i=MinTideYInd; i<=MaxTideYInd; ++i)
+	for (int i=MaxTideZInd; i<=MinTideZInd; ++i)
 	{
 		//Estimate horizontal breaking point
 		//Elevation of breaker point
@@ -333,7 +333,7 @@ void Hiro::CalculateDownwearing()
 	vector<double> ZZeros(NZNodes,0);
 	Dw_Erosion = ZZeros;
 	
-	for (int i=MinTideYInd; i<=MaxTideYInd; ++i)
+	for (int i=MinTideZInd; i<=MaxTideZInd; ++i)
 	{
 		//Get wave function needs to calculate a bunch of stuff?
 		GetWave();
@@ -375,7 +375,7 @@ void Hiro::IntertidalWeathering()
 	Weathering = ZZeros;
 	
 	//Loop across the tidal range
-	for (int i=MaxTideYInd; i<=MinTideYInd; ++i)
+	for (int i=MaxTideZInd; i<=MinTideZInd; ++i)
 	{
 		//Calculate Weathering
 		WeatheringForce = WeatheringConst*WeatheringEfficacy[i];
@@ -385,7 +385,21 @@ void Hiro::IntertidalWeathering()
 		for (int j=MinTideXInd; j<=MaxTideXInd; ++j)
 		{
 			//Check we're at a a surface cell
-			if ((MorphologyArray[i][j] == 1) && ((MorphologyArray[i-1][j] == 0) || (MorphologyArray[i][j+1] == 0)))
+			if (j == 0)
+			{
+				RemainingResistance = ResistanceArray[i][j];
+				ResistanceArray[i][j] -= WeatheringForce; 
+				
+				//If resistance is less than zero then cell is lost to weathering erosion
+				//excess weathering force is applied to the block behind
+				if (ResistanceArray[i][j] < 0)
+				{
+					MorphologyArray[i][j] = 0;
+					ResistanceArray[i][j] = 0;
+					WeatheringForce -= RemainingResistance;
+				}
+			}
+			else if ((MorphologyArray[i][j] == 1) && ((MorphologyArray[i-1][j] == 0) || (MorphologyArray[i][j-1] == 0)))
 			{
 				RemainingResistance = ResistanceArray[i][j];
 				ResistanceArray[i][j] -= WeatheringForce; 
@@ -407,25 +421,29 @@ void Hiro::IntertidalWeathering()
 void Hiro::ErodeBackwearing()
 {
 	//Loop over all wet cells
-	for (int i=0; i<MaxTideYInd; ++i)
+	int j=0;
+	for (int i=NZNodes-1; i>MaxTideZInd; --i)
 	{
 		//Find j ind somehow
 		//loop across the active shoreface
-		for (int j=MinTideXInd; j<MaxTideXInd; ++j)
+		while (j < MaxTideXInd)
 		{
-			//Check Backwear Force vs Resistance
-			if (Bw_Erosion[i] >= ResistanceArray[i][j])
-			{
-				//For now assume that only one block can be removed at a time
-				//Hiro has code that allows multiple blocks to be removed
-				MorphologyArray[i][j] = 0;
-				ResistanceArray[i][j] = 0;
-			
-				//Hiro then has some code to count the number of blocks removed
-				//but not clear why this is needed
-			
-				//May also need soemthing to move ix_max landward by 1
-			}
+			if (MorphologyArray[i][j] == 1) break;
+			++j;
+		}
+		
+		//Check Backwear Force vs Resistance
+		if (Bw_Erosion[i] >= ResistanceArray[i][j])
+		{
+			//For now assume that only one block can be removed at a time
+			//Hiro has code that allows multiple blocks to be removed
+			MorphologyArray[i][j] = 0;
+			ResistanceArray[i][j] = 0;
+		
+			//Hiro then has some code to count the number of blocks removed
+			//but not clear why this is needed
+		
+			//May also need soemthing to move ix_max landward by 1
 		}
 	}
 }
@@ -437,7 +455,7 @@ void Hiro::ErodeDownwearing()
 	for (int j=0; j<MaxTideXInd; ++j)
 	{
 		// loop over the tidal range?
-		for (int i=MinTideYInd; i<=MaxTideYInd; ++i)
+		for (int i=MinTideZInd; i<=MaxTideZInd; ++i)
 		{
 			// Check Downwear Force vs Resistance
 			if (Dw_Erosion[j] >= ResistanceArray[i][j])
@@ -479,8 +497,8 @@ void Hiro::UpdateMorphology()
 	}
 	
 	//Loop across all intertidal elevations
-	MinTideYInd = SeaLevelInd+0.5*TidalRange/dZ;
-	MaxTideYInd = SeaLevelInd-0.5*TidalRange/dZ;
+	MinTideZInd = SeaLevelInd+0.5*TidalRange/dZ;
+	MaxTideZInd = SeaLevelInd-0.5*TidalRange/dZ;
 	
 	//Populate vector of X values in Z 
 	for (int i=0; i<NZNodes; ++i)
@@ -517,14 +535,15 @@ void Hiro::UpdateMorphology()
 	bool HighTideFlag = false;
 	for (int j=0; j<NXNodes; ++j)
 	{
-		if ((MorphologyArray[MaxTideYInd][j] == 1) && (HighTideFlag == false))
+		if ((MorphologyArray[MaxTideZInd][j] == 1) && (HighTideFlag == false))
 		{
 			MaxTideXInd = j;
 			HighTideFlag = true;
 		}
-		if ((MorphologyArray[MinTideYInd][j] == 1) && (LowTideFlag == false))
+		if ((MorphologyArray[MinTideZInd][j] == 1) && (LowTideFlag == false))
 		{
 			 MinTideXInd = j;
+			 LowTideFlag = true;
 		}
 		if ((HighTideFlag == 1) && (LowTideFlag == 1)) break;
 	}
