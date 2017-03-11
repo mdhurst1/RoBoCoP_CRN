@@ -88,7 +88,10 @@ void Hiro::Initialise(double dZ_in, double dX_in)
 	StandingWavePressure_Dw = 1.;
 	BreakingWavePressure_Dw = 1.;
 	BrokenWavePressure_Dw = 1.;
-		
+	
+	//Cliff control params
+	CliffFailureDepth = 1.;
+	
 	//Declare spatial stuff
 	dZ = dZ_in;
 	dX = dX_in;
@@ -125,9 +128,6 @@ void Hiro::Initialise(double dZ_in, double dX_in)
 	//Set sea level to zero to begin with, and the ind, this will get updated later
 	SeaLevel = 0;
 	SeaLevelInd = 0;
-	
-	//Initialise weathering shape function
-	InitialiseWeathering();
 	
 	//Populate geometric metrics
 	UpdateMorphology();
@@ -177,13 +177,17 @@ void Hiro::InitialiseTides(double TideRange)
 	
 	//Normalise values to total
 	for (int i=0; i<NTideValues; ++i) ErosionShapeFunction[i] /= Total;
+	
+	//Initialise weathering shape function
+	InitialiseWeathering();
+	
 }
 
 void Hiro::InitialiseWeathering()
 {
 	/* Weathering Efficacy Function following Trenhaile and Kanayay (2005) */
 	
-	// Make erosion shape function based on tidal duration
+	// Make weathering shape function based on tidal duration
 	NTideValues = (int)(TidalRange/dZ)+1;
 	vector<double> EmptyTideVec(NTideValues,TidalRange/2.);	
 	WeatheringEfficacy = EmptyTideVec;
@@ -192,7 +196,7 @@ void Hiro::InitialiseWeathering()
 	{
 		for (int i=0; i<NTideValues ;++i)
 		{
-			if (i<TidalRange/4.) WeatheringEfficacy[i] = exp(-(i-pow(0.25*TidalRange,2.))/(0.5*TidalRange));
+			if (i<NTideValues/4.) WeatheringEfficacy[i] = exp(-(i-pow(0.25*TidalRange,2.))/(0.5*TidalRange));
 			else WeatheringEfficacy[i] = exp(-((i-pow(0.25*TidalRange,2.))/(pow(TidalRange,2.)/10.)));
 		} 
 	}
@@ -575,7 +579,7 @@ void Hiro::MassFailure()
 	}
 	
 	//if big enough then delete
-	if ((XMax-XCliff) > 10.)
+	if ((XMax-XCliff) > CliffFailureDepth)
 	{
 		for (int i=0; i<=XMaxZInd; ++i)
 		{

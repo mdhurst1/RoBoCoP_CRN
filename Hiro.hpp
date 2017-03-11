@@ -170,6 +170,7 @@ class Hiro
 		//depends on wave height so defined inline
 		double DepthDecay;		
 		double CliffWeatheringRate;
+		double CliffFailureDepth;
 		
 		//This will need to be populated in the initialise tides function
 		vector<double> WeatheringEfficacy;
