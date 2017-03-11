@@ -156,8 +156,8 @@ void Hiro::InitialiseTides(double TideRange)
 	{
 		for (int i=0; i<NTideValues; ++i)
 		{
-			ErosionShapeFunction[i] = sin(i*M_PI/(0.5*TidalRange));
-			if (i>0.5*TidalRange) ErosionShapeFunction[i] *= -1;
+			ErosionShapeFunction[i] = sin(i*dZ*M_PI/(0.5*TidalRange));
+			if (i*dZ>0.5*TidalRange) ErosionShapeFunction[i] *= -1;
 			Total += ErosionShapeFunction[i];
 		}
 	}
@@ -165,12 +165,12 @@ void Hiro::InitialiseTides(double TideRange)
 	{
 		for (int i=0; i<0.55*NTideValues; ++i)
 		{
-			ErosionShapeFunction[i] = sin(i*M_PI/(0.55*TidalRange));
+			ErosionShapeFunction[i] = sin(i*dZ*M_PI/(0.55*TidalRange));
 			Total += ErosionShapeFunction[i];
 		}
 		for (int i=0.45*NTideValues; i<NTideValues; ++i)
 		{
-			ErosionShapeFunction[i] += sin((i-0.45*TidalRange)*M_PI/(0.55*TidalRange));
+			ErosionShapeFunction[i] += sin((i*dZ-0.45*TidalRange)*M_PI/(0.55*TidalRange));
 			Total += ErosionShapeFunction[i];
 		}
 	}
