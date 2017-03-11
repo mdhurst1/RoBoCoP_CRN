@@ -185,21 +185,32 @@ void Hiro::InitialiseTides(double TideRange)
 
 void Hiro::InitialiseWeathering()
 {
-	/* Weathering Efficacy Function following Trenhaile and Kanayay (2005) */
+	/* Weathering Efficacy Function guided by Trenhaile and Kanayay (2005)
+	using a log-normal distribution across the tidal range */
+	
+	// declare control parameters for distribution
+	double sigma = 0.5;
+	double Theta = 0;
+	double MaxEfficacy;
+	
+	// This m value is tailored to cause a distribution peak at 3/4 of the tidal range
+	// as in Matsumoto et al. (2016)
+	double m = 1.1665; 
 	
 	// Make weathering shape function based on tidal duration
 	NTideValues = (int)(TidalRange/dZ)+1;
-	vector<double> EmptyTideVec(NTideValues,TidalRange/2.);	
+	vector<double> EmptyTideVec(NTideValues,0);	
 	WeatheringEfficacy = EmptyTideVec;
 	
-	if (dZ == 0.1)
-	{
-		for (int i=0; i<NTideValues ;++i)
-		{
-			if (i<NTideValues/4.) WeatheringEfficacy[i] = exp(-(i-pow(0.25*TidalRange,2.))/(0.5*TidalRange));
-			else WeatheringEfficacy[i] = exp(-((i-pow(0.25*TidalRange,2.))/(pow(TidalRange,2.)/10.)));
-		} 
-	}
+	//Create a vector ranging from 0 to 10 with NTideValues
+	vector<double> LogNormalDistX(NTideValues,0);
+	for (int i=0; i<NTideValues; ++i) LogNormalDistX[i] = 10.*i/(NTideValues-1);
+
+	//Normalise so that Max value is 1
+	MaxEfficacy = exp(-(pow(log(2.5-Theta)-m,2.)/(2.*pow(sigma,2.)))) / ((2.5-Theta)*sigma*sqrt(2.*M_PI)); 
+	
+	//Create log normal weathering efficacy shape function	
+	for (int i=1; i<NTideValues ;++i) WeatheringEfficacy[i] = (exp(-((pow(log(LogNormalDistX[i]-Theta)-m,2.))/(2*pow(sigma,2.)))) / ((LogNormalDistX[i]-Theta)*sigma*sqrt(2.*M_PI))) / MaxEfficacy;
 }
 
 void Hiro::InitialiseWaves(double WaveHeight_Mean, double WaveHeight_StD, double WavePeriod_Mean, double WavePeriod_StD)
