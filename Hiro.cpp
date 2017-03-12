@@ -401,7 +401,7 @@ void Hiro::IntertidalWeathering()
 	for (int i=MaxTideZInd; i<=MinTideZInd; ++i)
 	{
 		//Calculate Weathering
-		WeatheringForce = WeatheringConst*WeatheringEfficacy[i];
+		WeatheringForce = WeatheringConst*WeatheringEfficacy[i-MaxTideZInd];
 		
 		//How are we going to get j? i.e. x-position in the array?
 		//Need a loop in here moving from bottom to top of tidal range in x-position
@@ -449,7 +449,7 @@ void Hiro::ErodeBackwearing()
 	{
 		//Find j ind somehow
 		//loop across the active shoreface
-		while (j < MaxTideXInd)
+		while (j < MaxXInd)
 		{
 			if (MorphologyArray[i][j] == 1) break;
 			++j;
@@ -524,6 +524,7 @@ void Hiro::UpdateMorphology()
 	MaxTideZInd = SeaLevelInd-0.5*TidalRange/dZ;
 	
 	//Populate vector of X values in Z 
+	MaxXInd = 0;
 	for (int i=0; i<NZNodes; ++i)
 	{
 		for (int j=XInd[i]; j<NXNodes; ++j)
@@ -532,6 +533,7 @@ void Hiro::UpdateMorphology()
 			{
 				Xz[i] = X[j];
 				XInd[i] = j;
+				if (XInd[i] > MaxXInd) MaxXInd = XInd[i];
 				break;
 			}
 		}

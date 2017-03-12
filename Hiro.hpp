@@ -107,8 +107,11 @@ class Hiro
 		
 		//Positions of min and max tide in X and Z
 		int MinTideXInd, MaxTideXInd, MinTideZInd, MaxTideZInd;
-		
-		//
+
+		//Position of most landward eroded cell 
+		int MaxXInd; 
+
+		//Surf zone properties for wave transformation
 		double SurfZoneGradient;
 		double SurfZoneWidth;
 		
