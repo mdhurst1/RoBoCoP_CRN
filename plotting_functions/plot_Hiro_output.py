@@ -38,16 +38,16 @@ def make_plot(FileName,ColourMap):
     
     # Only plot every 1 000 years
     PlotTime = 0
-    PlotInterval = 1
+    PlotInterval = 1000
     
     ax1 = plt.subplot(111)
 
     #Get header info and setup X coord
-    for j in range(1,NoLines-1,2):
+    for j in range(1,NoLines-1):
         
         Line = (Lines[j].strip().split(" "))
         Time = float(Line[0])
-        
+        print Time, 
         #Read morphology
         X = np.array(Line[1:],dtype="float64")
         Z = np.arange(37.5,-37.6,-0.1)
@@ -61,8 +61,8 @@ def make_plot(FileName,ColourMap):
     plt.xlabel("Distance (m)")
     plt.ylabel("Elevation (m)")
     xmin, xmax = ax1.get_xlim()
-    #plt.xlim(xmin-10,xmax)
-    #plt.ylim(-10,10)
+    plt.xlim(xmin-10,xmax)
+    plt.ylim(-10,10)
     plt.show()
 
 if __name__ == "__main__":
