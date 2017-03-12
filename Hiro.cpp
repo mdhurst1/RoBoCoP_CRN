@@ -405,7 +405,7 @@ void Hiro::IntertidalWeathering()
 		
 		//How are we going to get j? i.e. x-position in the array?
 		//Need a loop in here moving from bottom to top of tidal range in x-position
-		for (int j=MinTideXInd; j<=MaxTideXInd; ++j)
+		for (int j=MinTideXInd; j<=MaxXInd; ++j)
 		{
 			//Check we're at a a surface cell
 			if (j == 0)
