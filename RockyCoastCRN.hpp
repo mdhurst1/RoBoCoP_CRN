@@ -96,14 +96,14 @@ class RockyCoastCRN
 		double dX;    //Nodes spacing in cross shore (m)
 		double dZ;    //Node spacing in vertical (m)
 				
+		int NoNuclides;								//How many nuclides to track
+		vector<int> Nuclides;						//Which nuclides to track, labelled by atomic number
 		vector< vector<double> > SurfaceN;		//CRN surface concentrations	(a/g)
+		vector< vector< vector<double> > > N;	//concentration of nuclides (a/g) as a function of position and depth and nuclide
 		
 		vector<double> PlatformElevation;		  //Platform Surface Elevations (m)
 		vector<double> PlatformElevationOld;	//Platform Surface Elevations Old (m)
 		vector<double> SurfaceElevation;		  //Surface Elevations (including beach cover) (m)
-		
-		vector<int> Nuclides;						//Which nuclides to track, labelled by atomic number
-		vector< vector< vector<double> > > N;	//concentration of nuclides (a/g) as a function of position and depth and nuclide
 				
 		vector<double> GeoMagTime;
 		vector<double> GeoMagScalingFactors;  //Holds data from Lifton et al. (2014) Geomag model
