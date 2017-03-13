@@ -70,7 +70,8 @@ int main()
 	//Print Control
 	double PrintInterval = 100.;
 	double PrintTime = Time;
-	string OutputFileName = "ShoreProfile.xz";
+	string OutputMorphologyFileName = "ShoreProfile.xz";
+	string OutputConcentrationFileName = "Concentrations.xn";
 	
 	//initialise Hiro Model
 	Hiro PlatformModel = Hiro(dZ, dX);
@@ -128,7 +129,7 @@ int main()
 		//print?
 		if (Time >= PrintTime)
 		{
-			PlatformModel.WriteProfile(OutputFileName, Time);
+			PlatformModel.WriteProfile(OutputMorphologyFileName, Time);
 			PlatformCRN.WriteCRNProfile(OutputConcentrationFileName, Time);
 			PrintTime += PrintInterval;
 		}

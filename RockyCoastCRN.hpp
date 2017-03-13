@@ -242,8 +242,8 @@ class RockyCoastCRN
 		/// @param cliffheight Height of retreating cliff (constant)
 		/// @param junctionelevation Elevation of platform at the cliff
 		/// @param tidalamplitude Amplitude of diurnal tides
-		///	@author Martin D. Hurst 
-    /// @date 14/09/2015
+		/// @author Martin D. Hurst 
+		/// @date 14/09/2015
 		RockyCoastCRN(double retreatrate, double beachwidth, int beachtype, double platformgradient, double cliffheight, double junctionelevation, double tidalamplitude, double slr, int steppedplatform=0, double stepsize=0)
 		{
 			Initialise(retreatrate, beachwidth, beachtype, platformgradient, cliffheight, junctionelevation, tidalamplitude, slr, steppedplatform, stepsize);
@@ -251,11 +251,20 @@ class RockyCoastCRN
 		
 		/// @brief Initialisation function with friend class RoBoCoP as the morphological model
 		/// @param RoBoCoP RoBoCoPCoast a RoBoCoP coastal morphology object 
-		///	@author Martin D. Hurst 
-    /// @date 8/3/2015
+		/// @author Martin D. Hurst 
+    	/// @date 8/3/2016
 		RockyCoastCRN(RoBoCoP RoBoCoPCoast)
 		{
 			Initialise(RoBoCoPCoast);
+		}
+		
+		/// @brief Initialisation function with friend class Hiro as the morphological model
+		/// @param Hiro HiroCoast a Hiro coastal morphology object 
+		/// @author Martin D. Hurst 
+		/// @date 13/3/2017
+		RockyCoastCRN(Hiro HiroCoast)
+		{
+			Initialise(HiroCoast);
 		}
 		
 		/// @brief Empty initialisation function, will throw an error.
@@ -318,24 +327,33 @@ class RockyCoastCRN
 		/// @details This function calculates the accumulation of 10Be in the platform surface and
 		///   at depth by both spallation and muogenic production. 
 		/// @param TimeInterval the time step in years
-		///	@author Martin D. Hurst 
-    /// @date 09/02/2016
+		/// @author Martin D. Hurst 
+		/// @date 09/02/2016
 		void UpdateCRNs();
 
 		/// @brief Updates the platform morphology
 		/// @details This function calculates the amount of platform downwear and updates the elevations
 		///   of the platform surface. Currently just does gradual uniform downwear or step-retreat.
-		///	@author Martin D. Hurst 
-    /// @date 09/02/2016
+		/// @author Martin D. Hurst 
+		/// @date 09/02/2016
 		void UpdateEquillibriumMorphology();
 		
 		/// @brief Updates the platform morphology
 		/// @details This function calculates the amount of platform downwear and cliff retre updates the elevations
 		///   of the platform surface based on an iteration of the RoBoCoP coast object.
-		///	@author Martin D. Hurst
+		/// @author Martin D. Hurst
 		/// @param RoBoCoPCoast A RoBoCoP Coastal model object
     	/// @date 14/03/2016
 		void UpdateMorphology(RoBoCoP RoBoCoPCoast);
+		
+		/// @brief Updates the platform morphology
+		/// @details This function calculates the amount of platform downwear and 
+		/// 	cliff retre updates the elevations of the platform surface based on 
+		/// 	an iteration of the Hiro coast object.
+		/// @author Martin D. Hurst
+		/// @param HiroCoast A Hiro Coastal model object
+    	/// @date 13/03/2017
+		void UpdateMorphology(Hiro HiroCoast);
 		
 		/// @brief Updates the platform morphology based on recieving X and Z vectors
 		/// @details This function updates the platform morphology based on a profile passed through
