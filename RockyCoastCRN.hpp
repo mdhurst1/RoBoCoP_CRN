@@ -100,7 +100,7 @@ class RockyCoastCRN
 		vector<double> PlatformElevationOld;	//Platform Surface Elevations Old (m)
 		vector<double> SurfaceElevation;		  //Surface Elevations (including beach cover) (m)
 		
-		vector< vector vector< <double> > N;	//concentration of nuclides (a/g) as a function of position and depth and nuclide
+		vector< vector< vector<double> > > N;	//concentration of nuclides (a/g) as a function of position and depth and nuclide
 				
 		vector<double> GeoMagTime;
 		vector<double> GeoMagScalingFactors;  //Holds data from Lifton et al. (2014) Geomag model
@@ -161,6 +161,7 @@ class RockyCoastCRN
 	  
 		//Initialise Function
 		void Initialise();
+		void Initialise(vector<int> Nuclides);
 		void Initialise(double retreatrate, double beachwidth, int beachtype, double bermheight, double platformgradient, double cliffheight, double junctionelevation, double tidalamplitude, double slr, int steppedplatform=0, double stepsize=0);
 		void Initialise(double retreatrate1, double retreatrate2, int retreattype, double changetime, double beachwidth, int beachtype, double bermheight, double platformgradient, double cliffheight, double junctionelevation, double tidalamplitude, double SLR, int steppedplatform=0, double stepsize=0);
 		void Initialise(RoBoCoP RoBoCoPCoast);
@@ -245,9 +246,14 @@ class RockyCoastCRN
 			Initialise(RoBoCoPCoast);
 		}
 		
+		RockyCoastCRN(vector<int> Nuclides)
+		{
+			Initialise(Nuclides);
+		}
+		
 		/// @brief Empty initialisation function, will throw an error.
 		///	@author Martin D. Hurst 
-    /// @date 14/09/2015
+    	/// @date 14/09/2015
 		RockyCoastCRN()
 		{
 			Initialise();
@@ -349,8 +355,8 @@ class RockyCoastCRN
 		/// @brief Get surface CRN concentration
 		/// @return Surface CRN concentration
 		///	@author Martin D. Hurst 
-    /// @date 14/09/2015
-		vector<double> get_SurfaceN() const { return SurfaceN; }
+		/// @date 14/09/2015
+		//vector<double> get_SurfaceN() const { return SurfaceN; }
 		
 };
 

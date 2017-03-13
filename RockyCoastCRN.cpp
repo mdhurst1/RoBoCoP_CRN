@@ -58,6 +58,15 @@ using namespace std;
 
 void RockyCoastCRN::Initialise()
 {
+	cout << "Warning: You have not specified which nuclides you wish to track" << endl;
+	cout << "Defaulting to 10Be only" << endl;
+	
+	vector<int> Nuclides = [10];
+	Initialise(Nuclides);
+}
+
+void RockyCoastCRN::Initialise(vector<int> Nuclides)
+{
   /* initialise an empty platform object
 	retreatrate is the rate of cliff retreat (m/yr)
 	beachwidth is the width of the beach (m), protecting the platform from CRN production
@@ -245,7 +254,63 @@ void RockyCoastCRN::Initialise(RoBoCoP RoBoCoPCoast)
   //Initialise Geomagnetic Scaling as constant
   GeoMagScalingFactor = 1;
 }
+
+void RockyCoastCRN::Initialise(Hiro HiroCoast)
+{
+	/* initialise a RockyCoastCRN object for use with a Hiro object */
+	printf("\nRockyCoastCRN.Initialise: Initialised a RockyCoastCRN object for use with a Hiro Model object\n");
+
+	//set tidal amplitude based on HiroCoast
+	TidalRange = HiroCoast.TidalRange;
 	
+	//get max extent of shoreface from RoBoCoP
+	XMin = HiroCoast.X[0];
+	XMax = RoBoCoPCoast.X[RoBoCoPCoast.NoNodes-1];
+	double ZMax = RoBoCoPCoast.Z[0];
+  double ZMin = RoBoCoPCoast.Z[RoBoCoPCoast.NoNodes-1];
+  //Cliff is at the start of the vector
+	CliffHeight = ZMax;
+	CliffPositionX = XMin;
+  CliffPositionInd = 0;
+		
+	//Setup CRN domain based on RoBoCoP
+	NXNodes = RoBoCoPCoast.NoNodes;
+	NZNodes = RoBoCoPCoast.NoNodes;
+	NDV = -9999;
+	dX = (XMax-XMin)/(NXNodes-1);
+	dt = RoBoCoPCoast.dt;
+		
+	//Setup CRN Arrays
+	vector<double> EmptyX(NXNodes,0.0);
+	vector<double> EmptyZ(NZNodes,0.0);
+	vector<double> EmptyXNDV(NXNodes,NDV);
+	vector< vector<double> > EmptyVV(NXNodes,EmptyZ);
+	X = EmptyX;
+	Z = EmptyZ;
+	PlatformElevation = EmptyXNDV;
+	PlatformElevationOld = EmptyXNDV;
+	SurfaceElevation = EmptyXNDV;
+	SurfaceN = EmptyX;
+	N = EmptyVV;
+
+  for (int j=0; j<NZNodes; ++j) Z[j] = (((ZMax-ZMin)/2.)-j*((ZMax-ZMin)/(NZNodes-1)));	
+  
+	//Get surface morphology from RoBoCoP
+  int Ind = 0;
+	for (int i=0; i<NXNodes; ++i)
+  {
+    X[i] = dX*i;
+    while ((RoBoCoPCoast.X[Ind] < X[i]) && (Ind < RoBoCoPCoast.NoNodes)) ++Ind;
+    if (RoBoCoPCoast.X[Ind] == X[i]) SurfaceElevation[i] = RoBoCoPCoast.Z[Ind];
+    else SurfaceElevation[i] = RoBoCoPCoast.Z[Ind-1] + (RoBoCoPCoast.Z[Ind]-RoBoCoPCoast.Z[Ind-1])*((X[i]-RoBoCoPCoast.X[Ind-1])/(RoBoCoPCoast.X[Ind]-RoBoCoPCoast.X[Ind-1]));
+  }
+
+  // copy to PlatformElevation
+  PlatformElevation = SurfaceElevation;
+  
+  //Initialise Geomagnetic Scaling as constant
+  GeoMagScalingFactor = 1;
+}
 
 void RockyCoastCRN::InitialisePlanarPlatformMorphology()
 {
