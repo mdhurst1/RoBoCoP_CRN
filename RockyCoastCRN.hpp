@@ -169,6 +169,9 @@ class RockyCoastCRN
 		void Initialise(double retreatrate1, double retreatrate2, int retreattype, double changetime, double beachwidth, int beachtype, double bermheight, double platformgradient, double cliffheight, double junctionelevation, double tidalamplitude, double SLR, int steppedplatform=0, double stepsize=0);
 		void Initialise(RoBoCoP RoBoCoPCoast);
 		
+		//function to initialise production schematics
+		void InitialiseNuclides(vector<int> Nuclides);
+		
 		//functions to initialise platform morphology
 		void InitialisePlanarPlatformMorphology();
 				

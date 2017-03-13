@@ -41,7 +41,6 @@ float Po_14C_Spal = 12.29;
 ///@details Spallation (a/g/yr) calibrated 36Cl production rate (add_ref).
 //float Po_36Cl_Spal = 4.007166;
 
-
 ///@brief   10Be muogneic reference produciton rate.
 ///@details Total muogenic production rate (a/g/yr) following Braucher et al. (2013).
 float Po_10Be_Muon_Fast = 0.028;
