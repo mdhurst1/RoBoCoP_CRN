@@ -35,11 +35,11 @@ float Po_14C_Spal = 12.29;
 
 ///@brief   26Al spallation reference production rate.
 ///@details Spallation (a/g/yr) calibrated 26Al production rate (add ref).
-//float Po_26Al_Spal = 4.007166;
+float Po_26Al_Spal = 4.007166;
 
 ///@brief   36Cl spallation reference production rate.
 ///@details Spallation (a/g/yr) calibrated 36Cl production rate (add_ref).
-//float Po_36Cl_Spal = 4.007166;
+float Po_36Cl_Spal = 4.007166;
 
 ///@brief   10Be muogneic reference produciton rate.
 ///@details Total muogenic production rate (a/g/yr) following Braucher et al. (2013).
@@ -47,9 +47,19 @@ float Po_10Be_Muon_Fast = 0.028;
 float Po_10Be_Muon_Slow = 0;
 
 ///@brief   14C muogneic reference produciton rate.
-///@details Total muogenic production rate (a/g/yr) following Braucher et al. (2013).
+///@details Total muogenic production rate (a/g/yr)
 float Po_14C_Muon_Fast = 3.34;
 float Po_14C_Muon_Slow = 0.44;
+
+///@brief   26Al muogneic reference produciton rate.
+///@details Total muogenic production rate (a/g/yr)
+float Po_26Al_Muon_Fast = 3.34;
+float Po_26Al_Muon_Slow = 0.44;
+
+///@brief   36Cl muogneic reference produciton rate.
+///@details Total muogenic production rate (a/g/yr)
+float Po_36Cl_Muon_Fast = 3.34;
+float Po_36Cl_Muon_Slow = 0.44;
 
 // Attenuation Lengths
 ///@brief Spallogenic attenuation length (kg/m^2).

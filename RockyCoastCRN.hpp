@@ -98,6 +98,10 @@ class RockyCoastCRN
 				
 		int NoNuclides;								//How many nuclides to track
 		vector<int> Nuclides;						//Which nuclides to track, labelled by atomic number
+		vector<double>	Po_Spal;						//Holder for all spalation surface production rates
+		vector<double> Po_Muon_Fast;				//Holder for all fast muon surface production rates
+		vector<double> Po_Muon_Slow;				//Holder for all slow muon surface production rates
+		vector<double> Lambda;						//Holder for all decay constants
 		vector< vector<double> > SurfaceN;		//CRN surface concentrations	(a/g)
 		vector< vector< vector<double> > > N;	//concentration of nuclides (a/g) as a function of position and depth and nuclide
 		
@@ -115,11 +119,12 @@ class RockyCoastCRN
 		double NDV;													//No Data Value placeholder
 		
 		//CRN
-		vector<double> P_Spal, P_Muon_Fast, P_Muon_Slow; //local production rates for spallation and muons for any nuclide
+		vector <vector <double> >P_Spal, P_Muon_Fast, P_Muon_Slow; //local production rates for spallation and muons for any nuclide
 		
 		//TIDES
 		double TidalPeriod;
 		double TidalAmplitude;
+		double TidalRange;
 		vector<double> TideLevels;
 		vector<double> WaterLevels;
 		vector<double> WaterDepths;
@@ -168,6 +173,7 @@ class RockyCoastCRN
 		void Initialise(double retreatrate, double beachwidth, int beachtype, double bermheight, double platformgradient, double cliffheight, double junctionelevation, double tidalamplitude, double slr, int steppedplatform=0, double stepsize=0);
 		void Initialise(double retreatrate1, double retreatrate2, int retreattype, double changetime, double beachwidth, int beachtype, double bermheight, double platformgradient, double cliffheight, double junctionelevation, double tidalamplitude, double SLR, int steppedplatform=0, double stepsize=0);
 		void Initialise(RoBoCoP RoBoCoPCoast);
+		void Initialise(Hiro HiroCoast);
 		
 		//function to initialise production schematics
 		void InitialiseNuclides(vector<int> Nuclides);

@@ -83,7 +83,7 @@ void RockyCoastCRN::Initialise()
 	cout << "Warning: You have not specified which nuclides you wish to track" << endl;
 	cout << "Defaulting to 10Be only" << endl;
 	
-	vector<int> Nuclides = [10];
+	vector<int> Nuclides(1,10);
 	Initialise(Nuclides);
 }
 
@@ -132,18 +132,18 @@ void RockyCoastCRN::Initialise(vector<int> Nuclides)
 	//Setup Surface Arrays
 	vector<double> EmptyZ(NZNodes,0);
 	vector<double> EmptyX(NXNodes,0);
+	vector<double> EmptyXNDV(NXNodes,NDV);
 	X = EmptyX;
 	Z = EmptyZ;
 	PlatformElevation = EmptyXNDV;
 	PlatformElevationOld = EmptyXNDV;
 	SurfaceElevation = EmptyXNDV;
-	vector< vector <double> > EmptySurfaceNs(EmptyX,NoNuclides);
+	vector< vector <double> > EmptySurfaceNs(NoNuclides,EmptyX);
 	SurfaceN = EmptySurfaceNs;
 	
-	//Setup CRN Arrays 
-	vector<double> EmptyXNDV(NXNodes,NDV);
-	vector< vector<double> > EmptyN(EmptyZ,NXNodes);
-	vector< vector< vector<double> > > EmptyNs(EmptyN,NoNuclides);
+	//Setup CRN Arrays 	
+	vector< vector<double> > EmptyN(NXNodes,EmptyZ);
+	vector< vector< vector<double> > > EmptyNs(NoNuclides,EmptyN);
 	N = EmptyNs;
 
 	for (int j=0; j<NZNodes; ++j) Z[j] = (((ZMax-ZMin)/2.)-j*((ZMax-ZMin)/(NZNodes-1)));	
@@ -245,8 +245,6 @@ void RockyCoastCRN::Initialise(RoBoCoP RoBoCoPCoast)
 	//Setup CRN domain based on RoBoCoP
 	NXNodes = RoBoCoPCoast.NoNodes;
 	NZNodes = RoBoCoPCoast.NoNodes;
-	X = EmptyX;
-	Z = EmptyZ;
 	NDV = -9999;
 	dX = (XMax-XMin)/(NXNodes-1);
 	dt = RoBoCoPCoast.dt;
@@ -254,16 +252,18 @@ void RockyCoastCRN::Initialise(RoBoCoP RoBoCoPCoast)
 	//Setup Surface Arrays
 	vector<double> EmptyZ(NZNodes,0);
 	vector<double> EmptyX(NXNodes,0);
+	vector<double> EmptyXNDV(NXNodes,NDV);
+	X = EmptyX;
+	Z = EmptyZ;
 	PlatformElevation = EmptyXNDV;
 	PlatformElevationOld = EmptyXNDV;
 	SurfaceElevation = EmptyXNDV;
-	vector< vector <double> > EmptySurfaceNs(EmptyX,NoNuclides);
+	vector< vector <double> > EmptySurfaceNs(NoNuclides,EmptyX);
 	SurfaceN = EmptySurfaceNs;
 	
-	//Setup CRN Arrays 
-	vector<double> EmptyXNDV(NXNodes,NDV);
-	vector< vector<double> > EmptyN(EmptyZ,NXNodes);
-	vector< vector< vector<double> > > EmptyNs(EmptyN,NoNuclides);
+	//Setup CRN Arrays 	
+	vector< vector<double> > EmptyN(NXNodes,EmptyZ);
+	vector< vector< vector<double> > > EmptyNs(NoNuclides,EmptyN);
 	N = EmptyNs;
 	
 	for (int j=0; j<NZNodes; ++j) Z[j] = (((ZMax-ZMin)/2.)-j*((ZMax-ZMin)/(NZNodes-1)));	
@@ -295,7 +295,7 @@ void RockyCoastCRN::Initialise(Hiro HiroCoast)
 	
 	//Setup CRN domain based on HiroCoast
 	NXNodes = HiroCoast.NXNodes;
-	NZNodes = HrioCoast.NZNodes;
+	NZNodes = HiroCoast.NZNodes;
 	NoNuclides = Nuclides.size();
 	NDV = -9999;
 	dX = HiroCoast.dX;
@@ -305,16 +305,18 @@ void RockyCoastCRN::Initialise(Hiro HiroCoast)
 	//Setup Surface Arrays
 	vector<double> EmptyZ(NZNodes,0);
 	vector<double> EmptyX(NXNodes,0);
+	vector<double> EmptyXNDV(NXNodes,NDV);
+	X = EmptyX;
+	Z = EmptyZ;
 	PlatformElevation = EmptyXNDV;
 	PlatformElevationOld = EmptyXNDV;
 	SurfaceElevation = EmptyXNDV;
-	vector< vector <double> > EmptySurfaceNs(EmptyX,NoNuclides);
+	vector< vector <double> > EmptySurfaceNs(NoNuclides,EmptyX);
 	SurfaceN = EmptySurfaceNs;
 	
-	//Setup CRN Arrays 
-	vector<double> EmptyXNDV(NXNodes,NDV);
-	vector< vector<double> > EmptyN(EmptyZ,NXNodes);
-	vector< vector< vector<double> > > EmptyNs(EmptyN,NoNuclides);
+	//Setup CRN Arrays 	
+	vector< vector<double> > EmptyN(NXNodes,EmptyZ);
+	vector< vector< vector<double> > > EmptyNs(NoNuclides,EmptyN);
 	N = EmptyNs;
 	
 	//Do I actually need to copy these over?
@@ -325,8 +327,8 @@ void RockyCoastCRN::Initialise(Hiro HiroCoast)
 	for (int j=0; j<NXNodes; ++j)
 	{
 		int i=0;
-		while ((HiroModel.MorphologyArray[i][j] == 0) ++i;
-		SurfaceElevation[i] = HiroModel.Z[i];
+		while (HiroCoast.MorphologyArray[i][j] == 0) ++i;
+		SurfaceElevation[i] = HiroCoast.Z[i];
 	}
 
 	// copy to PlatformElevation
@@ -336,10 +338,10 @@ void RockyCoastCRN::Initialise(Hiro HiroCoast)
 	GeoMagScalingFactor = 1;
 }
 
-void RockCoastCRN::InitialiseNuclides(vector<int> Nuclides)
+void RockyCoastCRN::InitialiseNuclides(vector<int> Nuclides)
 {
 	//Declare number of nuclides
-	NoNuclides = Nucildes.size();
+	NoNuclides = Nuclides.size();
 	
 	//Setup empty vectors to store the required global production variables
 	vector<double> EmptyVec(NoNuclides);
@@ -389,19 +391,18 @@ void RockyCoastCRN::InitialisePlanarPlatformMorphology()
  	//Setup Surface Arrays
 	vector<double> EmptyZ(NZNodes,0);
 	vector<double> EmptyX(NXNodes,0);
+	vector<double> EmptyXNDV(NXNodes,NDV);
 	X = EmptyX;
 	Z = EmptyZ;
-	
 	PlatformElevation = EmptyXNDV;
 	PlatformElevationOld = EmptyXNDV;
 	SurfaceElevation = EmptyXNDV;
-	vector< vector <double> > EmptySurfaceNs(EmptyX,NoNuclides);
+	vector< vector <double> > EmptySurfaceNs(NoNuclides,EmptyX);
 	SurfaceN = EmptySurfaceNs;
 	
-	//Setup CRN Arrays 
-	vector<double> EmptyXNDV(NXNodes,NDV);
-	vector< vector<double> > EmptyN(EmptyZ,NXNodes);
-	vector< vector< vector<double> > > EmptyNs(EmptyN,NoNuclides);
+	//Setup CRN Arrays 	
+	vector< vector<double> > EmptyN(NXNodes,EmptyZ);
+	vector< vector< vector<double> > > EmptyNs(NoNuclides,EmptyN);
 	N = EmptyNs;
 	
 	// Create initial morphology
@@ -504,39 +505,41 @@ void RockyCoastCRN::UpdateParameters( double RetreatRate1_Test, double RetreatRa
 
 void RockyCoastCRN::RunModel(string outfilename, int WriteResultsFlag)
 {
-  /*  Main model loop. Iterates through time updating the CRN concentrations on the 
-      platform and at depth. Cliff steps back following cliff retreat rates, and 
-      platform downwears to maintain steady-state cliff profile. This currently only
-      works for a constant and gradual rate of cliff retreat and platform downwear. 
-      Future work can explore the influence of block removal on the platform, and 
-      episodic cliff retreat scenarios.
-      
-      Retreat Type can be 
-        - 0 for single/constant retreat rates
-        - 1 for step change retreat rates at time ChangeTime
-        - 2 for linear/gradual change in retreat rates through time
-        
-      WriteResultsFlag specifies whether to write results to file. Default is 1 (on).
-      This should be turned off (set to 0) for running MCMC_RockyCoast analysis.
-  */
-  
-  //Filenames
-  OutFileName = outfilename;
-  
-  //Reset Concentrations
-  //Setup Vectors
-	vector<double> EmptyX(NXNodes,0.0);
-	vector<double> EmptyZ(NZNodes,0.0);
+	/*  Main model loop. Iterates through time updating the CRN concentrations on the 
+		platform and at depth. Cliff steps back following cliff retreat rates, and 
+		platform downwears to maintain steady-state cliff profile. This currently only
+		works for a constant and gradual rate of cliff retreat and platform downwear. 
+		Future work can explore the influence of block removal on the platform, and 
+		episodic cliff retreat scenarios.
+		
+		Retreat Type can be 
+		  - 0 for single/constant retreat rates
+		  - 1 for step change retreat rates at time ChangeTime
+		  - 2 for linear/gradual change in retreat rates through time
+		  
+		WriteResultsFlag specifies whether to write results to file. Default is 1 (on).
+		This should be turned off (set to 0) for running MCMC_RockyCoast analysis.
+	*/
+
+	//Filenames
+	OutFileName = outfilename;
+
+	//Setup Surface Arrays
+	vector<double> EmptyZ(NZNodes,0);
+	vector<double> EmptyX(NXNodes,0);
 	vector<double> EmptyXNDV(NXNodes,NDV);
-	vector< vector<double> > EmptyVV(NXNodes,EmptyZ);
-	
+	X = EmptyX;
+	Z = EmptyZ;
 	PlatformElevation = EmptyXNDV;
 	PlatformElevationOld = EmptyXNDV;
 	SurfaceElevation = EmptyXNDV;
-	BeachThickness = EmptyX;
+	vector< vector <double> > EmptySurfaceNs(NoNuclides,EmptyX);
+	SurfaceN = EmptySurfaceNs;
 	
-	SurfaceN = EmptyX;
-	N = EmptyVV;
+	//Setup CRN Arrays 	
+	vector< vector<double> > EmptyN(NXNodes,EmptyZ);
+	vector< vector< vector<double> > > EmptyNs(NoNuclides,EmptyN);
+	N = EmptyNs;
 	
 	//set Sea level parameters
 	//SLR = 0.0002;     //Rate of relative sea level rise (m/y)  
@@ -711,10 +714,11 @@ void RockyCoastCRN::UpdateCRNs()
 	*/
 
 	//Temp parameters
-	vector<double> EmptyVector(NXNodes,0);
-	P_Spal = EmptyVector;
-	P_Muon = EmptyVector;
-
+	vector<double> EmptyNVec(NoNuclides,0);
+	vector <vector <double> > P_Spal(NXNodes,EmptyNVec);
+	P_Muon_Fast = P_Spal;
+	P_Muon_Slow = P_Spal;
+	
 	// variation in production on the platform at depth as a function of a tidal period
 	// First get a Tidal Sequence of Water Levels, clipping for negative depths
 	for (int i=0, NN=WaterLevels.size(); i<NN;++i) WaterLevels[i] = SeaLevel+TideLevels[i];
@@ -725,17 +729,12 @@ void RockyCoastCRN::UpdateCRNs()
 		//Get topographic shielding factor
 		TopoShieldingFactor = GetTopographicShieldingFactor(X[j]-CliffPositionX, CliffHeight);
 
-		//get water levels for this profile
-		//reset production params
-		P_Spal[i] = 0;
-		P_Muon[i] = 0;
-		
 		//Sort out the water shielding
 		if (SurfaceElevation[j] < SeaLevel+0.5*TidalRange)
 		{
 			for (int a=0, NN=WaterLevels.size(); a<NN; ++a)
 			{
-				if (WaterLevels[a] >= SurfaceElevation[i]) WaterDepths[a] = WaterLevels[a]-SurfaceElevation[i];
+				if (WaterLevels[a] >= SurfaceElevation[j]) WaterDepths[a] = WaterLevels[a]-SurfaceElevation[j];
 				else WaterDepths[a] = 0;
 
 				//Calculate Production for this profile
@@ -743,28 +742,36 @@ void RockyCoastCRN::UpdateCRNs()
 				for (int n=0; n<NoNuclides; ++n)
 				{
 					P_Spal[j][n] += GeoMagScalingFactor*TopoShieldingFactor*Po_Spal[n]*exp(-WaterDepths[a]/z_ws);
-					P_Muon[j][n] += TopoShieldingFactor*Po_Muon[n]*exp(-WaterDepths[a]/z_wm);
+					P_Muon_Fast[j][n] += TopoShieldingFactor*Po_Muon_Fast[n]*exp(-WaterDepths[a]/z_wm);
+					P_Muon_Slow[j][n] += TopoShieldingFactor*Po_Muon_Slow[n]*exp(-WaterDepths[a]/z_wm);
 				}
 			}
-			//find mean production rate at surface
-			P_Spal[i] /= NTidalValues;
-			P_Muon[i] /= NTidalValues;
+			//FOR EACH NUCLIDE OF INTEREST
+			for (int n=0; n<NoNuclides; ++n)
+			{
+				//find mean production rate at surface
+				P_Spal[j][n] /= NTidalValues;
+				P_Muon_Fast[j][n] /= NTidalValues;
+				P_Muon_Slow[j][n] /= NTidalValues;
+			}
 		}
+		
+		bool Top = false;
 		
 		for (int i=0; i<NZNodes; ++i)
 		{
 			if ((Z[i] < PlatformElevation[j]) && (Z[i] > PlatformElevation[j]-20.))
 			{
-				if (Top == 0)
+				if (Top == false)
 				{	
 					for (int n=0; n<NoNuclides; ++n)
 					{
 						//linearly interpolate to get concentration at the surface
 						if (PlatformElevationOld[j] == -9999) SurfaceN[j][n] = 0;
-						else if (SurfaceN[j][n] > 0) SurfaceN[j][n] -= (((PlatformElevationOld[i]-PlatformElevation[i])/(PlatformElevationOld[i]-Z[j]))*(SurfaceN[j][n]-N[i][j][n]]));
+						else if (SurfaceN[j][n] > 0) SurfaceN[j][n] -= (((PlatformElevationOld[i]-PlatformElevation[i])/(PlatformElevationOld[i]-Z[j]))*(SurfaceN[j][n]-N[i][j][n]));
 
 						//update concentration at the platform surface, accounting for beach cover
-						SurfaceN[i][n] += dt*P_Spal[i]*exp((0-((SurfaceElevation[i]-PlatformElevation[i])))/z_rs);
+						SurfaceN[i][n] += dt*P_Spal[j][n]*exp((0-((SurfaceElevation[i]-PlatformElevation[i])))/z_rs);
 						Top = 1;
 					}
 				}
@@ -775,8 +782,8 @@ void RockyCoastCRN::UpdateCRNs()
 					//This is kept as SurfaceElevation not Platform Elevation for now
 					//NB This assumes that material density of the beach is the same as the bedrock!
 					N[i][j][n] += dt*P_Spal[j][n]*exp((Z[j]-SurfaceElevation[i])/z_rs);	//spallation
-					N[i][j][n] += dt*P_Muon[j][n]*exp((Z[j]-SurfaceElevation[i])/z_rm);	//muons
-
+					N[i][j][n] += dt*P_Muon_Fast[j][n]*exp((Z[j]-SurfaceElevation[i])/z_rm);	//muons
+					N[i][j][n] += dt*P_Muon_Slow[j][n]*exp((Z[j]-SurfaceElevation[i])/z_rm);	//muons
 					//remove atoms due to radioactive decay
 					N[i][j][n] -= dt*Lambda[n];
 				}
