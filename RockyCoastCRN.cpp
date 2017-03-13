@@ -7,21 +7,42 @@
 	cliff retreat and platform downwear. For comparison with measured
 	10Be CRN measurements across a coastal platform.
 	
+	Please see/cite the following publications:
+	
+	Hurst, M.D., Rood, D.H., Ellis, M.A., Anderson, R.S. and 
+	Dornbusch, U., (2016) Recent acceleration in coastal cliff retreat rates
+	on the south coast of Great Britain. PNAS 113(47), 13336-13341,
+	http://dx.doi.org/10.1073/pnas.1613044113
+
+	Hurst, M. D., Rood, D. H., and Ellis, M. A. (2017) Controls on the 
+	distribution of cosmogenic 10Be across shore platforms. Earth Surf. 
+	Dynam. 5, 67-84, http://dx.doi.org/10.5194/esurf-5-67-2017
+	
 	Martin D. Hurst, British Geological Survey, December 2014
 
 	Copyright (C) 2015, Martin Hurst
 	
-	Developer can be contacted:
-  mhurst@bgs.ac.uk
+	
+	Updates to allow compatibility with Hiro Matsumoto's shore platform model
+	which has been coded up and added to RoBoCoP as part of MASTS project
+	
+	Matsumoto, H., Dickson, M. E., & Kench, P. S. (2016)
+	An exploratory numerical model of rocky shore profile evolution. 
+	Geomorphology, 268, 98-109, http://dx.doi.org/10.1016/j.geomorph.2016.05.017
+	
+	March 2017
+	
+	Copyright (C) 2017, Martin Hurst
+	
+	Developer can be contacted
+	martin.hurst@glasgow.ac.uk
   
-  Martin D. Hurst
-  British Geological Survey,
-  Environmental Science Centre,
-  Nicker Hill,
-  Keyworth,
-  Nottingham,
-  UK,
-  NG12 5GG
+	Martin D. Hurst
+	School of Geographical and Earth Sciences
+	University of Glasgow
+	Glasgow
+	Scotland
+	G12 8QQ
   
 	This program is free software: you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -52,6 +73,7 @@
 #include <cstdlib>
 #include <omp.h>
 #include "RockyCoastCRN.hpp"
+#include "Hiro.hpp"
 #include "CRN_global_variables.hpp"
 
 using namespace std;
@@ -278,7 +300,8 @@ void RockyCoastCRN::Initialise(Hiro HiroCoast)
 	PlatformElevation = EmptyXNDV;
 	PlatformElevationOld = EmptyXNDV;
 	SurfaceElevation = EmptyXNDV;
-	vector< vector <double> > EmptySurfaceNs(EmptyX,NoNuclides
+	vector< vector <double> > EmptySurfaceNs(EmptyX,NoNuclides);
+	SurfaceN = EmptySurfaceNs;
 	
 	//Setup CRN Arrays 
 	vector<double> EmptyXNDV(NXNodes,NDV);
@@ -632,65 +655,67 @@ void RockyCoastCRN::UpdateCRNs()
 	// First get a Tidal Sequence of Water Levels, clipping for negative depths
 	for (int i=0, NN=WaterLevels.size(); i<NN;++i) WaterLevels[i] = SeaLevel+TideLevels[i];
 
-	//FOR EACH NUCLIDE OF INTEREST
-	for (int n=0; n<NoNuclides; ++n)
-	{		
-		//LOOP ACROSS THE ACTIVE PART OF THE PLATFORM
-		for (int i=CliffPositionInd; i<NXNodes; ++i)
-		{
-			//only work on active nodes
-			if ((X[i] > CliffPositionX) && (X[i] <= XMax))
-			{
-				//Get topographic shielding factor
-				TopoShieldingFactor = GetTopographicShieldingFactor(X[i]-CliffPositionX, CliffHeight);
+	//LOOP Through the concentrations arrays
+	for (int j=0; j<NXNodes; ++j)
+	{
+		//Get topographic shielding factor
+		TopoShieldingFactor = GetTopographicShieldingFactor(X[j]-CliffPositionX, CliffHeight);
 
-				//get water levels for this profile
-				//reset production params
-				P_Spal[i] = 0;
-				P_Muon[i] = 0;
-
-				for (int a=0, NN=WaterLevels.size(); a<NN; ++a)
-				{
-					if (WaterLevels[a] >= SurfaceElevation[i]) WaterDepths[a] = WaterLevels[a]-SurfaceElevation[i];
-					else WaterDepths[a] = 0;
-
-					//Calculate Production for this profile
-					P_Spal[i] += GeoMagScalingFactor*TopoShieldingFactor*Po_10Be_Spal*exp(-WaterDepths[a]/z_ws);
-					P_Muon[i] += TopoShieldingFactor*Po_10Be_Muon*exp(-WaterDepths[a]/z_wm);
-				}
-
-				//find mean production rate at surface
-				P_Spal[i] /= NTidalValues;
-				P_Muon[i] /= NTidalValues;
+		//get water levels for this profile
+		//reset production params
+		P_Spal[i] = 0;
+		P_Muon[i] = 0;
 		
-			  //loop through depths and update concentrations
-			  int Top = 0;
-			  for (int j=0; j<NZNodes; ++j)
-			  {
-				  //cout << Z[j] << " " << SurfaceElevation[i] << " " << i << " " << j << endl;
-				  if ((Z[j] < PlatformElevation[i]) && (Z[j] > PlatformElevation[i]-20.))
-				  {
-					  if (Top == 0)
-					  {	
-						  //linearly interpolate to get concentration at the surface
-						  if (PlatformElevationOld[i] == -9999) SurfaceN[i] = 0;
-						  else if (SurfaceN[i] > 0) SurfaceN[i][n] -= (((PlatformElevationOld[i]-PlatformElevation[i])/(PlatformElevationOld[i]-Z[j]))*(SurfaceN[i]-N[i][j]));
-						  
-						  //update concentration at the platform surface, accounting for beach cover
-						  SurfaceN[i][n] += dt*P_Spal[i]*exp((0-((SurfaceElevation[i]-PlatformElevation[i])))/z_rs);
-						  Top = 1;
-					  }
+		//Sort out the water shielding
+		if (SurfaceElevation[j] < SeaLevel+0.5*TidalRange)
+		{
+			for (int a=0, NN=WaterLevels.size(); a<NN; ++a)
+			{
+				if (WaterLevels[a] >= SurfaceElevation[i]) WaterDepths[a] = WaterLevels[a]-SurfaceElevation[i];
+				else WaterDepths[a] = 0;
+
+				//Calculate Production for this profile
+				//FOR EACH NUCLIDE OF INTEREST
+				for (int n=0; n<NoNuclides; ++n)
+				{
+					P_Spal[j][n] += GeoMagScalingFactor*TopoShieldingFactor*Po_Spal[n]*exp(-WaterDepths[a]/z_ws);
+					P_Muon[j][n] += TopoShieldingFactor*Po_Muon[n]*exp(-WaterDepths[a]/z_wm);
+				}
+			}
+			//find mean production rate at surface
+			P_Spal[i] /= NTidalValues;
+			P_Muon[i] /= NTidalValues;
+		}
+		
+		for (int i=0; i<NZNodes; ++i)
+		{
+			if ((Z[i] < PlatformElevation[j]) && (Z[i] > PlatformElevation[j]-20.))
+			{
+				if (Top == 0)
+				{	
+					for (int n=0; n<NoNuclides; ++n)
+					{
+						//linearly interpolate to get concentration at the surface
+						if (PlatformElevationOld[j] == -9999) SurfaceN[j][n] = 0;
+						else if (SurfaceN[j][n] > 0) SurfaceN[j][n] -= (((PlatformElevationOld[i]-PlatformElevation[i])/(PlatformElevationOld[i]-Z[j]))*(SurfaceN[i]-N[i][j]));
+
+						//update concentration at the platform surface, accounting for beach cover
+						SurfaceN[i][n] += dt*P_Spal[i]*exp((0-((SurfaceElevation[i]-PlatformElevation[i])))/z_rs);
+						Top = 1;
+					}
+				}
 				
-					  //update concentrations at depth
-					  //This is kept as SurfaceElevation not Platform Elevation for now
-					  //NB This assumes that material density of the beach is the same as the bedrock!
-					  N[i][j][n] += dt*P_Spal[i]*exp((Z[j]-SurfaceElevation[i])/z_rs);	//spallation
-					  N[i][j][n] += dt*P_Muon[i]*exp((Z[j]-SurfaceElevation[i])/z_rm);	//muons
-					  
-					  //remove atoms due to radioactive decay
-					  N[i][j][n] -= dt*Lambda_10Be;
-				  }
-			  }
+				for (int n=0; n<NoNuclides; ++n)
+				{
+					//update concentrations at depth
+					//This is kept as SurfaceElevation not Platform Elevation for now
+					//NB This assumes that material density of the beach is the same as the bedrock!
+					N[i][j][n] += dt*P_Spal[j][n]*exp((Z[j]-SurfaceElevation[i])/z_rs);	//spallation
+					N[i][j][n] += dt*P_Muon[j][n]*exp((Z[j]-SurfaceElevation[i])/z_rm);	//muons
+
+					//remove atoms due to radioactive decay
+					N[i][j][n] -= dt*Lambda[n];
+				}
 			}
 		}
 	}

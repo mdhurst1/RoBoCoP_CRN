@@ -72,6 +72,7 @@ These pages describe the software.
 #include <cstdlib>
 #include <omp.h>
 #include "RoBoCoP.hpp"
+#include "Hiro.hpp"
 
 using namespace std;
 
@@ -83,6 +84,7 @@ using namespace std;
 class RockyCoastCRN
 {
 	friend class RoBoCoP;
+	friend class Hiro;
 	
 	private:
 		vector<double> X;	  //cross shore distance (m)
