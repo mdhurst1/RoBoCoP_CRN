@@ -100,6 +100,7 @@ class RockyCoastCRN
 		vector<double> PlatformElevationOld;	//Platform Surface Elevations Old (m)
 		vector<double> SurfaceElevation;		  //Surface Elevations (including beach cover) (m)
 		
+		vector<int> Nuclides;						//Which nuclides to track, labelled by atomic number
 		vector< vector< vector<double> > > N;	//concentration of nuclides (a/g) as a function of position and depth and nuclide
 				
 		vector<double> GeoMagTime;
@@ -246,6 +247,9 @@ class RockyCoastCRN
 			Initialise(RoBoCoPCoast);
 		}
 		
+		/// @brief Empty initialisation function, will throw an error.
+		/// @author Martin D. Hurst 
+    	/// @date 14/09/2015
 		RockyCoastCRN(vector<int> Nuclides)
 		{
 			Initialise(Nuclides);
