@@ -72,7 +72,6 @@ float Lamb_Muon = 42000.0;
 float rho_r = 2600.; 
 float rho_w = 1035.;
 
-
 //Decay length scales
 float z_rs = Lamb_Spal/rho_r;		//Decay length scale chalk spallation
 float z_ws = Lamb_Spal/rho_w;		//Decay length scale sea water spallation

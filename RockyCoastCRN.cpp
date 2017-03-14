@@ -74,7 +74,6 @@
 #include <omp.h>
 #include "RockyCoastCRN.hpp"
 #include "Hiro.hpp"
-#include "CRN_global_variables.hpp"
 
 using namespace std;
 
@@ -83,11 +82,11 @@ void RockyCoastCRN::Initialise()
 	cout << "Warning: You have not specified which nuclides you wish to track" << endl;
 	cout << "Defaulting to 10Be only" << endl;
 	
-	vector<int> Nuclides(1,10);
-	Initialise(Nuclides);
+	vector<int> WhichNuclides(1,10);
+	Initialise(WhichNuclides);
 }
 
-void RockyCoastCRN::Initialise(vector<int> Nuclides)
+void RockyCoastCRN::Initialise(vector<int> WhichNuclides)
 {
   /* initialise an empty platform object
 	retreatrate is the rate of cliff retreat (m/yr)
@@ -128,6 +127,9 @@ void RockyCoastCRN::Initialise(vector<int> Nuclides)
 	
 	NXNodes = (XMax-XMin)/dX + 1;
 	NZNodes = (ZMax-ZMin)/dZ + 1;
+	
+	//Initialise the nuclides
+	InitialiseNuclides(WhichNuclides);
 	
 	//Setup Surface Arrays
 	vector<double> EmptyZ(NZNodes,0);
@@ -224,7 +226,7 @@ void RockyCoastCRN::Initialise(double retreatrate1, double retreatrate2, int ret
 	InitialisePlanarPlatformMorphology();
 }
 
-void RockyCoastCRN::Initialise(RoBoCoP RoBoCoPCoast)
+void RockyCoastCRN::Initialise(RoBoCoP RoBoCoPCoast, vector<int> WhichNuclides)
 {
 	/* initialise a RockyCoastCRN object for use with a RoBoCoP object */
 	printf("\nRockyCoastCRN.Initialise: Initialised a RockyCoastCRN object for use with a RoBoCoP object\n");
@@ -248,6 +250,9 @@ void RockyCoastCRN::Initialise(RoBoCoP RoBoCoPCoast)
 	NDV = -9999;
 	dX = (XMax-XMin)/(NXNodes-1);
 	dt = RoBoCoPCoast.dt;
+	
+	//Initialise the nuclides
+	InitialiseNuclides(WhichNuclides);
 	
 	//Setup Surface Arrays
 	vector<double> EmptyZ(NZNodes,0);
@@ -285,7 +290,7 @@ void RockyCoastCRN::Initialise(RoBoCoP RoBoCoPCoast)
 	GeoMagScalingFactor = 1;
 }
 
-void RockyCoastCRN::Initialise(Hiro HiroCoast)
+void RockyCoastCRN::Initialise(Hiro HiroCoast, vector<int> WhichNuclides)
 {
 	/* initialise a RockyCoastCRN object for use with a Hiro object */
 	printf("\nRockyCoastCRN.Initialise: Initialised a RockyCoastCRN object for use with a Hiro Model object\n");
@@ -296,12 +301,14 @@ void RockyCoastCRN::Initialise(Hiro HiroCoast)
 	//Setup CRN domain based on HiroCoast
 	NXNodes = HiroCoast.NXNodes;
 	NZNodes = HiroCoast.NZNodes;
-	NoNuclides = Nuclides.size();
 	NDV = -9999;
 	dX = HiroCoast.dX;
 	dZ = HiroCoast.dZ;
 	dt = HiroCoast.dt;
-		
+	
+	//Initialise the nuclides
+	InitialiseNuclides(WhichNuclides);
+	
 	//Setup Surface Arrays
 	vector<double> EmptyZ(NZNodes,0);
 	vector<double> EmptyX(NXNodes,0);
@@ -338,12 +345,72 @@ void RockyCoastCRN::Initialise(Hiro HiroCoast)
 	GeoMagScalingFactor = 1;
 }
 
-void RockyCoastCRN::InitialiseNuclides(vector<int> Nuclides)
+void RockyCoastCRN::InitialiseNuclides(vector<int> WhichNuclides)
 {
+	// Spallation (a/g/yr) calibrated 10Be production rate (Lifton et al. 2014).
+	Po_10Be_Spal = 4.007;
+
+	// Spallation (a/g/yr) calibrated 14C production rate (add ref).
+	Po_14C_Spal = 12.29;
+
+	// Spallation (a/g/yr) calibrated 26Al production rate (add ref).
+	Po_26Al_Spal = 4.007;
+
+	// Spallation (a/g/yr) calibrated 36Cl production rate (add_ref).
+	Po_36Cl_Spal = 4.007;
+
+	// Total muogenic production rate (a/g/yr) following Braucher et al. (2013).
+	Po_10Be_Muon_Fast = 0.028;
+	Po_10Be_Muon_Slow = 0;
+
+	// Total muogenic production rate (a/g/yr)
+	Po_14C_Muon_Fast = 3.34;
+	Po_14C_Muon_Slow = 0.44;
+
+	// Total muogenic production rate (a/g/yr)
+	Po_26Al_Muon_Fast = 3.34;
+	Po_26Al_Muon_Slow = 0.44;
+
+	// Total muogenic production rate (a/g/yr)
+	Po_36Cl_Muon_Fast = 3.34;
+	Po_36Cl_Muon_Slow = 0.44;
+
+	// Attenuation Lengths
+	//Spallogenic attenuation length (kg/m^2).
+	Lamb_Spal = 1600.0;
+
+	// Muogenic attenuation length (kg/m^2) following Braucher et al. (2013).
+	Lamb_Muon = 42000.0;	
+
+	// density of rock and water respectively
+	rho_r = 2600.; 
+	rho_w = 1035.;
+
+	//Decay length scales
+	z_rs = Lamb_Spal/rho_r;		//Decay length scale chalk spallation
+	z_ws = Lamb_Spal/rho_w;		//Decay length scale sea water spallation
+	z_rm = Lamb_Muon/rho_r;		//Decay length scale chalk muons
+	z_wm = Lamb_Muon/rho_w;		//Decay length scale sea water muons
+
+	// Half life of 10Be (Korschineck et al. 2010).
+	Lambda_10Be = 4.99*pow(10.,-7);
+
+	// Half life of 14C (ref).
+	Lambda_14C = 4.99*pow(10.,-7);
+
+	// Half life of 26Al (ref).
+	Lambda_26Al = 4.99*pow(10.,-7);
+
+	// Half life of 36Cl (ref).
+	Lambda_36Cl = 4.99*pow(10.,-7);
+
 	//Declare number of nuclides
 	NoNuclides = Nuclides.size();
 	
 	//Setup empty vectors to store the required global production variables
+	Nuclides = WhichNuclides;
+	NoNuclides = Nuclides.size();
+	
 	vector<double> EmptyVec(NoNuclides);
 	Po_Spal = EmptyVec;
 	Po_Muon_Fast = EmptyVec;
@@ -844,8 +911,8 @@ void RockyCoastCRN::UpdateEquillibriumMorphology()
 	}
 }
 
-void RockyCoastCRN::UpdateMorphology(RoBoCoP RoBoCoPCoast)
-{
+//void RockyCoastCRN::UpdateMorphology(RoBoCoP RoBoCoPCoast)
+//{
 //  // Find cliff position
 //  XMin = RoBoCoPCoast.X[0];
 //  XMax = RoBoCoPCoast.X[RoBoCoPCoast.NoNodes-1];
@@ -883,7 +950,7 @@ void RockyCoastCRN::UpdateMorphology(RoBoCoP RoBoCoPCoast)
 //  
 //  // Copy sea level
 //  SeaLevel = RoBoCoPCoast.SeaLevel;
-}
+//}
 void RockyCoastCRN::UpdateMorphology(Hiro HiroCoast)
 {
 	//Get number of nodes in coastal morphology
@@ -1094,11 +1161,8 @@ void RockyCoastCRN::WriteProfile(string OutputFileName, double Time)
 
 void RockyCoastCRN::WriteCRNProfile(string OutputFileName, double Time)
 {
-  //write Sea Level to screen for debug
-  //cout << endl << "Sea level = " << SeaLevel << endl;
-  
-  //test if output file already exists
-  int FileExists = 0;
+	//test if output file already exists
+	int FileExists = 0;
 	ifstream oftest(OutputFileName.c_str());
 	if (oftest) FileExists = 1;
 	oftest.close();
@@ -1110,8 +1174,12 @@ void RockyCoastCRN::WriteCRNProfile(string OutputFileName, double Time)
 		WritePlatform.open(OutputFileName.c_str());
 		if (WritePlatform.is_open()) 
 		{
+			//write which nuclides we used
 			for (int n=0; n<NoNuclides; ++n) WritePlatform << Nuclides[n] << " ";
 			WritePlatform << endl;
+			
+			//dX as header line #2
+			WritePlatform << dX << endl;
 		}
 	}
 	WritePlatform.close();

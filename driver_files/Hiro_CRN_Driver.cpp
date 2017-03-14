@@ -76,8 +76,12 @@ int main()
 	//initialise Hiro Model
 	Hiro PlatformModel = Hiro(dZ, dX);
 	
+	//Which Nuclides to track 10Be, 14C, 26Al, 36Cl?
+	vector<int> Nuclides;
+	Nuclides.push_back(10);
+	
 	//initialise RockyCoastCRN friend object
-	RockyCoastCRN PlatformCRN = RockyCoastCRN(PlatformModel);
+	RockyCoastCRN PlatformCRN = RockyCoastCRN(PlatformModel, Nuclides);
 	
 	//Initialise Tides
 	double TidalRange = 1;

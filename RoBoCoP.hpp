@@ -55,16 +55,7 @@ These pages describe the software.
 #ifndef RoBoCoP_HPP
 #define RoBoCoP_HPP
 
-#include <cmath>
-#include <cstdlib>
-#include <cstring>
 #include <vector>
-#include <iostream>
-#include <iomanip>
-#include <fstream>
-#include <sstream>
-#include <cstdlib>
-#include <omp.h>
 
 using namespace std;
 
@@ -120,13 +111,7 @@ class RoBoCoP
 				
 		//TIME CONTROL PARAMETERS
 		double Time, MaxTime, dt;
-		
-		//PHYSICAL CONSTANTS
-		static const double rho_w = 1025.;
-		static const double g = 9.81;
-		static const double k = 0.02;
-		static const double M = 0.0001;
-	
+					
     /* FUNCTION DECLARATIONS */
 
 		//Initialise Functions
@@ -181,30 +166,30 @@ class RoBoCoP
 		//Sample a wave
 		void GetWave();
 		
-    /// @brief Launch the main program loop to evolve RoBoCoP coast
+		/// @brief Launch the main program loop to evolve RoBoCoP coast
 		/// @details This function evolves a rocky coastal platform through time.
 		///	@author Martin D. Hurst 
-    /// @date 25/02/2016
-    void EvolveCoast();
+		/// @date 25/02/2016
+		void EvolveCoast();
 		
 		/// @brief Writes the platform morphology to file
 		/// @details This function writes the elevations of the platform surface at the current time to
 		///   a file. If the file exists, this is appended.
 		///	@author Martin D. Hurst 
-    /// @date 25/02/2016
+		/// @date 25/02/2016
 		void WriteProfile(string OutputFileName, double Time);
 		void WriteErosion(string OutputFileName, double Time);
 		
 		/// @brief Get X coordinates
 		/// @return X coordinates
 		///	@author Martin D. Hurst 
-    /// @date 25/02/2016
+		/// @date 25/02/2016
 		vector<double> get_X() const { return X; }
 		
 		/// @brief Get surface CRN concentration
 		/// @return Surface CRN concentration
 		///	@author Martin D. Hurst 
-    /// @date 25/02/2016
+		/// @date 25/02/2016
 		vector<double> get_Z() const { return Z; }
 		
 };

@@ -60,16 +60,7 @@ These pages describe the software.
 #ifndef Hiro_HPP
 #define Hiro_HPP
 
-#include <cmath>
-#include <cstdlib>
-#include <cstring>
 #include <vector>
-#include <iostream>
-#include <iomanip>
-#include <fstream>
-#include <sstream>
-#include <cstdlib>
-#include <omp.h>
 
 using namespace std;
 

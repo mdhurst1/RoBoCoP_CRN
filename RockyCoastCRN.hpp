@@ -95,7 +95,73 @@ class RockyCoastCRN
 		
 		double dX;    //Nodes spacing in cross shore (m)
 		double dZ;    //Node spacing in vertical (m)
-				
+		
+		//Sea level high latitude production rates
+		///@brief   10Be spallation reference production rate.
+		///@details Spallation (a/g/yr) calibrated 10Be production rate (Lifton et al. 2014).
+		float Po_10Be_Spal;
+
+		///@brief   14C spallation reference production rate.
+		///@details Spallation (a/g/yr) calibrated 14C production rate (add ref).
+		float Po_14C_Spal;
+
+		///@brief   26Al spallation reference production rate.
+		///@details Spallation (a/g/yr) calibrated 26Al production rate (add ref).
+		float Po_26Al_Spal;
+
+		///@brief   36Cl spallation reference production rate.
+		///@details Spallation (a/g/yr) calibrated 36Cl production rate (add_ref).
+		float Po_36Cl_Spal;
+
+		///@brief   10Be muogneic reference produciton rate.
+		///@details Total muogenic production rate (a/g/yr) following Braucher et al. (2013).
+		float Po_10Be_Muon_Fast;
+		float Po_10Be_Muon_Slow;
+
+		///@brief   14C muogneic reference produciton rate.
+		///@details Total muogenic production rate (a/g/yr)
+		float Po_14C_Muon_Fast;
+		float Po_14C_Muon_Slow;
+
+		///@brief   26Al muogneic reference produciton rate.
+		///@details Total muogenic production rate (a/g/yr)
+		float Po_26Al_Muon_Fast;
+		float Po_26Al_Muon_Slow;
+
+		///@brief   36Cl muogneic reference produciton rate.
+		///@details Total muogenic production rate (a/g/yr)
+		float Po_36Cl_Muon_Fast;
+		float Po_36Cl_Muon_Slow;
+
+		// Attenuation Lengths
+		///@brief Spallogenic attenuation length (kg/m^2).
+		float Lamb_Spal;
+
+		///@brief Muogenic attenuation length (kg/m^2) following Braucher et al. (2013).
+		float Lamb_Muon;
+
+		// density of rock and water respectively
+		float rho_r;
+		float rho_w;
+
+		//Decay length scales
+		float z_rs;
+		float z_ws;
+		float z_rm;
+		float z_wm;
+
+		///@brief Half life of 10Be (Korschineck et al. 2010).
+		float Lambda_10Be;
+
+		///@brief Half life of 14C (ref).
+		float Lambda_14C;
+
+		///@brief Half life of 26Al (ref).
+		float Lambda_26Al;
+
+		///@brief Half life of 36Cl (ref).
+		float Lambda_36Cl;
+
 		int NoNuclides;								//How many nuclides to track
 		vector<int> Nuclides;						//Which nuclides to track, labelled by atomic number
 		vector<double>	Po_Spal;						//Holder for all spalation surface production rates
@@ -169,14 +235,14 @@ class RockyCoastCRN
 	  
 		//Initialise Function
 		void Initialise();
-		void Initialise(vector<int> Nuclides);
+		void Initialise(vector<int> WhichNuclides);
 		void Initialise(double retreatrate, double beachwidth, int beachtype, double bermheight, double platformgradient, double cliffheight, double junctionelevation, double tidalamplitude, double slr, int steppedplatform=0, double stepsize=0);
 		void Initialise(double retreatrate1, double retreatrate2, int retreattype, double changetime, double beachwidth, int beachtype, double bermheight, double platformgradient, double cliffheight, double junctionelevation, double tidalamplitude, double SLR, int steppedplatform=0, double stepsize=0);
-		void Initialise(RoBoCoP RoBoCoPCoast);
-		void Initialise(Hiro HiroCoast);
+		void Initialise(RoBoCoP RoBoCoPCoast, vector<int> WhichNuclides);
+		void Initialise(Hiro HiroCoast, vector<int> WhichNuclides);
 		
 		//function to initialise production schematics
-		void InitialiseNuclides(vector<int> Nuclides);
+		void InitialiseNuclides(vector<int> WhichNuclides);
 		
 		//functions to initialise platform morphology
 		void InitialisePlanarPlatformMorphology();
@@ -253,26 +319,26 @@ class RockyCoastCRN
 		/// @param RoBoCoP RoBoCoPCoast a RoBoCoP coastal morphology object 
 		/// @author Martin D. Hurst 
     	/// @date 8/3/2016
-		RockyCoastCRN(RoBoCoP RoBoCoPCoast)
+		RockyCoastCRN(RoBoCoP RoBoCoPCoast, vector<int> WhichNuclides)
 		{
-			Initialise(RoBoCoPCoast);
+			Initialise(RoBoCoPCoast, WhichNuclides);
 		}
 		
 		/// @brief Initialisation function with friend class Hiro as the morphological model
 		/// @param Hiro HiroCoast a Hiro coastal morphology object 
 		/// @author Martin D. Hurst 
 		/// @date 13/3/2017
-		RockyCoastCRN(Hiro HiroCoast)
+		RockyCoastCRN(Hiro HiroCoast, vector<int> WhichNuclides)
 		{
-			Initialise(HiroCoast);
+			Initialise(HiroCoast, WhichNuclides);
 		}
 		
 		/// @brief Empty initialisation function, will throw an error.
 		/// @author Martin D. Hurst 
     	/// @date 14/09/2015
-		RockyCoastCRN(vector<int> Nuclides)
+		RockyCoastCRN(vector<int> WhichNuclides)
 		{
-			Initialise(Nuclides);
+			Initialise(WhichNuclides);
 		}
 		
 		/// @brief Empty initialisation function, will throw an error.
@@ -344,7 +410,7 @@ class RockyCoastCRN
 		/// @author Martin D. Hurst
 		/// @param RoBoCoPCoast A RoBoCoP Coastal model object
     	/// @date 14/03/2016
-		void UpdateMorphology(RoBoCoP RoBoCoPCoast);
+		//void UpdateMorphology(RoBoCoP RoBoCoPCoast);
 		
 		/// @brief Updates the platform morphology
 		/// @details This function calculates the amount of platform downwear and 
