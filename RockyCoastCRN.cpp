@@ -961,6 +961,17 @@ void RockyCoastCRN::UpdateMorphology(Hiro HiroCoast)
 	PlatformElevationOld = PlatformElevation;
 	PlatformElevation = Z;
 	SurfaceElevation = Z;
+	
+	//Cliff is on the right, find it
+	CliffHeight = Z[NXNodes];
+	for (int j=NXNodes-1;j>0; --j)
+	{
+		if (Z[j] < Z[NXNodes-1])
+		{
+			CliffPositionX = X[j];
+			break;
+		}
+	}
 }
 
 void RockyCoastCRN::UpdateMorphology(vector<double> XCoast, vector<double> ZCoast)
@@ -1019,13 +1030,13 @@ double RockyCoastCRN::GetTopographicShieldingFactor(double X, double CliffHeight
 
 	if (X == 0) return 0.5;
 
-	//##### Cliff Shielding paramters #####
-	double d_theta_phi = (M_PI/180.)*5.0;			//azimuth and angle stepping
-	double FMax = 2.0*M_PI*Po_10Be_Spal/(3.3);			//Maximum Intensity
+	//##### Cliff Shielding parameters #####
+	double d_theta_phi = (M_PI/180.)*5.0;				//azimuth and angle stepping
+	double FMax = 2.0*M_PI*Po_10Be_Spal/(3.3);		//Maximum Intensity
 
 	double Viewshed;
 	double F = 0;
-
+	
 	for (double Az=-90; Az<=90.; Az+= 5.) 
 	{
 		Viewshed = atan(CliffHeight*cos((M_PI/180.)*Az)/X);
@@ -1194,7 +1205,7 @@ void RockyCoastCRN::WriteCRNProfile(string OutputFileName, double Time)
 		for (int n=0; n<NoNuclides; ++n)
 		{
 			WritePlatform << Time;
-			for (int j=0; j<NXNodes; ++j) WritePlatform << setprecision(5) << " " << SurfaceN[j][n];
+			for (int j=0; j<NXNodes; ++j) WritePlatform << setprecision(5) << " " << SurfaceN[n][j];
 			WritePlatform << endl;
 		}
 	}
