@@ -848,9 +848,9 @@ void RockyCoastCRN::UpdateCRNs()
 					//update concentrations at depth
 					//This is kept as SurfaceElevation not Platform Elevation for now
 					//NB This assumes that material density of the beach is the same as the bedrock!
-					N[n][j][i] += dt*P_Spal[j][n]*exp((Z[i]-SurfaceElevation[j])/z_rs);	//spallation
-					N[n][j][i] += dt*P_Muon_Fast[j][n]*exp((Z[i]-SurfaceElevation[j])/z_rm);	//muons
-					N[n][j][i] += dt*P_Muon_Slow[j][n]*exp((Z[i]-SurfaceElevation[j])/z_rm);	//muons
+					N[n][j][i] += dt*P_Spal[n][j]*exp((Z[i]-SurfaceElevation[j])/z_rs);	//spallation
+					N[n][j][i] += dt*P_Muon_Fast[n][j]*exp((Z[i]-SurfaceElevation[j])/z_rm);	//muons
+					N[n][j][i] += dt*P_Muon_Slow[n][j]*exp((Z[i]-SurfaceElevation[j])/z_rm);	//muons
 					//remove atoms due to radioactive decay
 					N[n][j][i] -= dt*Lambda[n];
 				}
@@ -956,6 +956,18 @@ void RockyCoastCRN::UpdateMorphology(Hiro HiroCoast)
 	//Get number of nodes in coastal morphology
 	X = HiroCoast.X;
 	Z = HiroCoast.Zx;
+	
+	int TempXSize = X.size();
+	while (TempXSize > NXNodes)
+	{
+		for (int n=0; n<NoNuclides; ++n)
+		{
+			N[n].push_back(N[n][NXNodes-1]);
+			SurfaceN[n].push_back(SurfaceN[n][NXNodes-1]);
+		}
+		PlatformElevation.push_back(PlatformElevation[NXNodes-1]);
+		--TempXSize;
+	}
 	NXNodes = X.size();
 	 
 	PlatformElevationOld = PlatformElevation;

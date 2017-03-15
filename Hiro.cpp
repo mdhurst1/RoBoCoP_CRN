@@ -95,8 +95,8 @@ void Hiro::Initialise(double dZ_in, double dX_in)
 	//Declare spatial stuff
 	dZ = dZ_in;
 	dX = dX_in;
-	NXNodes = round(500./dX);
-	NZNodes = round(75./dZ)+1;	
+	NXNodes = 10;
+	NZNodes = round(20./dZ)+1;	
 
 	//declare an array of zeros for assignment of Z vector
 	Z = vector<double>(NZNodes,0.0);
@@ -537,6 +537,15 @@ void Hiro::UpdateMorphology()
 				break;
 			}
 		}
+	}
+	
+	//Grow the X direction arrays dynamically
+	if (MaxXInd > NXNodes-5)
+	{
+		//Grow them
+		X.push_back(NXNodes*dX);
+		Zx.push_back(Zx[NXNodes-1]);
+		++NXNodes;
 	}
 	
 	//Populate vector of Z values in X 

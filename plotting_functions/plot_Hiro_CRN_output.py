@@ -48,7 +48,7 @@ def make_plot(FileName,ColourMap):
     
     # Only plot every 1 000 years
     PlotTime = 0
-    PlotInterval = 1000
+    PlotInterval = 100
     
     ax1 = plt.subplot(211)
     ax2 = plt.subplot(212)
@@ -61,12 +61,13 @@ def make_plot(FileName,ColourMap):
         Time = float(NLine[0])
         print Time, 
         #Read morphology
-        X = np.array(MorphLine[1:],dtype="float64")
+        Xz = np.array(MorphLine[1:],dtype="float64")
         N = np.array(NLine[1:],dtype="float64")
         Z = np.arange(37.5,-37.6,-0.1)
+        X = np.arange(0,500,0.1)
         
         if (Time == PlotTime):
-            ax1.plot(X,Z,'-',lw=1.5,color=ColourMap((Time)/(EndTime)))
+            ax1.plot(Xz,Z,'-',lw=1.5,color=ColourMap((Time)/(EndTime)))
             ax2.plot(X,N,'-',lw=1.5,color=ColourMap((Time)/(EndTime)))
             PlotTime += PlotInterval
                 
@@ -75,8 +76,8 @@ def make_plot(FileName,ColourMap):
     plt.xlabel("Distance (m)")
     plt.ylabel("Elevation (m)")
     xmin, xmax = ax1.get_xlim()
-    plt.xlim(xmin-10,xmax)
-    plt.ylim(-10,10)
+    ax1.set_xlim(xmin-10,xmax)
+    ax1.set_ylim(-10,10)
     plt.show()
 
 if __name__ == "__main__":
