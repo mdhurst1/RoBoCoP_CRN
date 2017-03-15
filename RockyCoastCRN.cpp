@@ -1028,23 +1028,26 @@ double RockyCoastCRN::GetTopographicShieldingFactor(double X, double CliffHeight
 	October 2014
 	*/    
 
-	if (X == 0) return 0.5;
-
-	//##### Cliff Shielding parameters #####
-	double d_theta_phi = (M_PI/180.)*5.0;				//azimuth and angle stepping
-	double FMax = 2.0*M_PI*Po_10Be_Spal/(3.3);		//Maximum Intensity
-
-	double Viewshed;
-	double F = 0;
-	
-	for (double Az=-90; Az<=90.; Az+= 5.) 
+	if (X == CliffPositionX-dX) return 0.5;
+	else if (CliffPositionX-X > 5*CliffHeight) return 1.0;
+	else if (X<CliffPositionX)
 	{
+		//##### Cliff Shielding parameters #####
+		double d_theta_phi = (M_PI/180.)*5.0;				//azimuth and angle stepping
+		double FMax = 2.0*M_PI*Po_10Be_Spal/(3.3);		//Maximum Intensity
+
+		double Viewshed;
+		double F = 0;
+
+		for (double Az=-90; Az<=90.; Az+= 5.) 
+		{
 		Viewshed = atan(CliffHeight*cos((M_PI/180.)*Az)/X);
 		F+= d_theta_phi*Po_10Be_Spal/(3.3)*pow(sin(Viewshed),3.3);
-	}
+		}
 
-	 return (FMax-F)/FMax;
-		
+		return (FMax-F)/FMax;
+	}
+	else return 0;
 }
 
 double RockyCoastCRN::GetGeoMagScalingFactor(double Time)

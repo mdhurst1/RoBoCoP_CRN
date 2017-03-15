@@ -34,3 +34,5 @@ $(EXECUTABLE): $(OBJECTS)
 .cpp.o:
 	$(CC) $(CFLAGS) $< -o $@
 
+clean:
+	rm -f ../*.o *.o *.out *.xz *.xn
