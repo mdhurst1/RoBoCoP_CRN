@@ -795,10 +795,27 @@ void RockyCoastCRN::UpdateCRNs()
 	{
 		//Get topographic shielding factor
 		TopoShieldingFactor = GetTopographicShieldingFactor(X[j]-CliffPositionX, CliffHeight);
-
+		
+		//FOR EACH NUCLIDE OF INTEREST SET SURFACE PRODUCTION RATES
+		for (int n=0; n<NoNuclides; ++n)
+		{
+			P_Spal[n][j] = Po_Spal[n];
+			P_Muon_Fast[n][j] = Po_Muon_Fast[n];
+			P_Muon_Slow[n][j] = Po_Muon_Slow[n];
+		}
+			
 		//Sort out the water shielding
 		if (SurfaceElevation[j] < SeaLevel+0.5*TidalRange)
 		{
+			//if under water calculate production modified for water depth
+			for (int n=0; n<NoNuclides; ++n)
+			{
+				P_Spal[n][j] = 0;
+				P_Muon_Fast[n][j] = 0;
+				P_Muon_Slow[n][j] = 0;
+			}
+			
+			//Loop over the tidal cycle and total the production
 			for (int a=0, NN=WaterLevels.size(); a<NN; ++a)
 			{
 				if (WaterLevels[a] >= SurfaceElevation[j]) WaterDepths[a] = WaterLevels[a]-SurfaceElevation[j];
@@ -817,6 +834,7 @@ void RockyCoastCRN::UpdateCRNs()
 			for (int n=0; n<NoNuclides; ++n)
 			{
 				//find mean production rate at surface
+				//normalise by the tidal duration
 				P_Spal[n][j] /= NTidalValues;
 				P_Muon_Fast[n][j] /= NTidalValues;
 				P_Muon_Slow[n][j] /= NTidalValues;
@@ -955,7 +973,7 @@ void RockyCoastCRN::UpdateMorphology(Hiro HiroCoast)
 {
 	//Get number of nodes in coastal morphology
 	X = HiroCoast.X;
-	Z = HiroCoast.Zx;
+	Zx = HiroCoast.Zx;
 	
 	int TempXSize = X.size();
 	while (TempXSize > NXNodes)
@@ -971,14 +989,14 @@ void RockyCoastCRN::UpdateMorphology(Hiro HiroCoast)
 	NXNodes = X.size();
 	 
 	PlatformElevationOld = PlatformElevation;
-	PlatformElevation = Z;
-	SurfaceElevation = Z;
+	PlatformElevation = Zx;
+	SurfaceElevation = Zx;
 	
 	//Cliff is on the right, find it
 	CliffHeight = Z[NXNodes];
 	for (int j=NXNodes-1;j>0; --j)
 	{
-		if (Z[j] < Z[NXNodes-1])
+		if (Zx[j] < Zx[NXNodes-1])
 		{
 			CliffPositionX = X[j];
 			break;
