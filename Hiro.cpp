@@ -273,18 +273,24 @@ void Hiro::CalculateBackwearing()
 		SurfZoneBottomZ = Z[i]-BreakingWaveWaterDepth;
 		//BreakingPointInd = i-round(BreakingWaveWaterDepth*dZ);?
 		
-		bool SurfZone=false;
 		int jj=MaxTideXInd;
-		while (SurfZone == false)
+		while (true)
 		{
 			if (Zx[jj] < SurfZoneBottomZ)
 			{
 				//Find Position X of Surfzone 
 				BreakingPointX = X[jj];
 				BreakingPointXInd = jj;
-				SurfZone = true;
+				break;
 			}
-			--jj;
+			else if (jj == 0)
+			{
+				//Wave breaks at the seaward edge
+				BreakingPointX = 0;
+				BreakingPointXInd = 0;
+				break;
+			}
+			else --jj;
 		}
 		
 		//Set Wave Type
@@ -545,10 +551,12 @@ void Hiro::UpdateMorphology()
 		//Grow them
 		X.push_back(NXNodes*dX);
 		Zx.push_back(Zx[NXNodes-1]);
-		vector<int> EmptyZVecInt(NZNodes,1);
-		vector<double> EmptyZVecDouble(NZNodes,1);
-		MorphologyArray.push_back(EmptyZVecInt);
-		ResistanceArray.push_back(EmptyZVecDouble);
+		ZInd.push_back(ZInd[NXNodes-1]);
+		for (int i=0; i<NZNodes; ++i)
+		{
+			MorphologyArray[i].push_back(MorphologyArray[i][NXNodes-1]);
+			ResistanceArray[i].push_back(ResistanceArray[i][NXNodes-1]);
+		}
 		++NXNodes;
 	}
 	
@@ -593,7 +601,7 @@ void Hiro::MassFailure()
 	
 	//Find X position of notch
 	double XMax = 0;
-	int XMaxZInd;
+	int XMaxZInd = 0;
 	
 	for (int i=0;i<NZNodes; ++i)
 	{
