@@ -50,7 +50,7 @@ def make_plot(FileName,ColourMap):
         print Time, 
         #Read morphology
         X = np.array(Line[1:],dtype="float64")
-        Z = np.arange(37.5,-37.6,-0.1)
+        Z = np.arange(10,-10.1,-0.1)
         
         if (Time == PlotTime):
             ax1.plot(X,Z,'-',lw=1.5,color=ColourMap((Time)/(EndTime)))
@@ -61,7 +61,7 @@ def make_plot(FileName,ColourMap):
     plt.xlabel("Distance (m)")
     plt.ylabel("Elevation (m)")
     xmin, xmax = ax1.get_xlim()
-    plt.xlim(xmin-10,xmax)
+    plt.xlim(xmin-10,xmax+10)
     plt.ylim(-10,10)
     plt.show()
 

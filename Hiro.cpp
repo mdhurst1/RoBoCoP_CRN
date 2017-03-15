@@ -100,7 +100,7 @@ void Hiro::Initialise(double dZ_in, double dX_in)
 
 	//declare an array of zeros for assignment of Z vector
 	Z = vector<double>(NZNodes,0.0);
-	for (int i=0; i<NZNodes; ++i) Z[i] = dZ*(0.5*NZNodes-i);
+	for (int i=0; i<NZNodes; ++i) Z[i] = dZ*(0.5*(NZNodes-1)-i);
 
 	//declare arrays of zeros to initalise various other vectors
 	vector<double> ZZeros(NZNodes,0);
@@ -274,17 +274,17 @@ void Hiro::CalculateBackwearing()
 		//BreakingPointInd = i-round(BreakingWaveWaterDepth*dZ);?
 		
 		bool SurfZone=false;
-		int ii=i;
+		int jj=MaxTideXInd;
 		while (SurfZone == false)
 		{
-			if (Z[ii] < SurfZoneBottomZ)
+			if (Zx[jj] < SurfZoneBottomZ)
 			{
 				//Find Position X of Surfzone 
-				BreakingPointX = Xz[ii];
-				BreakingPointXInd = ii;
+				BreakingPointX = X[jj];
+				BreakingPointXInd = jj;
 				SurfZone = true;
 			}
-			++ii;
+			--jj;
 		}
 		
 		//Set Wave Type
@@ -545,6 +545,10 @@ void Hiro::UpdateMorphology()
 		//Grow them
 		X.push_back(NXNodes*dX);
 		Zx.push_back(Zx[NXNodes-1]);
+		vector<int> EmptyZVecInt(NZNodes,1);
+		vector<double> EmptyZVecDouble(NZNodes,1);
+		MorphologyArray.push_back(EmptyZVecInt);
+		ResistanceArray.push_back(EmptyZVecDouble);
 		++NXNodes;
 	}
 	
