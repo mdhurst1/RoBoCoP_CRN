@@ -781,8 +781,8 @@ void RockyCoastCRN::UpdateCRNs()
 	*/
 
 	//Temp parameters
-	vector<double> EmptyNVec(NoNuclides,0);
-	vector <vector <double> > P_Spal(NXNodes,EmptyNVec);
+	vector<double> EmptyNVec(NXNodes,0);
+	vector <vector <double> > P_Spal(NoNuclides,EmptyNVec);
 	P_Muon_Fast = P_Spal;
 	P_Muon_Slow = P_Spal;
 	
@@ -808,18 +808,18 @@ void RockyCoastCRN::UpdateCRNs()
 				//FOR EACH NUCLIDE OF INTEREST
 				for (int n=0; n<NoNuclides; ++n)
 				{
-					P_Spal[j][n] += GeoMagScalingFactor*TopoShieldingFactor*Po_Spal[n]*exp(-WaterDepths[a]/z_ws);
-					P_Muon_Fast[j][n] += TopoShieldingFactor*Po_Muon_Fast[n]*exp(-WaterDepths[a]/z_wm);
-					P_Muon_Slow[j][n] += TopoShieldingFactor*Po_Muon_Slow[n]*exp(-WaterDepths[a]/z_wm);
+					P_Spal[n][j] += GeoMagScalingFactor*TopoShieldingFactor*Po_Spal[n]*exp(-WaterDepths[a]/z_ws);
+					P_Muon_Fast[n][j] += TopoShieldingFactor*Po_Muon_Fast[n]*exp(-WaterDepths[a]/z_wm);
+					P_Muon_Slow[n][j] += TopoShieldingFactor*Po_Muon_Slow[n]*exp(-WaterDepths[a]/z_wm);
 				}
 			}
 			//FOR EACH NUCLIDE OF INTEREST
 			for (int n=0; n<NoNuclides; ++n)
 			{
 				//find mean production rate at surface
-				P_Spal[j][n] /= NTidalValues;
-				P_Muon_Fast[j][n] /= NTidalValues;
-				P_Muon_Slow[j][n] /= NTidalValues;
+				P_Spal[n][j] /= NTidalValues;
+				P_Muon_Fast[n][j] /= NTidalValues;
+				P_Muon_Slow[n][j] /= NTidalValues;
 			}
 		}
 		
@@ -834,11 +834,11 @@ void RockyCoastCRN::UpdateCRNs()
 					for (int n=0; n<NoNuclides; ++n)
 					{
 						//linearly interpolate to get concentration at the surface
-						if (PlatformElevationOld[j] == -9999) SurfaceN[j][n] = 0;
-						else if (SurfaceN[j][n] > 0) SurfaceN[j][n] -= (((PlatformElevationOld[i]-PlatformElevation[i])/(PlatformElevationOld[i]-Z[j]))*(SurfaceN[j][n]-N[i][j][n]));
+						if (PlatformElevationOld[j] == -9999) SurfaceN[n][j] = 0;
+						else if (SurfaceN[n][j] > 0) SurfaceN[n][j] -= (((PlatformElevationOld[j]-PlatformElevation[j])/(PlatformElevationOld[j]-Z[i]))*(SurfaceN[n][j]-N[n][j][i]));
 
 						//update concentration at the platform surface, accounting for beach cover
-						SurfaceN[i][n] += dt*P_Spal[j][n]*exp((0-((SurfaceElevation[i]-PlatformElevation[i])))/z_rs);
+						SurfaceN[n][j] += dt*P_Spal[n][j]*exp((0-((SurfaceElevation[j]-PlatformElevation[j])))/z_rs);
 						Top = 1;
 					}
 				}
@@ -848,11 +848,11 @@ void RockyCoastCRN::UpdateCRNs()
 					//update concentrations at depth
 					//This is kept as SurfaceElevation not Platform Elevation for now
 					//NB This assumes that material density of the beach is the same as the bedrock!
-					N[i][j][n] += dt*P_Spal[j][n]*exp((Z[j]-SurfaceElevation[i])/z_rs);	//spallation
-					N[i][j][n] += dt*P_Muon_Fast[j][n]*exp((Z[j]-SurfaceElevation[i])/z_rm);	//muons
-					N[i][j][n] += dt*P_Muon_Slow[j][n]*exp((Z[j]-SurfaceElevation[i])/z_rm);	//muons
+					N[n][j][i] += dt*P_Spal[j][n]*exp((Z[i]-SurfaceElevation[j])/z_rs);	//spallation
+					N[n][j][i] += dt*P_Muon_Fast[j][n]*exp((Z[i]-SurfaceElevation[j])/z_rm);	//muons
+					N[n][j][i] += dt*P_Muon_Slow[j][n]*exp((Z[i]-SurfaceElevation[j])/z_rm);	//muons
 					//remove atoms due to radioactive decay
-					N[i][j][n] -= dt*Lambda[n];
+					N[n][j][i] -= dt*Lambda[n];
 				}
 			}
 		}
