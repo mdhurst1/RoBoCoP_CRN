@@ -127,11 +127,7 @@ void Hiro::Initialise(double dZ_in, double dX_in)
 	
 	//Set sea level to zero to begin with, and the ind, this will get updated later
 	SeaLevel = 0;
-	SeaLevelInd = 0;
-	
-	//Populate geometric metrics
-	UpdateMorphology();
-	
+	SeaLevelInd = 0;	
 }
 
 void Hiro::InitialiseTides(double TideRange)
@@ -179,8 +175,7 @@ void Hiro::InitialiseTides(double TideRange)
 	for (int i=0; i<NTideValues; ++i) ErosionShapeFunction[i] /= Total;
 	
 	//Initialise weathering shape function
-	InitialiseWeathering();
-	
+	InitialiseWeathering();	
 }
 
 void Hiro::InitialiseWeathering()
@@ -249,7 +244,11 @@ void Hiro::GetWave()
 	PressureDistMinInd = 0.5*BreakingWaveHeight/dZ;
 }
 
-void Hiro::UpdateSeaLevel(double SeaLevelRise)
+void Hiro::InitialiseSeaLevel(double SLR)
+{
+	SeaLevelRise = SLR;
+}
+void Hiro::UpdateSeaLevel()
 {
 	/*Update sea level based on a constant sea level rise rate*/
 	SeaLevel += SeaLevelRise*dt;
@@ -302,8 +301,12 @@ void Hiro::CalculateBackwearing()
 		//Determine Surfzone Width
 		//Get surf zone mean platform gradient
 		//Set it to super steep if vertical.
-		if (Xz[i-1] != X[BreakingPointXInd+1]) SurfZoneGradient = abs((Z[i-1]-Z[BreakingPointXInd+1])/(Xz[i-1]-Xz[BreakingPointXInd+1]));
-		else SurfZoneGradient = 100000;
+		if (Xz[i-1] != Xz[BreakingPointXInd])
+		{
+			SurfZoneGradient = abs((Z[i-1]-Z[BreakingPointXInd])/(Xz[i-1]-Xz[BreakingPointXInd]));
+		}
+		//Limt SurfZoneGradient to 45 degrees!
+		else SurfZoneGradient = 1.;
 		
 		SurfZoneWidth = BreakingWaveHeight/SurfZoneGradient;
 		
@@ -332,8 +335,14 @@ void Hiro::CalculateBackwearing()
 			for (int ii=i+PressureDistMaxInd; ii<=i+PressureDistMinInd; ++ii)
 			{
 				//need to add for condition where changes to broken wave above water level in pressure distribution function
-				if (X[ii] < BreakingPointX) WaveForce = StandingWaveConst*WaveHeight*ErosionShapeFunction[i-MaxTideZInd]*StandingWavePressure_Bw;
-				else WaveForce = BrokenWaveConst*WaveHeight*BreakingWaveDecay*ErosionShapeFunction[i-MaxTideZInd]*BreakingWavePressure_Bw*exp(-WaveAttenuationConst*(X[ii]-BreakingWaveDist));
+				if (Xz[ii] < BreakingPointX) 
+				{
+					WaveForce = StandingWaveConst*WaveHeight*ErosionShapeFunction[i-MaxTideZInd]*StandingWavePressure_Bw;
+				}
+				else 
+				{
+					WaveForce = BrokenWaveConst*WaveHeight*BreakingWaveDecay*ErosionShapeFunction[i-MaxTideZInd]*BreakingWavePressure_Bw*exp(-WaveAttenuationConst*(Xz[ii]-BreakingWaveDist));
+				}
 				Bw_Erosion[ii] += WaveForce;
 			}			
 		}
@@ -344,9 +353,22 @@ void Hiro::CalculateBackwearing()
 			//This may have some problems!
 			for (int ii=i+PressureDistMaxInd; ii<=i-PressureDistMinInd; ++ii)
 			{
-				if (X[ii] < BreakingPointX) WaveForce = StandingWaveConst*WaveHeight*ErosionShapeFunction[i-MaxTideZInd]*StandingWavePressure_Bw;
-				else if (X[ii]<(BreakingPointX+BreakingWaveDist)) WaveForce = BreakingWaveConst*WaveHeight*BreakingWaveDecay*ErosionShapeFunction[i-MaxTideZInd]*BrokenWavePressure_Bw*exp(-WaveAttenuationConst*(X[ii]-BreakingWaveDist));
-				else WaveForce = BrokenWaveConst*WaveHeight*ErosionShapeFunction[i-MaxTideZInd]*BrokenWavePressure_Bw*exp(-WaveAttenuationConst*(X[i]-(BreakingPointX+BreakingWaveDist)));
+				if (Xz[ii] < BreakingPointX) 
+				{
+					WaveForce = StandingWaveConst*WaveHeight*ErosionShapeFunction[i-MaxTideZInd]*StandingWavePressure_Bw;
+				}
+				else if (Xz[ii]<(BreakingPointX+BreakingWaveDist))
+				{
+					WaveForce = BreakingWaveConst*WaveHeight*BreakingWaveDecay*ErosionShapeFunction[i-MaxTideZInd]*BrokenWavePressure_Bw*exp(-WaveAttenuationConst*(Xz[ii]-BreakingWaveDist));
+				}
+				else
+				{
+					//double Test = -WaveAttenuationConst*(X[ii]-(BreakingPointX+BreakingWaveDist));
+					//cout << Test << endl;
+					//double Test2 = exp(Test);
+					//cout << setprecision(10) << X[ii] << " " << Test << " " << Test2 << endl;
+					WaveForce = BrokenWaveConst*WaveHeight*ErosionShapeFunction[i-MaxTideZInd]*BrokenWavePressure_Bw*exp(-WaveAttenuationConst*(Xz[ii]-(BreakingPointX+BreakingWaveDist)));
+				}
 				Bw_Erosion[ii] += WaveForce;
 			}
 		}

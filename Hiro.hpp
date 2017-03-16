@@ -208,7 +208,8 @@ class Hiro
 		void InitialiseWaves(double WaveHeight_Mean, double WaveHeight_StD, double WavePeriod_Mean, double WavePeriod_StD);
 		
 		//Update Sea Level
-		void UpdateSeaLevel(double SLRRate);
+		void InitialiseSeaLevel(double SLR);
+		void UpdateSeaLevel();
 		
 		//Sample a wave
 		void GetWave();

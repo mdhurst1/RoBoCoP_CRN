@@ -326,23 +326,14 @@ void RockyCoastCRN::Initialise(Hiro HiroCoast, vector<int> WhichNuclides)
 	vector< vector< vector<double> > > EmptyNs(NoNuclides,EmptyN);
 	N = EmptyNs;
 	
-	//Do I actually need to copy these over?
-	X = HiroCoast.X;
-	Z = HiroCoast.Z;
+	//Setup tides
+	TidalRange = HiroCoast.TidalRange;
 	
-	//Get surface morphology from HiroCoast
-	for (int j=0; j<NXNodes; ++j)
-	{
-		int i=0;
-		while (HiroCoast.MorphologyArray[i][j] == 0) ++i;
-		SurfaceElevation[i] = HiroCoast.Z[i];
-	}
-
-	// copy to PlatformElevation
-	PlatformElevation = SurfaceElevation;
-
 	//Initialise Geomagnetic Scaling as constant
 	GeoMagScalingFactor = 1;
+	
+	//Get morphology using update function
+	UpdateMorphology(HiroCoast);
 }
 
 void RockyCoastCRN::InitialiseNuclides(vector<int> WhichNuclides)
@@ -845,7 +836,8 @@ void RockyCoastCRN::UpdateCRNs()
 		
 		for (int i=0; i<NZNodes; ++i)
 		{
-			if ((Z[i] < PlatformElevation[j]) && (Z[i] > PlatformElevation[j]-20.))
+			if (Z[i] > PlatformElevation[j]) Z[i] = NDV;
+			else if (Z[i] > PlatformElevation[j]-20.)
 			{
 				if (Top == false)
 				{	
@@ -993,7 +985,9 @@ void RockyCoastCRN::UpdateMorphology(Hiro HiroCoast)
 	SurfaceElevation = Zx;
 	
 	//Cliff is on the right, find it
-	CliffHeight = Z[NXNodes];
+	//This will need updating once we have sea level rise
+	CliffHeight = Z[NZNodes-1];
+	CliffPositionX = 0;
 	for (int j=NXNodes-1;j>0; --j)
 	{
 		if (Zx[j] < Zx[NXNodes-1])
@@ -1002,6 +996,10 @@ void RockyCoastCRN::UpdateMorphology(Hiro HiroCoast)
 			break;
 		}
 	}
+	
+	//update Sea levl
+	SeaLevel = HiroCoast.SeaLevel;
+	TidalRange = HiroCoast.TidalRange;
 }
 
 void RockyCoastCRN::UpdateMorphology(vector<double> XCoast, vector<double> ZCoast)

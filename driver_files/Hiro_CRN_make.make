@@ -35,4 +35,5 @@ $(EXECUTABLE): $(OBJECTS)
 	$(CC) $(CFLAGS) $< -o $@
 
 clean:
-	rm -f ../*.o *.o *.out *.xz *.xn
+	rm -f ../*.o *.o *.out *.xz *.xn *.txt
+	

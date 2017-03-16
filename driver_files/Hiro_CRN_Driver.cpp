@@ -40,6 +40,8 @@
 
 ------------------------------------------------------------------------*/
 
+#include <fenv.h>
+#include <signal.h>
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
@@ -56,8 +58,18 @@
 
 using namespace std;
 
+void handler(int sig)
+{
+    printf("Floating Point Exception\n");
+    sig += 0;
+    exit(0);
+}
+
 int main()
 {
+	feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW | FE_UNDERFLOW);
+   signal(SIGFPE, handler);
+    
 	//initialisation parameters
 	double dZ = 0.1;
 	double dX = 0.1;
@@ -88,6 +100,14 @@ int main()
 	double TidalPeriod = 12.42;
 	PlatformModel.InitialiseTides(TidalRange);
 	PlatformCRN.InitialiseTides(TidalRange/2.,TidalPeriod);
+
+	//Set sea level rise rate
+	double SLR = 0;
+	PlatformModel.InitialiseSeaLevel(SLR);
+	
+	//Setup Morphology
+	//Populate geometric metrics
+	PlatformModel.UpdateMorphology();
 	
 	//Initialise Waves
 	//Single Wave for now but could use the waveclimate object from COVE!?
@@ -96,15 +116,12 @@ int main()
 	double WavePeriod_Mean = 6.;
 	double WavePeriod_StD = 0;
 	PlatformModel.InitialiseWaves(WaveHeight_Mean, WaveHeight_StD, WavePeriod_Mean, WavePeriod_StD);
-
-	//Sea level rise?
-	double SLR = 0;
 	
 	//Loop through time
 	while (Time <= EndTime)
 	{
 		//Update Sea Level
-		PlatformModel.UpdateSeaLevel(SLR);
+		PlatformModel.UpdateSeaLevel();
 
 		//Get the wave conditions
 		PlatformModel.GetWave();
