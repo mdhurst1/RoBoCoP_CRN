@@ -163,8 +163,11 @@ int main()
 	
 	string ResistanceFileName = "ResistanceArray.xz";
 	string MorphologyFileName = "MorphologyArray.xz";
+	string ConcentrationsFileName ="Concentrations.xzn";
 	PlatformModel.WriteResistanceArray(ResistanceFileName, Time);
 	PlatformModel.WriteMorphologyArray(MorphologyFileName, Time);
+	int Nuclide = 0;
+	PlatformCRN.WriteNuclideArray(ConcentrationsFileName, Time,Nuclide);
 	
 	//a few blank lines to finish
 	cout << endl << endl;

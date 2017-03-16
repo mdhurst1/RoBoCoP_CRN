@@ -442,9 +442,16 @@ class RockyCoastCRN
 		/// @brief Writes the platform morphology to file
 		/// @details This function writes the CRN concnetrations on the platform surface at the current time to
 		///   a file. If the file exists, this is appended.
-		///	@author Martin D. Hurst 
-    /// @date 15/03/2016
+		/// @author Martin D. Hurst 
+		/// @date 15/03/2016
 		void WriteCRNProfile(string OutputFileName, double Time);
+		
+		/// @brief Writes the array of concentrations N to file
+		/// @details This function writes the CRN concnetrations at the current time to
+		///   a file.
+		/// @author Martin D. Hurst 
+		/// @date 16/03/2017
+		void WriteNuclideArray(string OutputFileName, double Time, int Nuclide);
 		
 		/// @brief Get X coordinates
 		/// @return X coordinates

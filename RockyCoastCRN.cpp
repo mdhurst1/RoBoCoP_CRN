@@ -1242,4 +1242,42 @@ void RockyCoastCRN::WriteCRNProfile(string OutputFileName, double Time)
 	}
 }
 
+void  RockyCoastCRN::WriteNuclideArray(string OutputFileName, double Time, int Nuclide)
+{
+  /* Writes a matrix of N concentrations to file
+		File format is 	
+		
+		Time	
+			N[0][0]     |    N[0][1]    |   N[0][2]     =====>    N[0][NXNodes]
+			N[1][0]     |    N[1][1]    |   N[1][2]     =====>    N[0][NXNodes]
+			N[2][0]     |    N[2][1]    |   N[2][2]     =====>    N[0][NXNodes]
+		      ||               ||             ||                      ||
+		      \/               \/             \/                      \/
+		N[NZNodes][0]  | N[NZNodes][1] | N[NZNodes][2] =====> N[NZNodes][NXNodes] */
+      
+  	//open the output filestream and write headers
+	ofstream WriteFile;
+	WriteFile.open(OutputFileName.c_str());
+	WriteFile << Time << " " << dZ << " " << dX << endl;
+	
+	//Check if file exists if not open a new one and write headers
+	if (WriteFile.is_open())
+	{
+		//write Resistance
+		for (int i=0; i<NZNodes; ++i)
+		{
+			for (int j=0;j<NXNodes; ++j)
+			{
+				WriteFile << setprecision(6) << N[Nuclide][j][i] << " ";
+			}
+			WriteFile << endl;
+		}
+	}
+	else
+	{
+		//report errors
+		cout << "RockyCoastCRN.WriteNuclideArray: Error, the file " << OutputFileName << " is not open or cannot be read." << endl;
+		exit(EXIT_FAILURE);
+	}
+}
 #endif

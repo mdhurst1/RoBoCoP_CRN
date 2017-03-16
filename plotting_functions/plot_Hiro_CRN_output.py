@@ -65,14 +65,13 @@ def make_plot(FileName,ColourMap):
         N = np.array(NLine[1:],dtype="float64")
         Z = np.arange(10.,-10.01,-0.1)
         X2 = np.arange(0,len(N))*0.1
-        print np.shape(X2)
-        print np.shape(N)
+        
         if (Time == PlotTime):
             ax1.plot(X,Z,'-',lw=1.5,color=ColourMap((Time)/(EndTime)))
             ax2.plot(X2,N,'-',lw=1.5,color=ColourMap((Time)/(EndTime)))
             PlotTime += PlotInterval
     
-    print X2
+    
             
     # tweak the plot
     #ax1.set_xticklabels([])
