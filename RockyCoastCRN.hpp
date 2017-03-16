@@ -90,6 +90,7 @@ class RockyCoastCRN
 		vector<double> X;	  //cross shore distance (m)
 		vector<double> Z;		//elevation (m)
 		vector<double> Zx;	//elevation (m) at each X
+		vector<int> SurfaceInd; //Positions in X of surface Z
 		
 		int NXNodes;	//Number of nodes across the coastline
 		int NZNodes;	//Number of nodes depth

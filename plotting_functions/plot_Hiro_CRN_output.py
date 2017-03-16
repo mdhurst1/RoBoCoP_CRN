@@ -57,7 +57,7 @@ def make_plot(FileName,ColourMap):
     for j in range(1,NoLines-1):
         
         MorphLine = (MorphLines[j].strip().split(" "))
-        NLine = (NLines[j].strip().split(" "))
+        NLine = (NLines[j+1].strip().split(" "))
         Time = float(NLine[0])
         
         #Read morphology
@@ -65,6 +65,10 @@ def make_plot(FileName,ColourMap):
         N = np.array(NLine[1:],dtype="float64")
         Z = np.arange(10.,-10.01,-0.1)
         X2 = np.arange(0,len(N))*0.1
+        print N[-1]
+        mask = [N!=N[-1]]
+        N = N[mask]
+        X2 = X2[mask]
         
         if (Time == PlotTime):
             ax1.plot(X,Z,'-',lw=1.5,color=ColourMap((Time)/(EndTime)))
@@ -79,7 +83,8 @@ def make_plot(FileName,ColourMap):
     ax1.set_ylabel("Elevation (m)")
     ax2.set_ylabel("$^{10}$Be concentration (a/g/y)")
     xmin, xmax = ax1.get_xlim()
-    ax1.set_xlim(xmin-10,xmax)
+    ax1.set_xlim(xmin-10,xmax+10)
+    ax2.set_xlim(xmin-10,xmax+10)
     ax1.set_ylim(-10,10)
     plt.show()
 

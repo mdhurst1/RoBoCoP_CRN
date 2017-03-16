@@ -314,7 +314,7 @@ void RockyCoastCRN::Initialise(Hiro HiroCoast, vector<int> WhichNuclides)
 	vector<double> EmptyX(NXNodes,0);
 	vector<double> EmptyXNDV(NXNodes,NDV);
 	X = EmptyX;
-	Z = EmptyZ;
+	Z = HiroCoast.Z;
 	PlatformElevation = EmptyXNDV;
 	PlatformElevationOld = EmptyXNDV;
 	SurfaceElevation = EmptyXNDV;
@@ -836,23 +836,15 @@ void RockyCoastCRN::UpdateCRNs()
 		
 		for (int i=0; i<NZNodes; ++i)
 		{
-			if (Z[i] > PlatformElevation[j]) Z[i] = NDV;
+			if (Z[i] > PlatformElevation[j])
+			{
+				for (int n=0; n<NoNuclides; ++n)
+				{
+					N[n][j][i] = 0;
+				}
+			}
 			else if (Z[i] > PlatformElevation[j]-20.)
 			{
-				if (Top == false)
-				{	
-					for (int n=0; n<NoNuclides; ++n)
-					{
-						//linearly interpolate to get concentration at the surface
-						if (PlatformElevationOld[j] == -9999) SurfaceN[n][j] = 0;
-						else if (SurfaceN[n][j] > 0) SurfaceN[n][j] -= (((PlatformElevationOld[j]-PlatformElevation[j])/(PlatformElevationOld[j]-Z[i]))*(SurfaceN[n][j]-N[n][j][i]));
-
-						//update concentration at the platform surface, accounting for beach cover
-						SurfaceN[n][j] += dt*P_Spal[n][j]*exp((0-((SurfaceElevation[j]-PlatformElevation[j])))/z_rs);
-						Top = 1;
-					}
-				}
-				
 				for (int n=0; n<NoNuclides; ++n)
 				{
 					//update concentrations at depth
@@ -863,6 +855,15 @@ void RockyCoastCRN::UpdateCRNs()
 					N[n][j][i] += dt*P_Muon_Slow[n][j]*exp((Z[i]-SurfaceElevation[j])/z_rm);	//muons
 					//remove atoms due to radioactive decay
 					N[n][j][i] -= dt*Lambda[n];
+				}
+				if (Top == false)
+				{
+					for (int n=0; n<NoNuclides; ++n)
+					{
+						//update concentration at the platform surface, accounting for beach cover
+						SurfaceN[n][j] = N[n][j][i];
+						Top = 1;
+					}
 				}
 			}
 		}
@@ -966,6 +967,7 @@ void RockyCoastCRN::UpdateMorphology(Hiro HiroCoast)
 	//Get number of nodes in coastal morphology
 	X = HiroCoast.X;
 	Zx = HiroCoast.Zx;
+	SurfaceInd = HiroCoast.ZInd;
 	
 	int TempXSize = X.size();
 	while (TempXSize > NXNodes)
@@ -983,6 +985,14 @@ void RockyCoastCRN::UpdateMorphology(Hiro HiroCoast)
 	PlatformElevationOld = PlatformElevation;
 	PlatformElevation = Zx;
 	SurfaceElevation = Zx;
+	
+	for (int j=0; j<NXNodes; ++j)
+	{
+		for (int n=0; n<NoNuclides; ++n)
+		{
+			SurfaceN[n][j] = N[n][j][SurfaceInd[j]];
+		}
+	}
 	
 	//Cliff is on the right, find it
 	//This will need updating once we have sea level rise
