@@ -59,22 +59,26 @@ def make_plot(FileName,ColourMap):
         MorphLine = (MorphLines[j].strip().split(" "))
         NLine = (NLines[j].strip().split(" "))
         Time = float(NLine[0])
-        print Time, 
-        #Read morphology
-        Xz = np.array(MorphLine[1:],dtype="float64")
-        N = np.array(NLine[1:],dtype="float64")
-        Z = np.arange(37.5,-37.6,-0.1)
-        X = np.arange(0,500,0.1)
         
+        #Read morphology
+        X = np.array(MorphLine[1:],dtype="float64")
+        N = np.array(NLine[1:],dtype="float64")
+        Z = np.arange(10.,-10.01,-0.1)
+        X2 = np.arange(0,len(N))*0.1
+        print np.shape(X2)
+        print np.shape(N)
         if (Time == PlotTime):
-            ax1.plot(Xz,Z,'-',lw=1.5,color=ColourMap((Time)/(EndTime)))
-            ax2.plot(X,N,'-',lw=1.5,color=ColourMap((Time)/(EndTime)))
+            ax1.plot(X,Z,'-',lw=1.5,color=ColourMap((Time)/(EndTime)))
+            ax2.plot(X2,N,'-',lw=1.5,color=ColourMap((Time)/(EndTime)))
             PlotTime += PlotInterval
-                
+    
+    print X2
+            
     # tweak the plot
     #ax1.set_xticklabels([])
     plt.xlabel("Distance (m)")
-    plt.ylabel("Elevation (m)")
+    ax1.set_ylabel("Elevation (m)")
+    ax2.set_ylabel("$^{10}$Be concentration (a/g/y)")
     xmin, xmax = ax1.get_xlim()
     ax1.set_xlim(xmin-10,xmax)
     ax1.set_ylim(-10,10)

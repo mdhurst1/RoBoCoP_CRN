@@ -300,13 +300,14 @@ void Hiro::CalculateBackwearing()
 		
 		//Determine Surfzone Width
 		//Get surf zone mean platform gradient
-		//Set it to super steep if vertical.
 		if (Xz[i-1] != Xz[BreakingPointXInd])
 		{
 			SurfZoneGradient = abs((Z[i-1]-Z[BreakingPointXInd])/(Xz[i-1]-Xz[BreakingPointXInd]));
 		}
-		//Limt SurfZoneGradient to 45 degrees!
 		else SurfZoneGradient = 1.;
+		
+		//Limt SurfZoneGradient to 45 degrees!
+		if (SurfZoneGradient > 1.) SurfZoneGradient = 1.;
 		
 		SurfZoneWidth = BreakingWaveHeight/SurfZoneGradient;
 		
@@ -363,10 +364,6 @@ void Hiro::CalculateBackwearing()
 				}
 				else
 				{
-					//double Test = -WaveAttenuationConst*(X[ii]-(BreakingPointX+BreakingWaveDist));
-					//cout << Test << endl;
-					//double Test2 = exp(Test);
-					//cout << setprecision(10) << X[ii] << " " << Test << " " << Test2 << endl;
 					WaveForce = BrokenWaveConst*WaveHeight*ErosionShapeFunction[i-MaxTideZInd]*BrokenWavePressure_Bw*exp(-WaveAttenuationConst*(Xz[ii]-(BreakingPointX+BreakingWaveDist)));
 				}
 				Bw_Erosion[ii] += WaveForce;
