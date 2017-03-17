@@ -91,9 +91,8 @@ for Time in range(0,EndTime+1,10):
     N = np.flipud(np.loadtxt("../driver_files/Concentrations_"+str(Time)+".xzn",skiprows=1))
     
     NXNodes = np.int(80/dx)
-    NewRow = N[:,-1:]
-    for i in range(0,NXNodes):
-        N = np.hstack((N,NewRow))
+    NewRows = np.repeat(N[:,-1:],NXNodes,axis=1)
+    N = np.hstack((N,NewRows))
     
     Nm = N #ma.masked_where(N==0,N)
     Ny,Nx = np.shape(Nm)
@@ -101,7 +100,7 @@ for Time in range(0,EndTime+1,10):
     y = np.arange(0,Ny)*dy-10.
     xx,yy = np.meshgrid(x,y)
     NMesh = plt.pcolor(xx,yy,Nm/1000.,cmap='Reds')
-    NMesh.set_clim(vmin=0, vmax=36)
+    NMesh.set_clim(vmin=0, vmax=10)
     #plt.axis([x.min(), x.max(),y.min(), y.max()])
     cax = plt.axes([0.7,0.2,0.15,0.02])
     Label = r"$^{10}$Be Concentration (x10$^3$ atoms g$^{-1}$)"
