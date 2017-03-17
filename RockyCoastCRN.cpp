@@ -1270,6 +1270,10 @@ void  RockyCoastCRN::WriteNuclideArray(string OutputFileName, double Time, int N
 	WriteFile.open(OutputFileName.c_str());
 	WriteFile << Time << " " << dZ << " " << dX << endl;
 	
+	//
+	int n=0;
+	if (Nuclide == 10) n = 0;
+	
 	//Check if file exists if not open a new one and write headers
 	if (WriteFile.is_open())
 	{
@@ -1278,7 +1282,7 @@ void  RockyCoastCRN::WriteNuclideArray(string OutputFileName, double Time, int N
 		{
 			for (int j=0;j<NXNodes; ++j)
 			{
-				WriteFile << setprecision(6) << N[Nuclide][j][i] << " ";
+				WriteFile << setprecision(6) << N[n][j][i] << " ";
 			}
 			WriteFile << endl;
 		}

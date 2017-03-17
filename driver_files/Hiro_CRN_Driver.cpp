@@ -117,6 +117,9 @@ int main()
 	double WavePeriod_StD = 0;
 	PlatformModel.InitialiseWaves(WaveHeight_Mean, WaveHeight_StD, WavePeriod_Mean, WavePeriod_StD);
 	
+	//Create string stream for puting time into filename
+	stringstream ss;
+
 	//Loop through time
 	while (Time <= EndTime)
 	{
@@ -152,8 +155,14 @@ int main()
 		//print?
 		if (Time >= PrintTime)
 		{
+
+			ss << PrintTime;
+			string PrintTimeString = ss.str();
+			ss.clear();
+			string ConcentrationsFileName ="Concentrations_"+PrintTimeString+".xzn";
 			PlatformModel.WriteProfile(OutputMorphologyFileName, Time);
 			PlatformCRN.WriteCRNProfile(OutputConcentrationFileName, Time);
+			PlatformCRN.WriteNuclideArray(ConcentrationsFileName, Time, Nuclides[0]);
 			PrintTime += PrintInterval;
 		}
 
@@ -163,11 +172,10 @@ int main()
 	
 	string ResistanceFileName = "ResistanceArray.xz";
 	string MorphologyFileName = "MorphologyArray.xz";
-	string ConcentrationsFileName ="Concentrations.xzn";
+	
 	PlatformModel.WriteResistanceArray(ResistanceFileName, Time);
 	PlatformModel.WriteMorphologyArray(MorphologyFileName, Time);
-	int Nuclide = 0;
-	PlatformCRN.WriteNuclideArray(ConcentrationsFileName, Time,Nuclide);
+	
 	
 	//a few blank lines to finish
 	cout << endl << endl;
