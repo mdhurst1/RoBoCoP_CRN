@@ -80,7 +80,7 @@ int main()
 	double TimeInterval = 1;
 
 	//Print Control
-	double PrintInterval = 100.;
+	double PrintInterval = 10.;
 	double PrintTime = Time;
 	string OutputMorphologyFileName = "ShoreProfile.xz";
 	string OutputConcentrationFileName = "Concentrations.xn";
@@ -117,9 +117,6 @@ int main()
 	double WavePeriod_StD = 0;
 	PlatformModel.InitialiseWaves(WaveHeight_Mean, WaveHeight_StD, WavePeriod_Mean, WavePeriod_StD);
 	
-	//Create string stream for puting time into filename
-	stringstream ss;
-
 	//Loop through time
 	while (Time <= EndTime)
 	{
@@ -155,7 +152,8 @@ int main()
 		//print?
 		if (Time >= PrintTime)
 		{
-
+			//Create string stream for puting time into filename
+			stringstream ss;
 			ss << PrintTime;
 			string PrintTimeString = ss.str();
 			ss.clear();
