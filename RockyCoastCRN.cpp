@@ -788,8 +788,20 @@ void RockyCoastCRN::UpdateCRNs()
 		TopoShieldingFactor = GetTopographicShieldingFactor(X[j]-CliffPositionX, CliffHeight);
 		
 		//FOR EACH NUCLIDE OF INTEREST SET SURFACE PRODUCTION RATES
+		//Add in here if we're close enough to the cliff we're going to need some extra production'
+		
 		for (int n=0; n<NoNuclides; ++n)
 		{
+			CliffDepth = X[j]-CliffPositionX;
+			if ((CliffDepth > 0) && (CliffDepth < 3.))
+			{
+				P_Cliff = 0.5*Po_Spal[n]*(1+exp((Z[i]-SurfaceElevation[j])/z_rs));
+				P_Spal[n][j] = P_Cliff*exp(CliffDepth/z_rs)
+			}
+			else
+			{
+				P_Spal[n][j] = Po_Spal[n];
+			}
 			P_Spal[n][j] = Po_Spal[n];
 			P_Muon_Fast[n][j] = Po_Muon_Fast[n];
 			P_Muon_Slow[n][j] = Po_Muon_Slow[n];
