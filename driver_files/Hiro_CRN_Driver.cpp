@@ -80,7 +80,7 @@ int main()
 	double TimeInterval = 1;
 
 	//Print Control
-	double PrintInterval = 10.;
+	double PrintInterval = 100.;
 	double PrintTime = Time;
 	string OutputMorphologyFileName = "ShoreProfile.xz";
 	string OutputConcentrationFileName = "Concentrations.xn";
@@ -91,6 +91,7 @@ int main()
 	//Which Nuclides to track 10Be, 14C, 26Al, 36Cl?
 	vector<int> Nuclides;
 	Nuclides.push_back(10);
+	Nuclides.push_back(14);
 	
 	//initialise RockyCoastCRN friend object
 	RockyCoastCRN PlatformCRN = RockyCoastCRN(PlatformModel, Nuclides);
@@ -153,14 +154,14 @@ int main()
 		if (Time >= PrintTime)
 		{
 			//Create string stream for puting time into filename
-			stringstream ss;
-			ss << PrintTime;
-			string PrintTimeString = ss.str();
-			ss.clear();
-			string ConcentrationsFileName ="Concentrations_"+PrintTimeString+".xzn";
+//			stringstream ss;
+//			ss << PrintTime;
+//			string PrintTimeString = ss.str();
+//			ss.clear();
+//			string ConcentrationsFileName ="Concentrations_"+PrintTimeString+".xzn";
+			//PlatformCRN.WriteNuclideArray(ConcentrationsFileName, Time, Nuclides[0]);
 			PlatformModel.WriteProfile(OutputMorphologyFileName, Time);
 			PlatformCRN.WriteCRNProfile(OutputConcentrationFileName, Time);
-			PlatformCRN.WriteNuclideArray(ConcentrationsFileName, Time, Nuclides[0]);
 			PrintTime += PrintInterval;
 		}
 

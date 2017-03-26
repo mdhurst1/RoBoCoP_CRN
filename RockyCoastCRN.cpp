@@ -792,16 +792,16 @@ void RockyCoastCRN::UpdateCRNs()
 		
 		for (int n=0; n<NoNuclides; ++n)
 		{
-			CliffDepth = X[j]-CliffPositionX;
-			if ((CliffDepth > 0) && (CliffDepth < 3.))
-			{
-				P_Cliff = 0.5*Po_Spal[n]*(1+exp((Z[i]-SurfaceElevation[j])/z_rs));
-				P_Spal[n][j] = P_Cliff*exp(CliffDepth/z_rs)
-			}
-			else
-			{
-				P_Spal[n][j] = Po_Spal[n];
-			}
+//			CliffDepth = X[j]-CliffPositionX;
+//			if ((CliffDepth > 0) && (CliffDepth < 3.))
+//			{
+//				P_Cliff = 0.5*Po_Spal[n]*(1+exp((Z[i]-SurfaceElevation[j])/z_rs));
+//				P_Spal[n][j] = P_Cliff*exp(CliffDepth/z_rs)
+//			}
+//			else
+//			{
+//				P_Spal[n][j] = Po_Spal[n];
+//			}
 			P_Spal[n][j] = Po_Spal[n];
 			P_Muon_Fast[n][j] = Po_Muon_Fast[n];
 			P_Muon_Slow[n][j] = Po_Muon_Slow[n];

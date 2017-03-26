@@ -82,7 +82,7 @@ float z_wm = Lamb_Muon/rho_w;		//Decay length scale sea water muons
 float Lambda_10Be = 4.99*pow(10.,-7);
 
 ///@brief Half life of 14C (ref).
-float Lambda_14C = 4.99*pow(10.,-7);
+float Lambda_14C = 5730.;
 
 ///@brief Half life of 26Al (ref).
 float Lambda_26Al = 4.99*pow(10.,-7);

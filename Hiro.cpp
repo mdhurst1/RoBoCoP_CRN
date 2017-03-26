@@ -340,9 +340,13 @@ void Hiro::CalculateBackwearing()
 				{
 					WaveForce = StandingWaveConst*WaveHeight*ErosionShapeFunction[i-MaxTideZInd]*StandingWavePressure_Bw;
 				}
-				else 
+				else if (Xz[ii] < (BreakingPointX+BreakingWaveDist))
 				{
-					WaveForce = BrokenWaveConst*WaveHeight*BreakingWaveDecay*ErosionShapeFunction[i-MaxTideZInd]*BreakingWavePressure_Bw*exp(-WaveAttenuationConst*(Xz[ii]-BreakingWaveDist));
+					WaveForce = BreakingWaveConst*WaveHeight*BreakingWaveDecay*ErosionShapeFunction[i-MaxTideZInd]*BreakingWavePressure_Bw*exp(-WaveAttenuationConst*(Xz[ii]-BreakingWaveDist));
+				}
+				else
+				{
+					WaveForce = BrokenWaveConst*WaveHeight*ErosionShapeFunction[i-MaxTideZInd]*BrokenWavePressure_Bw*exp(-WaveAttenuationConst*(Xz[ii]-(BreakingPointX+BreakingWaveDist)));
 				}
 				Bw_Erosion[ii] += WaveForce;
 			}			

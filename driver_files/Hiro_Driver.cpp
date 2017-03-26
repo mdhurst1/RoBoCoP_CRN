@@ -92,14 +92,14 @@ int main()
 
 	//Sea level rise?
 	double SLR = 0;
-	
+	PlatformModel.InitialiseSeaLevel(SLR);
 	
 
 	//Loop through time
 	while (Time <= EndTime)
 	{
 		//Update Sea Level
-		PlatformModel.UpdateSeaLevel(SLR);
+		PlatformModel.UpdateSeaLevel();
 
 		//Get the wave conditions
 		PlatformModel.GetWave();
