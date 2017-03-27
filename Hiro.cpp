@@ -306,9 +306,21 @@ void Hiro::CalculateBackwearing()
 		
 		//Determine Surfzone Width
 		//Get surf zone mean platform gradient
+		//This is critical!
+		double Slope;
+		double SumSlopes = 0;
+		int NSlopes = 0;
 		if (Xz[i+1] != X[BreakingPointXInd])
 		{
-			SurfZoneGradient = abs((Z[i+1]-Zx[BreakingPointXInd])/(Xz[i+1]-X[BreakingPointXInd]));
+			//SurfZoneGradient = abs((Z[i+1]-Zx[BreakingPointXInd])/(Xz[i+1]-X[BreakingPointXInd]));
+			jj = BreakingPointXInd+1;
+			while (Zx[jj] < Z[i+1])
+			{
+				Slope = fabs((Zx[jj]-Zx[jj-1])/(X[jj]-X[jj-1]));
+				SumSlopes += Slope;
+				NSlopes++;
+			}
+			SurfZoneGradient = SumSlopes/NSlopes;
 		}
 		else 
 		{
