@@ -264,6 +264,7 @@ void Hiro::CalculateBackwearing()
 {
 	//Declare temporary variables
 	double WaveForce, SurfZoneBottomZ; //, SurfZoneBottomX;
+	int BreakingPointZInd;
 	int WaveType;
 	
 	//Reset backwear vector
@@ -298,6 +299,16 @@ void Hiro::CalculateBackwearing()
 			else --jj;
 		}
 		
+		//Find breaking point in Z
+		for (int ii=i; ii<NZNodes;++ii)
+		{
+			if (MorphologyArray[ii][BreakingPointXInd] == 1)
+			{
+				BreakingPointZInd = ii;
+				break;
+			}
+		}
+		
 		//Set Wave Type
 		if (Xz[i] == 0) WaveType = 1;
 		else if (Xz[i]-BreakingPointX<=0) WaveType = 1;
@@ -313,10 +324,9 @@ void Hiro::CalculateBackwearing()
 		if (Xz[i+1] != X[BreakingPointXInd])
 		{
 			//SurfZoneGradient = abs((Z[i+1]-Zx[BreakingPointXInd])/(Xz[i+1]-X[BreakingPointXInd]));
-			jj = BreakingPointXInd+1;
-			while (Zx[jj] < Z[i+1])
+			for (int ii=BreakingPointZInd; ii>=i; --ii)
 			{
-				Slope = fabs((Zx[jj]-Zx[jj-1])/(X[jj]-X[jj-1]));
+				Slope = fabs((Z[ii-1]-Z[ii])/(Xz[ii-1]-Xz[ii]));
 				SumSlopes += Slope;
 				NSlopes++;
 			}
