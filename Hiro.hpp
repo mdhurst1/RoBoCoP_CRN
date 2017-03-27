@@ -137,7 +137,7 @@ class Hiro
 		double BreakingWaveHeight;
 		double BreakingWaveDist;
 		double BreakingWaveWaterDepth;
-		double WaveAttenuationConst;
+		double BreakingWaveAttenuation, BrokenWaveAttenuation;
 		double BreakingPointX, BreakingPointY;
 		int BreakingPointXInd, BreakingPointYInd;
 		
