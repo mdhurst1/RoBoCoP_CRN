@@ -90,13 +90,14 @@ void Hiro::Initialise(double dZ_in, double dX_in)
 	BrokenWavePressure_Dw = 1.;
 	
 	//Cliff control params
+	CliffHeight = 10.;
 	CliffFailureDepth = 1.;
 	
 	//Declare spatial stuff
 	dZ = dZ_in;
 	dX = dX_in;
 	NXNodes = 10;
-	NZNodes = round(20./dZ)+1;	
+	NZNodes = round(2.*CliffHeight/dZ)+1;	
 
 	//declare an array of zeros for assignment of Z vector
 	Z = vector<double>(NZNodes,0.0);
@@ -264,7 +265,6 @@ void Hiro::CalculateBackwearing()
 {
 	//Declare temporary variables
 	double WaveForce, SurfZoneBottomZ; //, SurfZoneBottomX;
-	int BreakingPointZInd;
 	int WaveType;
 	
 	//Reset backwear vector
@@ -272,41 +272,31 @@ void Hiro::CalculateBackwearing()
 	Bw_Erosion = ZZeros;
 	
 	//Loop across all intertidal elevations
-	for (int i=MaxTideZInd; i<=MinTideZInd; ++i)
+	for (int i=MaxTideZInd+1; i<MinTideZInd; ++i)
 	{
 		//Estimate horizontal breaking point
 		//Elevation of breaker point
 		SurfZoneBottomZ = Z[i]-BreakingWaveWaterDepth;
 		//BreakingPointInd = i-round(BreakingWaveWaterDepth*dZ);?
 		
-		int jj=MaxTideXInd;
+		int j=MaxTideXInd;
 		while (true)
 		{
-			if (Zx[jj] < SurfZoneBottomZ)
+			if (Zx[j] < SurfZoneBottomZ)
 			{
 				//Find Position X of Surfzone 
-				BreakingPointX = X[jj];
-				BreakingPointXInd = jj;
+				BreakingPointX = X[j];
+				BreakingPointXInd = j;
 				break;
 			}
-			else if (jj == 0)
+			else if (j == 0)
 			{
 				//Wave breaks at the seaward edge
 				BreakingPointX = 0;
 				BreakingPointXInd = 0;
 				break;
 			}
-			else --jj;
-		}
-		
-		//Find breaking point in Z
-		for (int ii=i; ii<NZNodes;++ii)
-		{
-			if (MorphologyArray[ii][BreakingPointXInd] == 1)
-			{
-				BreakingPointZInd = ii;
-				break;
-			}
+			else --j;
 		}
 		
 		//Set Wave Type
@@ -314,6 +304,9 @@ void Hiro::CalculateBackwearing()
 		else if (Xz[i]-BreakingPointX<=0) WaveType = 1;
 		else if ((Xz[i]-BreakingPointX)<BreakingWaveDist) WaveType = 2;
 		else WaveType = 3;
+		
+		//
+		int BrokenWaveXInd = BreakingPointXInd + round(BreakingWaveDist/dX);
 		
 		//Determine Surfzone Width
 		//Get surf zone mean platform gradient
@@ -324,11 +317,14 @@ void Hiro::CalculateBackwearing()
 		if (Xz[i+1] != X[BreakingPointXInd])
 		{
 			//SurfZoneGradient = abs((Z[i+1]-Zx[BreakingPointXInd])/(Xz[i+1]-X[BreakingPointXInd]));
-			for (int ii=BreakingPointZInd; ii>=i; --ii)
+			for (int jj=BrokenWaveXInd; X[jj]<Xz[i]; ++jj)
 			{
-				Slope = fabs((Z[ii-1]-Z[ii])/(Xz[ii-1]-Xz[ii]));
-				SumSlopes += Slope;
-				NSlopes++;
+				if ((X[jj] != X[jj+1]) && (Zx[jj+1] < 0.5*CliffHeight))	
+				{
+					Slope = fabs((Zx[jj+1]-Zx[jj])/(X[jj+1]-X[jj]));
+					SumSlopes += Slope;
+					NSlopes++;
+				}
 			}
 			SurfZoneGradient = SumSlopes/NSlopes;
 		}

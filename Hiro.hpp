@@ -165,6 +165,7 @@ class Hiro
 		double DepthDecay;		
 		double CliffWeatheringRate;
 		double CliffFailureDepth;
+		double CliffHeight;
 		
 		//This will need to be populated in the initialise tides function
 		vector<double> WeatheringEfficacy;
