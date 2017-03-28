@@ -62,7 +62,7 @@ int main()
 	double dX = 0.1;
 
 	//Time control parameters
-	double EndTime = 50.;
+	double EndTime = 100.;
 	double Time = 0.;
 	double TimeInterval = 1;
 
