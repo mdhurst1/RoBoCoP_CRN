@@ -267,6 +267,7 @@ void Hiro::CalculateBackwearing()
 	//Declare temporary variables
 	double WaveForce, SurfZoneBottomZ; //, SurfZoneBottomX;
 	int WaveType;
+	int BreakingPointZInd;
 	
 	//Reset backwear vector
 	vector<double> ZZeros(NZNodes,0);
@@ -278,7 +279,14 @@ void Hiro::CalculateBackwearing()
 		//Estimate horizontal breaking point
 		//Elevation of breaker point
 		SurfZoneBottomZ = Z[i]-BreakingWaveWaterDepth;
-		//BreakingPointInd = i-round(BreakingWaveWaterDepth*dZ);?
+		for (int ii=i; ii<NZNodes; ++ii) 
+		{
+			if (Z[ii] < SurfZoneBottomZ)
+			{
+				BreakingPointZInd = ii;
+				break;
+			}
+		}
 		
 		int j=MaxTideXInd;
 		while (true)
@@ -307,27 +315,27 @@ void Hiro::CalculateBackwearing()
 		else WaveType = 3;
 		
 		//Find the location where the broken wave starts
-		int BrokenWaveXInd = BreakingPointXInd + round(BreakingWaveDist/dX);
+		//int BrokenWaveXInd = BreakingPointXInd + round(BreakingWaveDist/dX);
 		
 		//Determine Surfzone Width
 		//Get surf zone mean platform gradient
 		//This is critical!
-		double Slope;
-		double SumSlopes = 0;
-		int NSlopes = 0;
-		if ((Xz[i+1] != X[BreakingPointXInd]) && (BrokenWaveXInd<MaxTideXInd))
+//		double Slope;
+//		double SumSlopes = 0;
+//		int NSlopes = 0;
+		if ((Xz[i] != X[BreakingPointXInd]))
 		{
-			//SurfZoneGradient = abs((Z[i+1]-Zx[BreakingPointXInd])/(Xz[i+1]-X[BreakingPointXInd]));
-			for (int jj=BrokenWaveXInd; X[jj]<Xz[i]; ++jj)
-			{
-				if ((X[jj] != X[jj+1]) && (Zx[jj+1] < 0.5*CliffHeight))	
-				{
-					Slope = fabs((Zx[jj+1]-Zx[jj])/(X[jj+1]-X[jj]));
-					SumSlopes += Slope;
-					NSlopes++;
-				}
-			}
-			SurfZoneGradient = SumSlopes/NSlopes;
+			SurfZoneGradient = abs((Z[i]-Z[BreakingPointZInd])/(Xz[i]-Xz[BreakingPointZInd]));
+//			for (int jj=BrokenWaveXInd-1; X[jj]>Xz[i]; --jj)
+//			{
+//				if ((X[jj] != X[jj+1]) && (Zx[jj+1] < 0.5*CliffHeight))	
+//				{
+//					Slope = fabs((Zx[jj+1]-Zx[jj])/(X[jj+1]-X[jj]));
+//					SumSlopes += Slope;
+//					NSlopes++;
+//				}
+//			}
+//			SurfZoneGradient = SumSlopes/NSlopes;
 		}
 		else 
 		{
@@ -435,7 +443,7 @@ void Hiro::IntertidalWeathering()
 	Weathering = ZZeros;
 	
 	//Loop across the tidal range
-	for (int i=MaxTideZInd; i<=MinTideZInd; ++i)
+	for (int i=MaxTideZInd+1; i<MinTideZInd; ++i)
 	{
 		//Calculate Weathering
 		WeatheringForce = WeatheringConst*WeatheringEfficacy[i-MaxTideZInd];
@@ -445,7 +453,7 @@ void Hiro::IntertidalWeathering()
 		for (int j=MinTideXInd; j<=MaxXInd; ++j)
 		{
 			//Check we're at a a surface cell
-			if (j == 0)
+			if ((MorphologyArray[i][j] == 1) && (j == 0))
 			{
 				RemainingResistance = ResistanceArray[i][j];
 				ResistanceArray[i][j] -= WeatheringForce; 
@@ -527,7 +535,7 @@ void Hiro::ErodeDownwearing()
 	for (int j=0; j<MaxTideXInd; ++j)
 	{
 		// loop over the tidal range?
-		for (int i=MinTideZInd; i<=MaxTideZInd; ++i)
+		for (int i=MaxTideZInd; i<=MinTideZInd; ++i)
 		{
 			// Check Downwear Force vs Resistance
 			if (Dw_Erosion[j] >= ResistanceArray[i][j])
