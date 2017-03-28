@@ -80,6 +80,7 @@ void Hiro::Initialise(double dZ_in, double dX_in)
 	BreakingWaveDecay = 0.1;
 	BrokenWaveDecay = 0.01;
 	WeatheringConst = 0.05;
+	RockResistance = 1;
 	
 	//Wave pressure parameters, check these with Hiro at some point
 	StandingWavePressure_Bw = 1.;
@@ -121,7 +122,7 @@ void Hiro::Initialise(double dZ_in, double dX_in)
 	
 	//declare an array of ones for assignment of the Morphology Array
 	MorphologyArray = vector< vector<int> >(NZNodes,vector<int>(NXNodes,1));
-	ResistanceArray = vector< vector<double> >(NZNodes,vector<double>(NXNodes,1));
+	ResistanceArray = vector< vector<double> >(NZNodes,vector<double>(NXNodes,RockResistance));
 		
 	//default time interval
 	dt = 1.;
@@ -178,8 +179,8 @@ void Hiro::InitialiseTides(double TideRange)
 	
 	//Normalise values to total
 	//Or should I be normalising to Max Value!?
-	//for (int i=0; i<NTideValues; ++i) ErosionShapeFunction[i] /= Total;
-	for (int i=0; i<NTideValues; ++i) ErosionShapeFunction[i] /= Max;
+	for (int i=0; i<NTideValues; ++i) ErosionShapeFunction[i] /= Total;
+	//for (int i=0; i<NTideValues; ++i) ErosionShapeFunction[i] /= Max;
 	
 	//Initialise weathering shape function
 	InitialiseWeathering();	

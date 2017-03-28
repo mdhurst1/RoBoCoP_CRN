@@ -155,6 +155,7 @@ class Hiro
 		double BreakingWaveConst, BrokenWaveConst;
 		double BreakingWaveDecay, BrokenWaveDecay;
 		double WeatheringConst;
+		double RockResistance;
 		
 		//Wave pressure parameters, check these with Hiro at some point
 		double StandingWavePressure_Bw, BreakingWavePressure_Bw, BrokenWavePressure_Bw;
