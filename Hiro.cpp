@@ -80,7 +80,7 @@ void Hiro::Initialise(double dZ_in, double dX_in)
 	BreakingWaveDecay = 0.1;
 	BrokenWaveDecay = 0.01;
 	WeatheringConst = 0.05;
-	RockResistance = 1;
+	RockResistance = 2.;
 	
 	//Wave pressure parameters, check these with Hiro at some point
 	StandingWavePressure_Bw = 1.;
@@ -306,7 +306,7 @@ void Hiro::CalculateBackwearing()
 		else if ((Xz[i]-BreakingPointX)<BreakingWaveDist) WaveType = 2;
 		else WaveType = 3;
 		
-		//
+		//Find the location where the broken wave starts
 		int BrokenWaveXInd = BreakingPointXInd + round(BreakingWaveDist/dX);
 		
 		//Determine Surfzone Width
@@ -315,7 +315,7 @@ void Hiro::CalculateBackwearing()
 		double Slope;
 		double SumSlopes = 0;
 		int NSlopes = 0;
-		if (Xz[i+1] != X[BreakingPointXInd])
+		if ((Xz[i+1] != X[BreakingPointXInd]) && (BrokenWaveXInd<MaxTideXInd))
 		{
 			//SurfZoneGradient = abs((Z[i+1]-Zx[BreakingPointXInd])/(Xz[i+1]-X[BreakingPointXInd]));
 			for (int jj=BrokenWaveXInd; X[jj]<Xz[i]; ++jj)

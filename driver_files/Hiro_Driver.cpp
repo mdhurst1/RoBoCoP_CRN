@@ -84,7 +84,7 @@ int main()
 
 	//Initialise Waves
 	//Single Wave for now but could use the waveclimate object from COVE!?
-	double WaveHeight_Mean = 1.;
+	double WaveHeight_Mean = 2.;
 	double WaveHeight_StD = 0;
 	double WavePeriod_Mean = 6.;
 	double WavePeriod_StD = 0;
@@ -126,6 +126,7 @@ int main()
 		{
 			PlatformModel.WriteProfile(OutputFileName, Time);
 			PrintTime += PrintInterval;
+			cout << endl;
 		}
 
 		//update time
