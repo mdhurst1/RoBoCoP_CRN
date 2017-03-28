@@ -62,12 +62,12 @@ int main()
 	double dX = 0.1;
 
 	//Time control parameters
-	double EndTime = 10000.;
+	double EndTime = 50.;
 	double Time = 0.;
 	double TimeInterval = 1;
 
 	//Print Control
-	double PrintInterval = 100.;
+	double PrintInterval = 1.;
 	double PrintTime = Time;
 	string OutputFileName = "ShoreProfile.xz";
 	
@@ -84,7 +84,7 @@ int main()
 
 	//Initialise Waves
 	//Single Wave for now but could use the waveclimate object from COVE!?
-	double WaveHeight_Mean = 2.;
+	double WaveHeight_Mean = 1.;
 	double WaveHeight_StD = 0;
 	double WavePeriod_Mean = 6.;
 	double WavePeriod_StD = 0;
@@ -112,14 +112,20 @@ int main()
 		PlatformModel.ErodeBackwearing();
 		PlatformModel.ErodeDownwearing();
 
-		//Implement Weathering
-		PlatformModel.IntertidalWeathering();
-
 		//Update the Morphology 
 		PlatformModel.UpdateMorphology();	  
 		
+		//Implement Weathering
+		PlatformModel.IntertidalWeathering();
+		
+		//Update the Morphology 
+		PlatformModel.UpdateMorphology();
+
 		//Check for Mass Failure
 		PlatformModel.MassFailure();
+		
+		//Update the Morphology 
+		PlatformModel.UpdateMorphology();
 		
 		//print?
 		if (Time >= PrintTime)

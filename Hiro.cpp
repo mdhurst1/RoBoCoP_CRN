@@ -97,7 +97,7 @@ void Hiro::Initialise(double dZ_in, double dX_in)
 	//Declare spatial stuff
 	dZ = dZ_in;
 	dX = dX_in;
-	NXNodes = 10;
+	NXNodes = 1000;
 	NZNodes = round(2.*CliffHeight/dZ)+1;	
 
 	//declare an array of zeros for assignment of Z vector
@@ -359,14 +359,14 @@ void Hiro::CalculateBackwearing()
 		//Breaking wave
 		//For a breaking wave, first deal with backwear for the standing wave part, 
 		// then the breaking part
-		else if (WaveType == 2)
+		else if (WaveType == 2 || WaveType == 3)
 		{
 			//Loop across pressure distribution function 
 			//This may have some problems!
 			for (int ii=i+PressureDistMinInd; ii<=i+PressureDistMaxInd; ++ii)
 			{
 				//need to add for condition where changes to broken wave above water level in pressure distribution function
-				if (Xz[ii] < BreakingPointX) 
+				if (Xz[ii] <= BreakingPointX) 
 				{
 					WaveForce = StandingWaveConst*WaveHeight*ErosionShapeFunction[i-MaxTideZInd]*StandingWavePressure_Bw;
 				}
@@ -380,29 +380,6 @@ void Hiro::CalculateBackwearing()
 				}
 				Bw_Erosion[ii] += WaveForce;
 			}			
-		}
-		//Broken wave
-		else if (WaveType == 3)
-		{
-			//Loop across pressure distribution function 
-			//This may have some problems!
-			for (int ii=i+PressureDistMinInd; ii<=i+PressureDistMaxInd; ++ii)
-			{
-				//need to add for condition where changes to broken wave above water level in pressure distribution function
-				if (Xz[ii] < BreakingPointX) 
-				{
-					WaveForce = StandingWaveConst*WaveHeight*ErosionShapeFunction[i-MaxTideZInd]*StandingWavePressure_Bw;
-				}
-				else if (Xz[ii] <= (BreakingPointX+BreakingWaveDist))
-				{
-					WaveForce = BreakingWaveConst*WaveHeight*ErosionShapeFunction[i-MaxTideZInd]*BreakingWavePressure_Bw*exp(-BreakingWaveAttenuation*(Xz[ii]-BreakingWaveDist));
-				}
-				else
-				{
-					WaveForce = BrokenWaveConst*WaveHeight*ErosionShapeFunction[i-MaxTideZInd]*BrokenWavePressure_Bw*exp(-BrokenWaveAttenuation*(Xz[ii]-(BreakingPointX+BreakingWaveDist)));
-				}
-				Bw_Erosion[ii] += WaveForce;
-			}
 		}
 	}
 }
@@ -505,7 +482,9 @@ void Hiro::ErodeBackwearing()
 {
 	//Loop over all wet cells
 	int j=0;
-	for (int i=NZNodes-1; i>=MaxTideZInd+PressureDistMinInd; --i)
+	double RemainingForce;
+	
+	for (int i=MinTideZInd+PressureDistMaxInd; i>=MaxTideZInd+PressureDistMinInd; --i)
 	{
 		//Find j ind somehow
 		//loop across the active shoreface
@@ -516,17 +495,27 @@ void Hiro::ErodeBackwearing()
 		}
 		
 		//Check Backwear Force vs Resistance
-		if (Bw_Erosion[i] >= ResistanceArray[i][j])
+		RemainingForce = Bw_Erosion[i];
+		
+		while (RemainingForce > ResistanceArray[i][j])
 		{
+			//Update remaining force
+			RemainingForce -= ResistanceArray[i][j];
+			 
 			//For now assume that only one block can be removed at a time
 			//Hiro has code that allows multiple blocks to be removed
 			MorphologyArray[i][j] = 0;
 			ResistanceArray[i][j] = 0;
-		
-			//Hiro then has some code to count the number of blocks removed
-			//but not clear why this is needed
+			
+			//iterate landward
+			++j;
+			if (j > MaxXInd) MaxXInd = j;
 		
 			//May also need soemthing to move ix_max landward by 1
+			if (j >= NXNodes) 
+			{
+				cout << "Off the end of X" << endl;
+			}
 		}
 	}
 }
