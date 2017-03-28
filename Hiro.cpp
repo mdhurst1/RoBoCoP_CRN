@@ -325,7 +325,7 @@ void Hiro::CalculateBackwearing()
 //		int NSlopes = 0;
 		if ((Xz[i] != X[BreakingPointXInd]))
 		{
-			SurfZoneGradient = abs((Z[i]-Z[BreakingPointZInd])/(Xz[i]-Xz[BreakingPointZInd]));
+			SurfZoneGradient = abs((Z[MaxXInd]-Z[BreakingPointZInd])/(Xz[MaxXInd]-Xz[BreakingPointZInd]));
 //			for (int jj=BrokenWaveXInd-1; X[jj]>Xz[i]; --jj)
 //			{
 //				if ((X[jj] != X[jj+1]) && (Zx[jj+1] < 0.5*CliffHeight))	
