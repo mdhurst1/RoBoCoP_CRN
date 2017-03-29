@@ -100,7 +100,7 @@ class Hiro
 		int MinTideXInd, MaxTideXInd, MinTideZInd, MaxTideZInd;
 
 		//Position of most landward eroded cell 
-		int MaxXInd; 
+		int MaxXXInd, MaxXZInd; 
 
 		//Surf zone properties for wave transformation
 		double SurfZoneGradient;
@@ -134,8 +134,8 @@ class Hiro
   		double StdWaveHeight;
   		double WavePeriod;
 		double WaveHeight;
-		double BreakingWaveHeight;
-		double BreakingWaveDist;
+		double BreakingWaveHeight, BrokenWaveHeight;
+		double BreakingWaveDist, BrokenWaveDist;
 		double BreakingWaveWaterDepth;
 		double BreakingWaveAttenuation, BrokenWaveAttenuation;
 		double BreakingPointX, BreakingPointY;

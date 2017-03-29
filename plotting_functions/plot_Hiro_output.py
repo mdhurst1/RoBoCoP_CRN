@@ -38,7 +38,7 @@ def make_plot(FileName,ColourMap):
     
     # Only plot every 1 000 years
     PlotTime = 0
-    PlotInterval = 1
+    PlotInterval = 10
     
     ax1 = plt.subplot(111)
 
@@ -47,12 +47,13 @@ def make_plot(FileName,ColourMap):
         
         Line = (Lines[j].strip().split(" "))
         Time = float(Line[0])
-        print Time, 
+        
         #Read morphology
-        X = np.array(Line[1:],dtype="float64")+j
+        X = np.array(Line[1:],dtype="float64")
         Z = np.arange(10,-10.1,-0.1)
         
         if (Time == PlotTime):
+            print Time,
             ax1.plot(X,Z,'-',lw=1.5,color=ColourMap((Time)/(EndTime)))
             PlotTime += PlotInterval
                 
@@ -67,6 +68,6 @@ def make_plot(FileName,ColourMap):
 
 if __name__ == "__main__":
     FileName = "../driver_files/"
-    ColourMap = cm.YlGnBu
+    ColourMap = cm.RdBu
     make_plot(FileName,ColourMap)
         

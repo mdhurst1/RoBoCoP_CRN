@@ -80,7 +80,7 @@ void Hiro::Initialise(double dZ_in, double dX_in)
 	BreakingWaveDecay = 0.1;
 	BrokenWaveDecay = 0.01;
 	WeatheringConst = 0.05;
-	RockResistance = 2.;
+	RockResistance = 0.05;
 	
 	//Wave pressure parameters, check these with Hiro at some point
 	StandingWavePressure_Bw = 1.;
@@ -156,7 +156,8 @@ void Hiro::InitialiseTides(double TideRange)
 		for (int i=0; i<NTideValues; ++i)
 		{
 			ErosionShapeFunction[i] = sin(i*dZ*M_PI/(0.5*TidalRange));
-			if (i*dZ>0.5*TidalRange) ErosionShapeFunction[i] *= -1;
+			if (i == (NTideValues-1)/2) ErosionShapeFunction[i] += 0.5*ErosionShapeFunction[i-1];
+			else if (i*dZ>0.5*TidalRange) ErosionShapeFunction[i] *= -1;
 			Total += ErosionShapeFunction[i];
 			if (ErosionShapeFunction[i] > Max) Max = ErosionShapeFunction[i];
 		}
@@ -267,7 +268,7 @@ void Hiro::CalculateBackwearing()
 	//Declare temporary variables
 	double WaveForce, SurfZoneBottomZ; //, SurfZoneBottomX;
 	int WaveType;
-	int BreakingPointZInd;
+	int BreakingPointZInd = 0;
 	
 	//Reset backwear vector
 	vector<double> ZZeros(NZNodes,0);
@@ -288,6 +289,13 @@ void Hiro::CalculateBackwearing()
 			}
 		}
 		
+		//If waves are breaking at the seaward edge, find the top of the seaward edge
+		for (int ii=BreakingPointZInd; ii>i; --ii) 
+		{
+			if (Xz[ii] == Xz[BreakingPointZInd]) BreakingPointZInd = ii;
+			else break;
+		}
+				
 		int j=MaxTideXInd;
 		while (true)
 		{
@@ -323,9 +331,9 @@ void Hiro::CalculateBackwearing()
 //		double Slope;
 //		double SumSlopes = 0;
 //		int NSlopes = 0;
-		if ((Xz[i] != X[BreakingPointXInd]))
+		if ((Xz[MaxXZInd] != X[BreakingPointXInd]))
 		{
-			SurfZoneGradient = abs((Z[MaxXInd]-Z[BreakingPointZInd])/(Xz[MaxXInd]-Xz[BreakingPointZInd]));
+			SurfZoneGradient = abs((Z[MaxXZInd]-Z[BreakingPointZInd])/(Xz[MaxXZInd]-Xz[BreakingPointZInd]));
 //			for (int jj=BrokenWaveXInd-1; X[jj]>Xz[i]; --jj)
 //			{
 //				if ((X[jj] != X[jj+1]) && (Zx[jj+1] < 0.5*CliffHeight))	
@@ -374,17 +382,19 @@ void Hiro::CalculateBackwearing()
 			for (int ii=i+PressureDistMinInd; ii<=i+PressureDistMaxInd; ++ii)
 			{
 				//need to add for condition where changes to broken wave above water level in pressure distribution function
-				if (Xz[ii] <= BreakingPointX) 
+				if (Xz[ii] < BreakingPointX) 
 				{
 					WaveForce = StandingWaveConst*WaveHeight*ErosionShapeFunction[i-MaxTideZInd]*StandingWavePressure_Bw;
 				}
 				else if (Xz[ii] <= (BreakingPointX+BreakingWaveDist))
 				{
-					WaveForce = BreakingWaveConst*WaveHeight*ErosionShapeFunction[i-MaxTideZInd]*BreakingWavePressure_Bw*exp(-BreakingWaveAttenuation*(Xz[ii]-BreakingWaveDist));
+					BreakingWaveHeight = WaveHeight*exp(-BreakingWaveAttenuation*(Xz[ii]-BreakingPointX));
+					WaveForce = BreakingWaveConst*BreakingWaveHeight*ErosionShapeFunction[i-MaxTideZInd]*BreakingWavePressure_Bw;
 				}
 				else
 				{
-					WaveForce = BrokenWaveConst*WaveHeight*ErosionShapeFunction[i-MaxTideZInd]*BrokenWavePressure_Bw*exp(-BrokenWaveAttenuation*(Xz[ii]-(BreakingPointX+BreakingWaveDist)));
+					BrokenWaveHeight = WaveHeight*exp(-BrokenWaveAttenuation*(Xz[ii]-(BreakingPointX+BreakingWaveDist)));
+					WaveForce = BrokenWaveConst*BrokenWaveHeight*ErosionShapeFunction[i-MaxTideZInd]*BrokenWavePressure_Bw;
 				}
 				Bw_Erosion[ii] += WaveForce;
 			}			
@@ -450,7 +460,7 @@ void Hiro::IntertidalWeathering()
 		
 		//How are we going to get j? i.e. x-position in the array?
 		//Need a loop in here moving from bottom to top of tidal range in x-position
-		for (int j=MinTideXInd; j<=MaxXInd; ++j)
+		for (int j=MinTideXInd; j<=MaxXXInd; ++j)
 		{
 			//Check we're at a a surface cell
 			if ((MorphologyArray[i][j] == 1) && (j == 0))
@@ -496,7 +506,8 @@ void Hiro::ErodeBackwearing()
 	{
 		//Find j ind somehow
 		//loop across the active shoreface
-		while (j < MaxXInd)
+		j=0;
+		while (j < MaxXXInd)
 		{
 			if (MorphologyArray[i][j] == 1) break;
 			++j;
@@ -517,7 +528,7 @@ void Hiro::ErodeBackwearing()
 			
 			//iterate landward
 			++j;
-			if (j > MaxXInd) MaxXInd = j;
+			if (j > MaxXXInd) MaxXXInd = j;
 		
 			//May also need soemthing to move ix_max landward by 1
 			if (j >= NXNodes) 
@@ -581,7 +592,8 @@ void Hiro::UpdateMorphology()
 	MaxTideZInd = SeaLevelInd-0.5*TidalRange/dZ;
 	
 	//Populate vector of X values in Z 
-	MaxXInd = 0;
+	MaxXXInd = 0;
+	MaxXZInd = 0;
 	for (int i=0; i<NZNodes; ++i)
 	{
 		for (int j=XInd[i]; j<NXNodes; ++j)
@@ -590,14 +602,18 @@ void Hiro::UpdateMorphology()
 			{
 				Xz[i] = X[j];
 				XInd[i] = j;
-				if (XInd[i] > MaxXInd) MaxXInd = XInd[i];
+				if (XInd[i] > MaxXXInd) 
+				{
+					MaxXXInd = XInd[i];
+					MaxXZInd = i;
+				}
 				break;
 			}
 		}
 	}
 	
 	//Grow the X direction arrays dynamically
-	if (MaxXInd > NXNodes-5)
+	if (MaxXXInd > NXNodes-5)
 	{
 		//Grow them
 		X.push_back(NXNodes*dX);
