@@ -64,10 +64,10 @@ int main()
 	//Time control parameters
 	double EndTime = 10000;
 	double Time = 0.;
-	double TimeInterval = 10;
+	double TimeInterval = 1;
 
 	//Print Control
-	double PrintInterval = 1.;
+	double PrintInterval = 1;
 	double PrintTime = Time;
 	string OutputFileName = "ShoreProfile.xz";
 	
@@ -91,7 +91,7 @@ int main()
 	PlatformModel.InitialiseWaves(WaveHeight_Mean, WaveHeight_StD, WavePeriod_Mean, WavePeriod_StD);
 
 	//Sea level rise?
-	double SLR = 0.01;
+	double SLR = 0.001;
 	PlatformModel.InitialiseSeaLevel(SLR);
 	
 

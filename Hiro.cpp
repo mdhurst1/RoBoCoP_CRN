@@ -91,7 +91,7 @@ void Hiro::Initialise(double dZ_in, double dX_in)
 	BrokenWavePressure_Dw = 1.;
 	
 	//Cliff control params
-	CliffHeight = 10.;
+	CliffHeight = 15.;
 	CliffFailureDepth = 1.;
 	
 	//Declare spatial stuff
@@ -531,9 +531,19 @@ void Hiro::ErodeBackwearing()
 			if (j > MaxXXInd) MaxXXInd = j;
 		
 			//May also need soemthing to move ix_max landward by 1
-			if (j >= NXNodes) 
+			//If we run out of land dynamically add more columns
+			if (j == NXNodes-2) 
 			{
-				cout << "Off the end of X" << endl;
+				//Grow them
+				X.push_back(NXNodes*dX);
+				Zx.push_back(Zx[NXNodes-1]);
+				ZInd.push_back(ZInd[NXNodes-1]);
+				for (int i=0; i<NZNodes; ++i)
+				{
+					MorphologyArray[i].push_back(MorphologyArray[i][NXNodes-1]);
+					ResistanceArray[i].push_back(ResistanceArray[i][NXNodes-1]);
+				}
+				++NXNodes;
 			}
 		}
 	}
@@ -613,7 +623,7 @@ void Hiro::UpdateMorphology()
 	}
 	
 	//Grow the X direction arrays dynamically
-	if (MaxXXInd > NXNodes-5)
+	if (MaxXXInd > NXNodes-10)
 	{
 		//Grow them
 		X.push_back(NXNodes*dX);

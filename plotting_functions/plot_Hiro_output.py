@@ -35,10 +35,15 @@ def make_plot(FileName,ColourMap):
     Lines = f.readlines()
     NoLines = len(Lines)
     EndTime = float(Lines[-1].strip().split(" ")[0])
+
+    # Get info on vertical from header
+    Header = np.array(Lines[0].strip().split(" "),dtype=np.float)
+    CliffHeight = Header[0]
+    dz = Header[1]
     
     # Only plot every 1 000 years
     PlotTime = 0
-    PlotInterval = 10
+    PlotInterval = 100
     
     ax1 = plt.subplot(111)
 
@@ -50,20 +55,22 @@ def make_plot(FileName,ColourMap):
         
         #Read morphology
         X = np.array(Line[1:],dtype="float64")
-        Z = np.arange(10,-10.1,-0.1)
+        NValues = len(X)
+        Z = np.linspace(CliffHeight,-CliffHeight-dz, NValues)
         
         if (Time == PlotTime):
-            print Time,
             ax1.plot(X,Z,'-',lw=1.5,color=ColourMap((Time)/(EndTime)))
             PlotTime += PlotInterval
-                
+    
+    print Z[0], Z[-1]           
     # tweak the plot
     #ax1.set_xticklabels([])
     plt.xlabel("Distance (m)")
     plt.ylabel("Elevation (m)")
     xmin, xmax = ax1.get_xlim()
     plt.xlim(xmin-10,xmax+10)
-    plt.ylim(-10,10)
+    plt.ylim(-CliffHeight,CliffHeight)
+    #plt.ylim(-30,30)
     plt.show()
 
 if __name__ == "__main__":
