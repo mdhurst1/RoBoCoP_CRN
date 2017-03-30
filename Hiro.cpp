@@ -187,6 +187,26 @@ void Hiro::InitialiseTides(double TideRange)
 	InitialiseWeathering();	
 }
 
+void Hiro::InitialiseGeology(double CliffHeightNew, double CliffFailureDepthNew, double RockResistanceNew, double WeatheringConstNew)
+{
+	/* Function to set the cliff height, failure depth, rock resistance and 
+		weathering rate constant */
+		
+	CliffHeight = CliffHeightNew;
+	CliffFailureDepth = CliffFailureDepthNew;
+	Resistance = RockResistanceNew;
+	WeatheringConst = WeatheringConstNew;
+	
+	//Loop across the resistance array and reset all values
+	for (int i=0;i<NZNodes; ++i)
+	{
+		for (int j=0; j<NXNodes; ++j)
+		{
+			ResistanceArray[i][j] = Resistance;
+		}
+	}
+}
+
 void Hiro::InitialiseWeathering()
 {
 	/* Weathering Efficacy Function guided by Trenhaile and Kanayay (2005)

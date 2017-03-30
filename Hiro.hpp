@@ -218,6 +218,9 @@ class Hiro
 		//Sample a wave
 		void GetWave();
 		
+		// Function to modify the geological parameters
+		void InitialiseGeology(double CliffHeightNew, double CliffFailureDepthNew, double RockResistanceNew, double WeatheringConstNew);
+		
 		// Function to initialise weathering shape function 
 		void InitialiseWeathering();
 		
