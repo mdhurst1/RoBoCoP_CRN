@@ -706,11 +706,57 @@ void Hiro::MassFailure()
 
 void Hiro::EvolveCoast()
 {
-  /* Function to evolve the coastal profile through time following
-     Matsumoto et al. 2016 */
+	/* 
+		Function to evolve the coastal profile through time following
+		Matsumoto et al. 2016 
+     
+		This is the main model loop. Can be executed here or from a driver file
   
-  //This is unedited and needs work
+		Martin Hurst 30/3/2017 
+	*/
   
+ 	//Loop through time
+	while (Time <= EndTime)
+	{
+		//Update Sea Level
+		UpdateSeaLevel();
+
+		//Get the wave conditions
+		GetWave();
+
+		//Calculate forces acting on the platform
+		CalculateBackwearing();
+		CalculateDownwearing();
+
+		//Do erosion
+		ErodeBackwearing();
+		ErodeDownwearing();
+
+		//Update the Morphology 
+		UpdateMorphology();	  
+		
+		//Implement Weathering
+		IntertidalWeathering();
+		
+		//Update the Morphology 
+		UpdateMorphology();
+
+		//Check for Mass Failure
+		MassFailure();
+		
+		//Update the Morphology 
+		UpdateMorphology();
+		
+		//print?
+		if (Time >= PrintTime)
+		{
+			PlatformModel.WriteProfile(OutputFileName, Time);
+			PrintTime += PrintInterval;
+		}
+
+		//update time
+		Time += TimeInterval;
+	}
   
 }
 
@@ -839,4 +885,6 @@ void  Hiro::WriteMorphologyArray(string OutputFileName, double Time)
 		exit(EXIT_FAILURE);
 	}
 }
+
+
 #endif
