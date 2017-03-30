@@ -143,7 +143,8 @@ class Hiro
 		
 		
 		//TIME CONTROL PARAMETERS
-		double Time, MaxTime, dt;
+		double Time, EndTime, TimeInterval;
+		double PrintTime, PrintInterval;
 		
 		//PHYSICAL CONSTANTS
 		double rho_w;
@@ -174,9 +175,10 @@ class Hiro
 		
 		int PressureDistMinInd, PressureDistMaxInd;
 		
-		
 		double NDV;    // No data value
 	
+		string OutputFileName;
+		
     /* FUNCTION DECLARATIONS */
 
 		//Initialise Functions

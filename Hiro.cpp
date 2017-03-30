@@ -125,7 +125,7 @@ void Hiro::Initialise(double dZ_in, double dX_in)
 	ResistanceArray = vector< vector<double> >(NZNodes,vector<double>(NXNodes,RockResistance));
 		
 	//default time interval
-	dt = 1.;
+	TimeInterval = 1.;
 	
 	//Set sea level to zero to begin with, and the ind, this will get updated later
 	SeaLevel = 0;
@@ -260,7 +260,7 @@ void Hiro::InitialiseSeaLevel(double SLR)
 void Hiro::UpdateSeaLevel()
 {
 	/*Update sea level based on a constant sea level rise rate*/
-	SeaLevel += SeaLevelRise*dt;
+	SeaLevel += SeaLevelRise*TimeInterval;
 }
 
 void Hiro::CalculateBackwearing()
@@ -750,7 +750,7 @@ void Hiro::EvolveCoast()
 		//print?
 		if (Time >= PrintTime)
 		{
-			PlatformModel.WriteProfile(OutputFileName, Time);
+			WriteProfile(OutputFileName, Time);
 			PrintTime += PrintInterval;
 		}
 
