@@ -177,8 +177,6 @@ class Hiro
 		
 		double NDV;    // No data value
 	
-		string OutputFileName;
-		
     /* FUNCTION DECLARATIONS */
 
 		//Initialise Functions
@@ -241,6 +239,9 @@ class Hiro
 		void SupratidalWeathering();
 		
 		void UpdateMorphology();
+		
+		// File name holder
+		string OutputFileName;
 		
 		/// @brief Writes the platform morphology to file
 		/// @details This function writes the elevations of the platform surface at the current time to

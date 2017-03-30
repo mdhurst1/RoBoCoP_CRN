@@ -125,9 +125,16 @@ void Hiro::Initialise(double dZ_in, double dX_in)
 	ResistanceArray = vector< vector<double> >(NZNodes,vector<double>(NXNodes,RockResistance));
 		
 	//default time interval
-	TimeInterval = 1.;
+	Time = 0;
+	TimeInterval = 1;
+	EndTime = 10000;
+	
+	//default print conditions to print every timestep
+	PrintTime = 0;
+	PrintInterval = TimeInterval;
 	
 	//Set sea level to zero to begin with, and the ind, this will get updated later
+	SeaLevelRise = 0;
 	SeaLevel = 0;
 	SeaLevelInd = 0;	
 }
@@ -194,7 +201,7 @@ void Hiro::InitialiseGeology(double CliffHeightNew, double CliffFailureDepthNew,
 		
 	CliffHeight = CliffHeightNew;
 	CliffFailureDepth = CliffFailureDepthNew;
-	Resistance = RockResistanceNew;
+	RockResistance = RockResistanceNew;
 	WeatheringConst = WeatheringConstNew;
 	
 	//Loop across the resistance array and reset all values
@@ -202,7 +209,7 @@ void Hiro::InitialiseGeology(double CliffHeightNew, double CliffFailureDepthNew,
 	{
 		for (int j=0; j<NXNodes; ++j)
 		{
-			ResistanceArray[i][j] = Resistance;
+			ResistanceArray[i][j] = RockResistance;
 		}
 	}
 }
