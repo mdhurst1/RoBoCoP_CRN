@@ -202,6 +202,10 @@ class Hiro
 			Initialise(dZ, dX);
 		}
 		
+		void ResetModel()
+		{
+			Initialise(dZ,dX);
+		}
     		
 		//Initialise Tides
 		void InitialiseTides(double TideRange);
