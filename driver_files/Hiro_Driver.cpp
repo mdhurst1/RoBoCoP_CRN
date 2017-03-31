@@ -67,7 +67,7 @@ int main()
 	double TimeInterval = 1;
 
 	//Print Control
-	double PrintInterval = 1;
+	double PrintInterval = 100;
 	double PrintTime = Time;
 	string OutputFileName = "ShoreProfile.xz";
 	
@@ -79,19 +79,19 @@ int main()
 //	double TidalAmplitude = 1.;
 //	double TidalPeriod = 12.42;
 //	PlatformModel.InitialiseTides(TidalAmplitude, TidalPeriod);
-	double TidalRange = 4;
+	double TidalRange = 1;
 	PlatformModel.InitialiseTides(TidalRange);
 
 	//Initialise Waves
 	//Single Wave for now but could use the waveclimate object from COVE!?
-	double WaveHeight_Mean = 2.;
-	double WaveHeight_StD = 0;
+	double WaveHeight_Mean = 1.;
+	double WaveHeight_StD = 0.;
 	double WavePeriod_Mean = 6.;
 	double WavePeriod_StD = 0;
 	PlatformModel.InitialiseWaves(WaveHeight_Mean, WaveHeight_StD, WavePeriod_Mean, WavePeriod_StD);
 
 	//Sea level rise?
-	double SLR = 0.001;
+	double SLR = 0;
 	PlatformModel.InitialiseSeaLevel(SLR);
 	
 
@@ -126,7 +126,7 @@ int main()
 		
 		//Update the Morphology 
 		PlatformModel.UpdateMorphology();
-		
+				
 		//print?
 		if (Time >= PrintTime)
 		{
@@ -134,15 +134,11 @@ int main()
 			PrintTime += PrintInterval;
 			//cout << endl;
 		}
-
+		
 		//update time
 		Time += TimeInterval;
+		
 	}
-	
-	string ResistanceFileName = "ResistanceArray.xz";
-	string MorphologyFileName = "MorphologyArray.xz";
-	PlatformModel.WriteResistanceArray(ResistanceFileName, Time);
-	PlatformModel.WriteMorphologyArray(MorphologyFileName, Time);
 	
 	//a few blank lines to finish
 	cout << endl << endl;

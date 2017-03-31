@@ -56,10 +56,10 @@ def make_plot(FileName,ColourMap):
         #Read morphology
         X = np.array(Line[1:],dtype="float64")
         NValues = len(X)
-        Z = np.linspace(CliffHeight,-CliffHeight-dz, NValues)
+        Z = np.linspace(CliffHeight,-CliffHeight, NValues)
         
-        if (Time == PlotTime):
-            ax1.plot(X,Z,'-',lw=1.5,color=ColourMap((Time)/(EndTime)))
+        if (Time >= PlotTime):
+            ax1.plot(X,Z,'-',lw=1.5,color='k')
             PlotTime += PlotInterval
     
     print Z[0], Z[-1]           

@@ -88,8 +88,8 @@ int main()
 	
 	//Geology
 	double CliffHeight = 10;
-	double CliffFailureDepth = 10;
-	double RockResistance = 1; 
+	double CliffFailureDepth = 1;
+	double RockResistance = 0.5; 
 	double WeatheringConst = 0.005;
 
 	//Initialise Waves

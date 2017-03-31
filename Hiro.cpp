@@ -79,19 +79,19 @@ void Hiro::Initialise(double dZ_in, double dX_in)
 	BrokenWaveConst = 0.1;
 	BreakingWaveDecay = 0.1;
 	BrokenWaveDecay = 0.01;
-	WeatheringConst = 0.05;
-	RockResistance = 0.05;
+	WeatheringConst = 0.005;
+	RockResistance = 0.5;
 	
 	//Wave pressure parameters, check these with Hiro at some point
-	StandingWavePressure_Bw = 1.;
-	BreakingWavePressure_Bw = 1.;
-	BrokenWavePressure_Bw = 1.;
-	StandingWavePressure_Dw = 1.;
-	BreakingWavePressure_Dw = 1.;
-	BrokenWavePressure_Dw = 1.;
+	StandingWavePressure_Bw = 0.1;
+	BreakingWavePressure_Bw = 0.1;
+	BrokenWavePressure_Bw = 0.1;
+	StandingWavePressure_Dw = 0.1;
+	BreakingWavePressure_Dw = 0.1;
+	BrokenWavePressure_Dw = 0.1;
 	
 	//Cliff control params
-	CliffHeight = 15.;
+	CliffHeight = 10.;
 	CliffFailureDepth = 1.;
 	
 	//Declare spatial stuff
@@ -163,8 +163,9 @@ void Hiro::InitialiseTides(double TideRange)
 		for (int i=0; i<NTideValues; ++i)
 		{
 			ErosionShapeFunction[i] = sin(i*dZ*M_PI/(0.5*TidalRange));
-			if (i == (NTideValues-1)/2) ErosionShapeFunction[i] += 0.5*ErosionShapeFunction[i-1];
-			else if (i*dZ>0.5*TidalRange) ErosionShapeFunction[i] *= -1;
+			if (i == (NTideValues-1)/2) ErosionShapeFunction[i] += ErosionShapeFunction[i-1];
+			//else 
+			if (i*dZ>0.5*TidalRange) ErosionShapeFunction[i] *= -1;
 			Total += ErosionShapeFunction[i];
 			if (ErosionShapeFunction[i] > Max) Max = ErosionShapeFunction[i];
 		}
@@ -220,13 +221,13 @@ void Hiro::InitialiseWeathering()
 	using a log-normal distribution across the tidal range */
 	
 	// declare control parameters for distribution
-	double sigma = 0.5;
-	double Theta = 0;
-	double MaxEfficacy;
+	//double sigma = 0.5;
+	//double Theta = 0;
+	double MaxEfficacy = 0;
 	
 	// This m value is tailored to cause a distribution peak at 3/4 of the tidal range
 	// as in Matsumoto et al. (2016)
-	double m = 1.1665; 
+	//double m = 1.1665; 
 	
 	// Make weathering shape function based on tidal duration
 	NTideValues = (int)(TidalRange/dZ)+1;
@@ -238,10 +239,24 @@ void Hiro::InitialiseWeathering()
 	for (int i=0; i<NTideValues; ++i) LogNormalDistX[i] = 10.*i/(NTideValues-1);
 
 	//Normalise so that Max value is 1
-	MaxEfficacy = exp(-(pow(log(2.5-Theta)-m,2.)/(2.*pow(sigma,2.)))) / ((2.5-Theta)*sigma*sqrt(2.*M_PI)); 
+	//MaxEfficacy = exp(-(pow(log(2.5-Theta)-m,2.)/(2.*pow(sigma,2.)))) / ((2.5-Theta)*sigma*sqrt(2.*M_PI)); 
 	
 	//Create log normal weathering efficacy shape function	
-	for (int i=1; i<NTideValues ;++i) WeatheringEfficacy[i] = (exp(-((pow(log(LogNormalDistX[i]-Theta)-m,2.))/(2*pow(sigma,2.)))) / ((LogNormalDistX[i]-Theta)*sigma*sqrt(2.*M_PI))) / MaxEfficacy;
+	//for (int i=1; i<NTideValues ;++i) 
+	//{
+	//	WeatheringEfficacy[i] = (exp(-((pow(log(LogNormalDistX[i]-Theta)-m,2.))/(2*pow(sigma,2.)))) / ((LogNormalDistX[i]-Theta)*sigma*sqrt(2.*M_PI)));
+	//	if (WeatheringEfficacy[i] > MaxEfficacy) MaxEfficacy = WeatheringEfficacy[i];
+	//}
+	
+	//Create log normal weathering efficacy shape function	
+	for (int i=1; i<NTideValues ;++i) 
+	{
+		if (i<((NTideValues-1)/4)) WeatheringEfficacy[i] = exp(-(pow(i-(NTideValues/4.),2.)/(NTideValues/2.)));
+      else WeatheringEfficacy[i] = exp(-(pow(i-(NTideValues/4.),2.))/(NTideValues*NTideValues/10.));
+		if (WeatheringEfficacy[i] > MaxEfficacy) MaxEfficacy = WeatheringEfficacy[i];
+	}
+	
+	for (int i=1; i<NTideValues ;++i) WeatheringEfficacy[i] /= 	MaxEfficacy;
 }
 
 void Hiro::InitialiseWaves(double WaveHeight_Mean, double WaveHeight_StD, double WavePeriod_Mean, double WavePeriod_StD)
@@ -284,6 +299,7 @@ void Hiro::InitialiseSeaLevel(double SLR)
 {
 	SeaLevelRise = SLR;
 }
+
 void Hiro::UpdateSeaLevel()
 {
 	/*Update sea level based on a constant sea level rise rate*/
@@ -322,31 +338,11 @@ void Hiro::CalculateBackwearing()
 			if (Xz[ii] == Xz[BreakingPointZInd]) BreakingPointZInd = ii;
 			else break;
 		}
-				
-		int j=MaxTideXInd;
-		while (true)
-		{
-			if (Zx[j] < SurfZoneBottomZ)
-			{
-				//Find Position X of Surfzone 
-				BreakingPointX = X[j];
-				BreakingPointXInd = j;
-				break;
-			}
-			else if (j == 0)
-			{
-				//Wave breaks at the seaward edge
-				BreakingPointX = 0;
-				BreakingPointXInd = 0;
-				break;
-			}
-			else --j;
-		}
-		
+
 		//Set Wave Type
 		if (Xz[i] == 0) WaveType = 1;
-		else if (Xz[i]-BreakingPointX<=0) WaveType = 1;
-		else if ((Xz[i]-BreakingPointX)<BreakingWaveDist) WaveType = 2;
+		else if (Xz[i]-Xz[BreakingPointZInd]<=0) WaveType = 1;
+		else if ((Xz[i]-Xz[BreakingPointZInd])<BreakingWaveDist) WaveType = 2;
 		else WaveType = 3;
 		
 		//Find the location where the broken wave starts
@@ -358,7 +354,7 @@ void Hiro::CalculateBackwearing()
 //		double Slope;
 //		double SumSlopes = 0;
 //		int NSlopes = 0;
-		if ((Xz[MaxXZInd] != X[BreakingPointXInd]))
+		if ((Xz[MaxXZInd] != Xz[BreakingPointZInd]))
 		{
 			SurfZoneGradient = abs((Z[MaxXZInd]-Z[BreakingPointZInd])/(Xz[MaxXZInd]-Xz[BreakingPointZInd]));
 //			for (int jj=BrokenWaveXInd-1; X[jj]>Xz[i]; --jj)
@@ -381,7 +377,7 @@ void Hiro::CalculateBackwearing()
 		//Limt SurfZoneGradient to 45 degrees!
 		if (SurfZoneGradient > 1.) SurfZoneGradient = 1.;
 		
-		SurfZoneWidth = BreakingWaveHeight/SurfZoneGradient;
+		SurfZoneWidth = WaveHeight/SurfZoneGradient;
 		
 		//Set the wave attenuation constant #2
 		BreakingWaveAttenuation = -log(BreakingWaveDecay)/BreakingWaveDist;
@@ -409,18 +405,18 @@ void Hiro::CalculateBackwearing()
 			for (int ii=i+PressureDistMinInd; ii<=i+PressureDistMaxInd; ++ii)
 			{
 				//need to add for condition where changes to broken wave above water level in pressure distribution function
-				if (Xz[ii] < BreakingPointX) 
+				if (Xz[ii] < Xz[BreakingPointZInd]) 
 				{
 					WaveForce = StandingWaveConst*WaveHeight*ErosionShapeFunction[i-MaxTideZInd]*StandingWavePressure_Bw;
 				}
-				else if (Xz[ii] <= (BreakingPointX+BreakingWaveDist))
+				else if (Xz[ii] <= (Xz[BreakingPointZInd]+BreakingWaveDist))
 				{
-					BreakingWaveHeight = WaveHeight*exp(-BreakingWaveAttenuation*(Xz[ii]-BreakingPointX));
+					BreakingWaveHeight = WaveHeight*exp(-BreakingWaveAttenuation*(Xz[ii]-Xz[BreakingPointZInd]));
 					WaveForce = BreakingWaveConst*BreakingWaveHeight*ErosionShapeFunction[i-MaxTideZInd]*BreakingWavePressure_Bw;
 				}
 				else
 				{
-					BrokenWaveHeight = WaveHeight*exp(-BrokenWaveAttenuation*(Xz[ii]-(BreakingPointX+BreakingWaveDist)));
+					BrokenWaveHeight = BreakingWaveDecay*WaveHeight*exp(-BrokenWaveAttenuation*(Xz[ii]-(Xz[BreakingPointZInd]+BreakingWaveDist)));
 					WaveForce = BrokenWaveConst*BrokenWaveHeight*ErosionShapeFunction[i-MaxTideZInd]*BrokenWavePressure_Bw;
 				}
 				Bw_Erosion[ii] += WaveForce;
@@ -487,7 +483,7 @@ void Hiro::IntertidalWeathering()
 		
 		//How are we going to get j? i.e. x-position in the array?
 		//Need a loop in here moving from bottom to top of tidal range in x-position
-		for (int j=MinTideXInd; j<=MaxXXInd; ++j)
+		for (int j=0; j<=MaxXXInd; ++j)
 		{
 			//Check we're at a a surface cell
 			if ((MorphologyArray[i][j] == 1) && (j == 0))
@@ -798,7 +794,7 @@ void Hiro::WriteProfile(string OutputFileName, double Time)
   
 	//Print to screen
 	cout.flush();
-	cout << "Hiro: Writing output at Time " << setprecision(0) << fixed << Time << " years\r";
+	cout << "Hiro: Writing output at Time " << setprecision(2) << fixed << Time << " years\r";
 
 	//test if output file already exists
 	int FileExists = 0;
