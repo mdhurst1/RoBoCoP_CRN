@@ -163,25 +163,26 @@ int main()
 								PlatformModel.InitialiseWaves(WaveHeight_Mean, WaveHeight_StD, WavePeriod_Mean, WavePeriod_StD);
 		
 								//set wave coefficients
-								Set_WaveCoefficients(StandingCoefficient, BreakingCoefficients[f], BrokenCoefficients[g]);
+								PlatformModel.Set_WaveCoefficients(StandingCoefficient, BreakingCoefficients[f], BrokenCoefficients[g]);
 								
 								//reset the geology
-								WeatheringConst = WeatheringRates[d];
-								RockResistance = Resistances[e];
-								PlatformModel.InitialiseGeology(CliffHeight, CliffFailureDepth, RockResistance, WeatheringConst);
+								PlatformModel.InitialiseGeology(CliffHeight, CliffFailureDepth, Resistances[e], WeatheringRates[d]);
 												
 								//run the model!
-								cout << setprecision(1);
 								cout << "Running Model with..." << endl;
-								cout << "\tInitial Gradient " << Gradients[a] << endl;
+								cout << "\tInitial Gradient " << setprecision(1) << Gradients[a] << endl;
 								cout << "\tTidal Range " << TidalRanges[b] << " m" << endl;
 								cout << "\tWave Height " << WaveHeight_Mean << " m" << endl;
-								cout << "\tBreaking Coefficient " << BreakingCoefficients[f] << endl;
+								cout << "\tBreaking Coefficient " << setprecision(3) << BreakingCoefficients[f] << endl;
 								cout << "\tBroken Coefficient " << BrokenCoefficients[g] << endl;
-								cout << "\tMax Weathering Rate " << WeatheringConst << " m/yr" << endl;
-								cout << "\tRock Resistance " << RockResistance << endl;
+								cout << "\tMax Weathering Rate " << WeatheringRates[d] << " m/yr" << endl;
+								cout << "\tRock Resistance " << Resistances[e] << endl;
 								PlatformModel.EvolveCoast();
 								cout << "\nDone\n\n";
+							}
+						}
+					}
+				}
 			}
 		}
 	}	
