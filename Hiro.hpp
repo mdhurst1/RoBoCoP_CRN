@@ -83,6 +83,7 @@ class Hiro
 		// SPATIAL DOMAIN DECLARATIONS
 		int NXNodes, NZNodes;               // Number of nodes across the coastline
 		double dZ, dX;                      // Vertical and horizontal spacing of nodes
+		double InitialGradient;			//initial gradient m/m
 		
 		vector<double> Z;			// elevation (m)
 		vector<double> Xz;	   // cross shore distance at each elevation (m)
@@ -210,7 +211,7 @@ class Hiro
 		
 		void ResetModel()
 		{
-			Initialise(dZ,dX, Gradient);
+			Initialise(dZ,dX, InitialGradient);
 		}
     		
 		//Initialise Tides

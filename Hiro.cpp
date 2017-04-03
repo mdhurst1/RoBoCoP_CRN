@@ -174,6 +174,7 @@ void Hiro::Initialise(double dZ_in, double dX_in, double Gradient)
 	//Declare spatial stuff
 	dZ = dZ_in;
 	dX = dX_in;
+	InitialGradient = Gradient;
 	NXNodes = 1000;
 	NZNodes = round(2.*CliffHeight/dZ)+1;	
 
@@ -203,7 +204,7 @@ void Hiro::Initialise(double dZ_in, double dX_in, double Gradient)
 	
 	for (int i=0; i<NZNodes; ++i)
 	{
-		Xz[i] = (Z[NZNodes-i]-Z[NZNodes-1])*Gradient;
+		Xz[i] = (Z[i]-Z[NZNodes-1])*InitialGradient;
 		for (int j=0;j<NXNodes;++j)
 		{
 			 
@@ -795,7 +796,7 @@ void Hiro::MassFailure()
 	//Cliff position taken from Highest elevation.
 	double XCliff = Xz[0];
 	
-	//Find X position of notch
+	//Find X position of notch and cliff
 	double XMax = 0;
 	int XMaxZInd = 0;
 	
@@ -808,8 +809,19 @@ void Hiro::MassFailure()
 		}
 	}
 	
+	double XMin = XMax;
+	int XMinZInd = 0;
+	for (int i=XMaxZInd;i>0; --i)
+	{
+		if (Xz[i] < XMin)
+		{
+			XMin = Xz[i];
+			XMinZInd = i;
+		}
+	}
+	
 	//if big enough then delete
-	if ((XMax-XCliff) > CliffFailureDepth)
+	if ((XMax-XMin) > CliffFailureDepth)
 	{
 		for (int i=0; i<=XMaxZInd; ++i)
 		{
