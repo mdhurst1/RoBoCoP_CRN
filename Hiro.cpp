@@ -794,13 +794,12 @@ void Hiro::MassFailure()
 {
 	//simple implementation for now, talk to Hiro about this
 	//Cliff position taken from Highest elevation.
-	double XCliff = Xz[0];
 	
 	//Find X position of notch and cliff
 	double XMax = 0;
 	int XMaxZInd = 0;
 	
-	for (int i=0;i<NZNodes; ++i)
+	for (int i=MinTideZInd+PressureDistMaxInd; i>=MaxTideZInd+PressureDistMinInd; --i)
 	{
 		if (Xz[i] > XMax)
 		{
@@ -810,13 +809,11 @@ void Hiro::MassFailure()
 	}
 	
 	double XMin = XMax;
-	int XMinZInd = 0;
 	for (int i=XMaxZInd;i>0; --i)
 	{
 		if (Xz[i] < XMin)
 		{
 			XMin = Xz[i];
-			XMinZInd = i;
 		}
 	}
 	
