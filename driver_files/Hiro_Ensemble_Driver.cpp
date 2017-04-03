@@ -71,68 +71,117 @@ int main()
 	//initialise Hiro Model
 	Hiro PlatformModel = Hiro(dZ, dX);
 	
+	//Initialise different starting gradients
+	vector<double> Gradients;
+	Gradients.push_back(0.);
+	Gradients.push_back(1.);
+	
 	//Initialise Tidal Ranges to check
 	vector<double> TidalRanges;
 	TidalRanges.push_back(1.);
+	TidalRanges.push_back(4.);
 	TidalRanges.push_back(8.);
 	
 	//Initialise WaveHeights to check
 	vector<double> WaveHeights;
 	WaveHeights.push_back(1.);
+	WaveHeights.push_back(2.);
 	WaveHeights.push_back(3.);
 	
 	//Initialise weathering efficacy to check
 	vector<double> WeatheringRates;
-	WeatheringRates.push_back(0.005);
-	WeatheringRates.push_back(0.5);
+	WeatheringRates.push_back(0.0001);
+	WeatheringRates.push_back(0.001);
+	WeatheringRates.push_back(0.01);
+	
+	//Initialise resistances to check
+	vector<double> Resistances;
+	Resistances.push_back(0.001);
+	Resistances.push_back(0.01);
+	Resistances.push_back(0.1);
+	
+	//Breaking Wave Coefficients
+	vector<double> BreakingCoefficients;
+	BreakingCoefficients.push_back(10.);
+	BreakingCoefficients.push_back(1.);
+	
+	//Broken Wave Coefficients
+	vector<double> BrokenCoefficients;
+	BrokenCoefficients.push_back(1.);
+	BrokenCoefficients.push_back(0.1);
+	
+	//Standing wave coefficient constant
+	double StandingCoefficient = 0.01;
 	
 	//Geology
-	double CliffHeight = 10;
-	double CliffFailureDepth = 1;
-	double RockResistance = 0.5; 
-	double WeatheringConst = 0.005;
-
+	double CliffHeight = 10.;
+	double CliffFailureDepth = 1.;
+	
 	//Initialise Waves
 	//Single Wave for now but could use the waveclimate object from COVE!?
-	double WaveHeight_Mean = 2.;
+	double WaveHeight_Mean = 1.;
 	double WaveHeight_StD = 0;
 	double WavePeriod_Mean = 6.;
 	double WavePeriod_StD = 0;
 	
 	
 	//Loop across parameter space
-	for (int a=0, A=TidalRanges.size(); a<A; ++a)
+	for (int a=0, A=Gradients.size(); a<A; ++a)
 	{
-		for (int b=0, B=WaveHeights.size(); b<B; ++b)
+		for (int b=0, B=TidalRanges.size(); b<B; ++b)
 		{
-			for (int c=0, C=WeatheringRates.size(); c<C; ++c)
+			for (int c=0, C=WaveHeights.size(); c<C; ++c)
 			{
-				//setup the output file
-				PlatformModel.OutputFileName = "ShoreProfile_T"+tostr(TidalRanges[a])+"_H"+tostr(WaveHeights[b])+"_W"+tostr(WeatheringRates[c])+".xz";
+				for (int d=0, D=WeatheringRates.size(); d<D; ++d)
+				{
+					for (int e=0, E=Resistances.size(); e<E; ++e)
+					{
+						for (int f=0, F=BreakingCoefficients.size(); f<F; ++f)
+						{
+							for (int g=0, G=BrokenCoefficients.size(); g<G; ++g)
+							{
+								//setup the output file
+								PlatformModel.OutputFileName = "ShoreProfile_G"+tostr(Gradients[a])
+																		+"_T_"+tostr(TidalRanges[b])
+																		+"_H_"+tostr(WaveHeights[c])
+																		+"_W_"+tostr(WeatheringRates[d])
+																		+"_R_"+tostr(Resistances[e])
+																		+"_Br_"+tostr(BreakingCoefficients[f])
+																		+"_Bo_"+tostr(BrokenCoefficients[g])+".xz";
+								
+								//reset gradient
+								PlatformModel.Set_InitialGradient(Gradients[a]);
+								
+								//reset the model
+								PlatformModel.ResetModel();
 		
-				//reset the model
-				PlatformModel.ResetModel();
+								//Reset tidal range
+								PlatformModel.InitialiseTides(TidalRanges[b]);
 		
-				//Reset tidal range
-				double TidalRange = TidalRanges[a];
-				PlatformModel.InitialiseTides(TidalRange);
+								//reset wave height
+								WaveHeight_Mean = WaveHeights[c];
+								PlatformModel.InitialiseWaves(WaveHeight_Mean, WaveHeight_StD, WavePeriod_Mean, WavePeriod_StD);
 		
-				//reset wave height
-				WaveHeight_Mean = WaveHeights[b];
-				PlatformModel.InitialiseWaves(WaveHeight_Mean, WaveHeight_StD, WavePeriod_Mean, WavePeriod_StD);
-		
-				//reset the geology
-				WeatheringConst = WeatheringRates[c];
-				PlatformModel.InitialiseGeology(CliffHeight, CliffFailureDepth, RockResistance, WeatheringConst);
-				
-				//run the model!
-				cout << setprecision(1);
-				cout << "Running Model with..." << endl;
-				cout << "\tTidal Range " << TidalRange << " m" << endl;
-				cout << "\tWave Height " << WaveHeight_Mean << " m" << endl;
-				cout << "\tMax Weathering Rate " << WeatheringConst << " m/yr?" << endl;
-				PlatformModel.EvolveCoast();
-				cout << "\nDone\n";
+								//set wave coefficients
+								Set_WaveCoefficients(StandingCoefficient, BreakingCoefficients[f], BrokenCoefficients[g]);
+								
+								//reset the geology
+								WeatheringConst = WeatheringRates[d];
+								RockResistance = Resistances[e];
+								PlatformModel.InitialiseGeology(CliffHeight, CliffFailureDepth, RockResistance, WeatheringConst);
+												
+								//run the model!
+								cout << setprecision(1);
+								cout << "Running Model with..." << endl;
+								cout << "\tInitial Gradient " << Gradients[a] << endl;
+								cout << "\tTidal Range " << TidalRanges[b] << " m" << endl;
+								cout << "\tWave Height " << WaveHeight_Mean << " m" << endl;
+								cout << "\tBreaking Coefficient " << BreakingCoefficients[f] << endl;
+								cout << "\tBroken Coefficient " << BrokenCoefficients[g] << endl;
+								cout << "\tMax Weathering Rate " << WeatheringConst << " m/yr" << endl;
+								cout << "\tRock Resistance " << RockResistance << endl;
+								PlatformModel.EvolveCoast();
+								cout << "\nDone\n\n";
 			}
 		}
 	}	

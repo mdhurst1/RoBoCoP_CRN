@@ -43,7 +43,7 @@ def make_plot(FileName,ColourMap):
     
     # Only plot every 1 000 years
     PlotTime = 0
-    PlotInterval = 100
+    PlotInterval = 1000
     
     ax1 = plt.subplot(111)
 

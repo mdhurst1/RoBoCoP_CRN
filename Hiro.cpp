@@ -202,24 +202,29 @@ void Hiro::Initialise(double dZ_in, double dX_in, double Gradient)
 	MorphologyArray = vector< vector<int> >(NZNodes,vector<int>(NXNodes,1));
 	ResistanceArray = vector< vector<double> >(NZNodes,vector<double>(NXNodes,RockResistance));
 	
-	for (int i=0; i<NZNodes; ++i)
+	
+	if (InitialGradient != 0)
 	{
-		Xz[i] = (Z[i]-Z[NZNodes-1])*InitialGradient;
-		for (int j=0;j<NXNodes;++j)
+		for (int i=0; i<NZNodes; ++i)
 		{
-			 
-			if (X[j] < Xz[i])
+			Xz[i] = (Z[i]-Z[NZNodes-1])*InitialGradient;
+			for (int j=0;j<NXNodes;++j)
 			{
-				MorphologyArray[i][j]=0;
-				ResistanceArray[i][j]=0;
-			}
-			else
-			{
-				Zx[j] = Z[i];
-				break;
+				 
+				if (X[j] < Xz[i])
+				{
+					MorphologyArray[i][j]=0;
+					ResistanceArray[i][j]=0;
+				}
+				else
+				{
+					Zx[j] = Z[i];
+					break;
+				}
 			}
 		}
 	}
+	
 	//default time interval
 	Time = 0;
 	TimeInterval = 1;

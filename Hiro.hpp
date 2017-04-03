@@ -281,6 +281,17 @@ class Hiro
 		/// @date 27/02/2017
 		vector<double> get_Z() const { return Z; }
 		
+		void Set_InitialGradient(double Gradient)
+		{
+			InitialGradient = Gradient;
+		}
+		
+		void Set_WaveCoefficients(double StandingWaveCoef, double BreakingWaveCoef, double BrokenWaveCoef)
+		{
+			StandingWaveConst = StandingWaveCoef;
+			BreakingWaveConst = BreakingWaveCoef;
+			BrokenWaveConst= BrokenWaveCoef;
+		}
 };
 
 #endif

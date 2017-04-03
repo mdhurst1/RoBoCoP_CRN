@@ -60,6 +60,7 @@ int main()
 	//initialisation parameters
 	double dZ = 0.1;
 	double dX = 0.1;
+	double Gradient = 1.;
 
 	//Time control parameters
 	double EndTime = 10000;
@@ -72,7 +73,7 @@ int main()
 	string OutputFileName = "ShoreProfile.xz";
 	
 	//initialise Hiro Model
-	Hiro PlatformModel = Hiro(dZ, dX);
+	Hiro PlatformModel = Hiro(dZ, dX, Gradient);
 	
 //	//Initialise Tides
 // //This will become setting up the erosion shape function
