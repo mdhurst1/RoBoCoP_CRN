@@ -139,6 +139,102 @@ void Hiro::Initialise(double dZ_in, double dX_in)
 	SeaLevelInd = 0;	
 }
 
+
+void Hiro::Initialise(double dZ_in, double dX_in, double Gradient)
+{
+	/* initialise a sloping cliff Hiro object */
+	printf("\nHiro.Initialise: Initialised a Hiro as a slope\n");
+	
+	//PHYSICAL CONSTANTS
+	rho_w = 1025.;
+	g = 9.81;
+
+	//Define these in an input parameter file?
+	SubmarineDecayConst = 0.1;
+	StandingWaveConst = 0.01;
+	BreakingWaveConst = 10.;
+	BrokenWaveConst = 0.1;
+	BreakingWaveDecay = 0.1;
+	BrokenWaveDecay = 0.01;
+	WeatheringConst = 0.005;
+	RockResistance = 0.5;
+	
+	//Wave pressure parameters, check these with Hiro at some point
+	StandingWavePressure_Bw = 0.1;
+	BreakingWavePressure_Bw = 0.1;
+	BrokenWavePressure_Bw = 0.1;
+	StandingWavePressure_Dw = 0.1;
+	BreakingWavePressure_Dw = 0.1;
+	BrokenWavePressure_Dw = 0.1;
+	
+	//Cliff control params
+	CliffHeight = 10.;
+	CliffFailureDepth = 1.;
+	
+	//Declare spatial stuff
+	dZ = dZ_in;
+	dX = dX_in;
+	NXNodes = 1000;
+	NZNodes = round(2.*CliffHeight/dZ)+1;	
+
+	//declare an array of zeros for assignment of Z vector
+	Z = vector<double>(NZNodes,0.0);
+	for (int i=0; i<NZNodes; ++i) Z[i] = dZ*(0.5*(NZNodes-1)-i);
+
+	//declare arrays of zeros to initalise various other vectors
+	vector<double> ZZeros(NZNodes,0);
+	vector<double> XZeros(NXNodes,0);
+	X = XZeros;
+	for (int j=0; j<NXNodes; ++j) X[j] = dX*j;
+	Zx = XZeros;
+	Xz = ZZeros;
+	
+	Bw_Erosion = ZZeros;
+	Dw_Erosion = XZeros;
+	Weathering = ZZeros;
+	
+	//Indices trackers
+	XInd = vector<int>(NZNodes,0);
+	ZInd = vector<int>(NXNodes,0);
+	
+	//declare an array of ones for assignment of the Morphology Array
+	MorphologyArray = vector< vector<int> >(NZNodes,vector<int>(NXNodes,1));
+	ResistanceArray = vector< vector<double> >(NZNodes,vector<double>(NXNodes,RockResistance));
+	
+	for (int i=0; i<NZNodes; ++i)
+	{
+		Xz[i] = (Z[NZNodes-i]-Z[NZNodes-1])*Gradient;
+		for (int j=0;j<NXNodes;++j)
+		{
+			 
+			if (X[j] < Xz[i])
+			{
+				MorphologyArray[i][j]=0;
+				ResistanceArray[i][j]=0;
+			}
+			else
+			{
+				Zx[j] = Z[i];
+				break;
+			}
+		}
+	}
+	//default time interval
+	Time = 0;
+	TimeInterval = 1;
+	EndTime = 10000;
+	
+	//default print conditions to print every timestep
+	PrintTime = 0;
+	PrintInterval = TimeInterval;
+	
+	//Set sea level to zero to begin with, and the ind, this will get updated later
+	SeaLevelRise = 0;
+	SeaLevel = 0;
+	SeaLevelInd = 0;	
+}
+
+
 void Hiro::InitialiseTides(double TideRange)
 {
 	//setup tides
