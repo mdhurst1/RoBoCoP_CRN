@@ -729,7 +729,7 @@ void Hiro::UpdateMorphology()
 	//Populate vector of X values in Z 
 	MaxXXInd = 0;
 	MaxXZInd = 0;
-	for (int i=0; i<NZNodes; ++i)
+	for (int i=MaxTideZInd+PressureDistMinInd; i<MinTideZInd+PressureDistMaxInd; ++i)
 	{
 		for (int j=XInd[i]; j<NXNodes; ++j)
 		{
