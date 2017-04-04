@@ -54,7 +54,7 @@ def make_plots(HiroFileName, FileName, Parameters):
         Z = np.arange(-37.3,37.6, 0.1)
         print len(X), len(Z)
         if ((Time >= PlotTime) and (Time < EndTime)):
-            ax1.plot(X,Z,'-',lw=1.5,color='r')
+            ax1.plot(X,Z,'-',lw=1.5,color='k')
             #ax1.text(X[0],Z[0]-1,str(np.int(Time))+" years",rotation=-90)
             PlotTime += PlotInterval
             
@@ -68,6 +68,7 @@ def make_plots(HiroFileName, FileName, Parameters):
     # Get info on vertical from header
     Header = np.array(Lines[0].strip().split(" "),dtype=np.float)
     CliffHeight = Header[0]
+    dz = Header[1]
     
     #Get header info and setup X coord
     PlotTime = 0
@@ -79,7 +80,8 @@ def make_plots(HiroFileName, FileName, Parameters):
         #Read morphology
         X = np.array(Line[1:],dtype="float64")
         NValues = len(X)
-        Z = np.linspace(CliffHeight,-CliffHeight, NValues)
+        Z = np.arange(CliffHeight,-CliffHeight-dz, -dz)
+        print len(X), len(Z)
         
         if ((Time >= PlotTime) and (Time < EndTime)):
             ax1.plot(X,Z,'-',lw=1.5,color=cm.coolwarm(Time/EndTime))

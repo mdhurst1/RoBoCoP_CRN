@@ -838,8 +838,19 @@ void Hiro::MassFailure()
 	XMax = 0;
 	for (int i=MinTideZInd+PressureDistMaxInd; i>XMaxZInd; --i)
 	{
-		if (Xz[i] > XMax) XMax = Xz[i];
-		else if (Xz[i] < XMax) Xz[i] = XMax;
+		if (Xz[i] > XMax) 
+		{
+			XMax = Xz[i];
+		}
+		else if (Xz[i] < XMax) 
+		{
+			Xz[i] = XMax;
+			for (int j=0; j<XMax/dX; ++j)
+			{
+				MorphologyArray[i][j] = 0;
+				ResistanceArray[i][j] = 0;
+			}
+		}
 	}
 }
 

@@ -75,17 +75,13 @@ int main()
 	//initialise Hiro Model
 	Hiro PlatformModel = Hiro(dZ, dX, Gradient);
 	
-//	//Initialise Tides
-// //This will become setting up the erosion shape function
-//	double TidalAmplitude = 1.;
-//	double TidalPeriod = 12.42;
-//	PlatformModel.InitialiseTides(TidalAmplitude, TidalPeriod);
-	double TidalRange = 1;
+	//Initialise Tides
+	double TidalRange = 8.;
 	PlatformModel.InitialiseTides(TidalRange);
-
+		
 	//Initialise Waves
 	//Single Wave for now but could use the waveclimate object from COVE!?
-	double WaveHeight_Mean = 1.;
+	double WaveHeight_Mean = 3.;
 	double WaveHeight_StD = 0.;
 	double WavePeriod_Mean = 6.;
 	double WavePeriod_StD = 0;
@@ -94,7 +90,20 @@ int main()
 	//Sea level rise?
 	double SLR = 0;
 	PlatformModel.InitialiseSeaLevel(SLR);
-	
+
+	// Wave coefficient constant
+	double StandingCoefficient = 0.01;
+	double BreakingCoefficient = 1.;
+	double BrokenCoefficient = 1.;
+	PlatformModel.Set_WaveCoefficients(StandingCoefficient, BreakingCoefficient, BrokenCoefficient);
+
+	//reset the geology
+	double CliffHeight = 10.;
+	double CliffFailureDepth = 1.;
+	double Resistance = 0.01;
+	double WeatheringRate = 0.001;
+	PlatformModel.InitialiseGeology(CliffHeight, CliffFailureDepth, Resistance, WeatheringRate);
+				
 
 	//Loop through time
 	while (Time <= EndTime)

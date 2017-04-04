@@ -26,7 +26,7 @@ padding = 5
 def make_plot(FileName,ColourMap):
     
     #create blank figure
-    plt.figure(1,figsize=(6,4))
+    plt.figure(1,figsize=(6.6,3.3))
 
     #First plot the morphology through time
     # declare the file and the axis
@@ -71,6 +71,7 @@ def make_plot(FileName,ColourMap):
     plt.xlim(xmin-10,xmax+10)
     plt.ylim(-CliffHeight,CliffHeight)
     #plt.ylim(-30,30)
+    plt.tight_layout()
     plt.show()
 
 if __name__ == "__main__":
