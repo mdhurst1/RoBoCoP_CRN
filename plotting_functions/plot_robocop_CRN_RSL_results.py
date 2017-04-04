@@ -20,6 +20,7 @@ from matplotlib import rc
 rc('font',size=8)
 rc('ytick.major',pad=5)
 rc('xtick.major',pad=5)
+rc('text', usetex=True)
 padding = 5
 plt.figure(1,figsize=(6,6))
 
