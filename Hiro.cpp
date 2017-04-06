@@ -479,7 +479,7 @@ void Hiro::CalculateBackwearing()
 		//Limt SurfZoneGradient to 45 degrees!
 		if (SurfZoneGradient > 1.) SurfZoneGradient = 1.;
 		
-		SurfZoneWidth = WaveHeight/SurfZoneGradient;
+		SurfZoneWidth = 2.*WaveHeight/SurfZoneGradient;
 		
 		//Set the wave attenuation constant #2
 		BreakingWaveAttenuation = -log(BreakingWaveDecay)/BreakingWaveDist;
@@ -726,10 +726,28 @@ void Hiro::UpdateMorphology()
 	MinTideZInd = SeaLevelInd+0.5*TidalRange/dZ;
 	MaxTideZInd = SeaLevelInd-0.5*TidalRange/dZ;
 	
+	//Determine intertidal range indices in X-direction
+	bool LowTideFlag = false;
+	bool HighTideFlag = false;
+	for (int j=0; j<NXNodes; ++j)
+	{
+		if ((MorphologyArray[MaxTideZInd][j] == 1) && (HighTideFlag == false))
+		{
+			MaxTideXInd = j;
+			HighTideFlag = true;
+		}
+		if ((MorphologyArray[MinTideZInd][j] == 1) && (LowTideFlag == false))
+		{
+			 MinTideXInd = j;
+			 LowTideFlag = true;
+		}
+		if ((HighTideFlag == 1) && (LowTideFlag == 1)) break;
+	}
+	
 	//Populate vector of X values in Z 
 	MaxXXInd = 0;
 	MaxXZInd = 0;
-	for (int i=MaxTideZInd+PressureDistMinInd; i<MinTideZInd+PressureDistMaxInd; ++i)
+	for (int i=0; i<NZNodes; ++i)
 	{
 		for (int j=XInd[i]; j<NXNodes; ++j)
 		{
@@ -737,7 +755,8 @@ void Hiro::UpdateMorphology()
 			{
 				Xz[i] = X[j];
 				XInd[i] = j;
-				if (XInd[i] > MaxXXInd) 
+				
+				if ((i>MaxTideZInd) && (i < MinTideZInd) && (XInd[i] >= MaxXXInd))
 				{
 					MaxXXInd = XInd[i];
 					MaxXZInd = i;
@@ -774,25 +793,7 @@ void Hiro::UpdateMorphology()
 				break;
 			}
 		}
-	}
-	
-	//Determine intertidal range indices in X-direction
-	bool LowTideFlag = false;
-	bool HighTideFlag = false;
-	for (int j=0; j<NXNodes; ++j)
-	{
-		if ((MorphologyArray[MaxTideZInd][j] == 1) && (HighTideFlag == false))
-		{
-			MaxTideXInd = j;
-			HighTideFlag = true;
-		}
-		if ((MorphologyArray[MinTideZInd][j] == 1) && (LowTideFlag == false))
-		{
-			 MinTideXInd = j;
-			 LowTideFlag = true;
-		}
-		if ((HighTideFlag == 1) && (LowTideFlag == 1)) break;
-	}
+	}	
 }
 
 void Hiro::MassFailure()
@@ -854,7 +855,6 @@ void Hiro::MassFailure()
 	}
 }
 
-
 void Hiro::EvolveCoast()
 {
 	/* 
@@ -908,7 +908,6 @@ void Hiro::EvolveCoast()
 		//update time
 		Time += TimeInterval;
 	}
-  
 }
 
 void Hiro::WriteProfile(string OutputFileName, double Time)

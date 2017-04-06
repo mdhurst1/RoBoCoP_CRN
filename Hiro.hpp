@@ -112,6 +112,8 @@ class Hiro
 		vector<double> Dw_Erosion;		//Down wear erosion
 		vector<double> Weathering;		//Wearthering erosion
 		
+		int CosmoFlag;
+		
 		// SEA LEVEL DECLARATIONS
 		//vector<double> RSLTime;             //Times for relative sea level elevations
 		//vector<double> RSLRate;             //Relative sea level elevations, will be length[1] if constant?
@@ -253,6 +255,7 @@ class Hiro
 		
 		// File name holder
 		string OutputFileName;
+		string OutputConcentrationFileName;
 		
 		/// @brief Writes the platform morphology to file
 		/// @details This function writes the elevations of the platform surface at the current time to
