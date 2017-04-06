@@ -387,7 +387,7 @@ void Hiro::GetWave()
 	//BreakingWaveHeight = 0.39*pow(g,0.2)*pow(WavePeriod,0.4)*pow(OffshoreWaveHeight,2.4);
 	WaveHeight = MeanWaveHeight;
 	BreakingWaveHeight = MeanWaveHeight;
-	BreakingWaveDist = BreakingWaveHeight/2.;
+	BreakingWaveDist = 10.*BreakingWaveHeight;
 
 	//Water depth of breaking wave
 	BreakingWaveWaterDepth = BreakingWaveHeight/0.78;
