@@ -90,7 +90,30 @@ void SeaLevel::Initialise(double SLR)
 void SeaLevel::Initialise(string SeaLevelDataFile)
 {
 	// Initialising Sea Level from a datafile
-	// Use this for GIA output from other models or other RSL records
+	// Use this for SeaLevel output from other models or other RSL records
+	double indata;
+	char Dummy[32];
+	
+	//read in RSL data from Bradley et al. (2011) model
+	ifstream SeaLevelIn(SeaLevelDataFile.c_str());
+	if (!SeaLevelIn)
+	{
+	  printf("SeaLevel::%s: line %d Sea Level data file \"%s\" doesn't exist\n\n", __func__, __LINE__, SeaLevelFilename.c_str());
+	  printf("Setting Realtive Sea Level to zero");
+	}
+	else
+	{
+		SeaLevelIn >> Dummy;
+		SeaLevelIn >> Dummy;
+		while (!SeaLevelIn.eof())
+		{
+		  SeaLevelIn >> indata;
+		  Times.push_back(indata);
+		  SeaLevelIn >> indata;
+		  SeaLevels.push_back(indata);
+		}
+		SeaLevelIn.close();
+	}
 }
   		
 void SeaLevel::get_SeaLevel(double Time)
@@ -101,7 +124,7 @@ void SeaLevel::get_SeaLevel(double Time)
 	int ind = 0;
 	while (TimeCondition == 0)
 	{
-		if (Time >= Times[RSLTime.size()-1])
+		if (Time >= Times[Times.size()-1])
 		{
 			TimeCondition = 1;
 			ind = RSLTime.size()-1;
@@ -112,5 +135,5 @@ void SeaLevel::get_SeaLevel(double Time)
 	Factor = (Time-Times[ind-1])/(Times[ind]-Times[ind-1]);
 	SeaLevel = SeaLevels[ind-1]+Factor*(SeaLevels[ind]-SeaLevels[ind-1]);
 
-	return -Rate;
+	return SeaLevel;
 }
