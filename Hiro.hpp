@@ -225,6 +225,7 @@ class Hiro
 		//Update Sea Level
 		void InitialiseSeaLevel(double SLR);
 		void UpdateSeaLevel();
+		void UpdateSeaLevel(double InputSeaLevel);
 		
 		//Sample a wave
 		void GetWave();
@@ -298,3 +299,4 @@ class Hiro
 };
 
 #endif
+

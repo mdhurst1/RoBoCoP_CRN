@@ -52,6 +52,7 @@
 #include <omp.h>
 #include <unistd.h>
 #include "../Hiro.hpp"
+#include "../SeaLevel.hpp"
 
 using namespace std;
 
@@ -64,7 +65,7 @@ int main()
 
 	//Time control parameters
 	double EndTime = 10000;
-	double Time = 0.;
+	double Time = -700000.;
 	double TimeInterval = 1;
 
 	//Print Control
@@ -88,8 +89,8 @@ int main()
 	PlatformModel.InitialiseWaves(WaveHeight_Mean, WaveHeight_StD, WavePeriod_Mean, WavePeriod_StD);
 
 	//Sea level rise?
-	double SLR = 0;
-	PlatformModel.InitialiseSeaLevel(SLR);
+	SeaLevel EustaticSeaLevel = SeaLevel();
+	double InstantSeaLevel = 0;
 
 	// Wave coefficient constant
 	double StandingCoefficient = 0.01;
@@ -111,7 +112,8 @@ int main()
 	while (Time <= EndTime)
 	{
 		//Update Sea Level
-		PlatformModel.UpdateSeaLevel();
+		InstantSeaLevel = EustaticSeaLevel.get_SeaLevel(Time);
+		PlatformModel.UpdateSeaLevel(InstantSeaLevel);
 
 		//Get the wave conditions
 		PlatformModel.GetWave();

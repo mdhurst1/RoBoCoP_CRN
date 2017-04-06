@@ -408,6 +408,12 @@ void Hiro::UpdateSeaLevel()
 	SeaLevel += SeaLevelRise*TimeInterval;
 }
 
+void Hiro::UpdateSeaLevel(double InputSeaLevel)
+{
+	/*Update sea level based on a constant sea level rise rate*/
+	SeaLevel = InputSeaLevel;
+}
+
 void Hiro::CalculateBackwearing()
 {
 	//Declare temporary variables

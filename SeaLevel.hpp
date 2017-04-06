@@ -33,6 +33,7 @@
 #define SeaLevel_HPP
 
 #include <vector>
+#include <cstring>
 
 using namespace std;
 
@@ -46,14 +47,14 @@ class SeaLevel
   	private:
   	
   		double Time;
-  		double SeaLevel;
+  		double MeanSeaLevel;
   		
   		vector<double> Times;
-  		vector<double> SeaLevels;
+  		vector<double> MeanSeaLevels;
   		
-  		Initialise();
-  		Initialise(double SLR);
-  		Initialise(string SeaLevelDataFile);
+  		void Initialise();
+  		//void Initialise(double SLR);
+  		void Initialise(string SeaLevelDataFile);
   	
   	protected:
 
@@ -64,16 +65,18 @@ class SeaLevel
 			Initialise();
 		}
 		
-		SeaLevel(double SLR)
-		{
-			Initialise(SLR);
-		}
+//		SeaLevel(double SLR)
+//		{
+//			Initialise(SLR);
+//		}
 		
-		SeaLevel(string SeaLevelDataFile)
+		SeaLevel(string SeaLevelDataFileIn)
 		{
-			Initialise(SeaLevelDataFile);
+			Initialise(SeaLevelDataFileIn);
 		}
 				
-		void get_SeaLevel(double Time);
+		double get_SeaLevel(double Time);
+};
+#endif
 		
 

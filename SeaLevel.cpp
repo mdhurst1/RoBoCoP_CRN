@@ -69,24 +69,19 @@ void SeaLevel::Initialise()
 	// Calculate the relative contributions
 	vector<double> Empty(710000,0.);
 	Times = Empty;
-	SeaLevels = Empty;
+	MeanSeaLevels = Empty;
 	for (int t=0, T=Times.size(); t<T; ++t) 
 	{
 		Times[t] = -700000.+t;
 		// Obliquity signal
-		SeaLevels[t] += Obliquity_Amp*cos(2.*M_PI*(Times[t]+Obliquity_Offset*Obliquity_Period)/Obliquity_Period);
+		MeanSeaLevels[t] += Obliquity_Amp*cos(2.*M_PI*(Times[t]+Obliquity_Offset*Obliquity_Period)/Obliquity_Period);
 		// Precession signal
-		SeaLevels[t] += Precession_Amp*cos(2.*M_PI*(Times[t]+Precession_Offset*Precession_Period)/Precession_Period);
+		MeanSeaLevels[t] += Precession_Amp*cos(2.*M_PI*(Times[t]+Precession_Offset*Precession_Period)/Precession_Period);
 		// Eccentricity signal
-		SeaLevels[t] += Eccentricity_Amp*cos(2.*M_PI*(Times[t]+Eccentricity_Offset*Eccentricity_Period)/Eccentricity_Period);
+		MeanSeaLevels[t] += Eccentricity_Amp*cos(2.*M_PI*(Times[t]+Eccentricity_Offset*Eccentricity_Period)/Eccentricity_Period);
 	}
 }
-void SeaLevel::Initialise(double SLR)
-{
-	// Initialising SeaLevel using a rate of Sea Level Rise
-	// Set to zero for constant Sea Level
-	
-}
+
 void SeaLevel::Initialise(string SeaLevelDataFile)
 {
 	// Initialising Sea Level from a datafile
@@ -98,7 +93,7 @@ void SeaLevel::Initialise(string SeaLevelDataFile)
 	ifstream SeaLevelIn(SeaLevelDataFile.c_str());
 	if (!SeaLevelIn)
 	{
-	  printf("SeaLevel::%s: line %d Sea Level data file \"%s\" doesn't exist\n\n", __func__, __LINE__, SeaLevelFilename.c_str());
+	  printf("SeaLevel::%s: line %d Sea Level data file \"%s\" doesn't exist\n\n", __func__, __LINE__, SeaLevelDataFile.c_str());
 	  printf("Setting Realtive Sea Level to zero");
 	}
 	else
@@ -110,16 +105,16 @@ void SeaLevel::Initialise(string SeaLevelDataFile)
 		  SeaLevelIn >> indata;
 		  Times.push_back(indata);
 		  SeaLevelIn >> indata;
-		  SeaLevels.push_back(indata);
+		  MeanSeaLevels.push_back(indata);
 		}
 		SeaLevelIn.close();
 	}
 }
   		
-void SeaLevel::get_SeaLevel(double Time)
+double SeaLevel::get_SeaLevel(double Time)
 {
 	//interpolate to get value
-	double Factor, Rate;
+	double Factor;
 	int TimeCondition = 0;
 	int ind = 0;
 	while (TimeCondition == 0)
@@ -127,13 +122,15 @@ void SeaLevel::get_SeaLevel(double Time)
 		if (Time >= Times[Times.size()-1])
 		{
 			TimeCondition = 1;
-			ind = RSLTime.size()-1;
+			ind = Times.size()-1;
 		}
-		else if (Time >= RSLTime[ind]) ++ind;
+		else if (Time >= Times[ind]) ++ind;
 		else TimeCondition = 1;
 	}
 	Factor = (Time-Times[ind-1])/(Times[ind]-Times[ind-1]);
-	SeaLevel = SeaLevels[ind-1]+Factor*(SeaLevels[ind]-SeaLevels[ind-1]);
+	MeanSeaLevel = MeanSeaLevels[ind-1]+Factor*(MeanSeaLevels[ind]-MeanSeaLevels[ind-1]);
 
-	return SeaLevel;
+	return MeanSeaLevel;
 }
+#endif
+
