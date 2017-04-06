@@ -304,7 +304,7 @@ void RockyCoastCRN::Initialise(Hiro HiroCoast, vector<int> WhichNuclides)
 	NDV = -9999;
 	dX = HiroCoast.dX;
 	dZ = HiroCoast.dZ;
-	dt = HiroCoast.dt;
+	dt = HiroCoast.TimeInterval;
 	
 	//Initialise the nuclides
 	InitialiseNuclides(WhichNuclides);
