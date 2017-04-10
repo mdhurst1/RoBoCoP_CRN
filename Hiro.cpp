@@ -140,7 +140,7 @@ void Hiro::Initialise(double dZ_in, double dX_in)
 }
 
 
-void Hiro::Initialise(double dZ_in, double dX_in, double Gradient)
+void Hiro::Initialise(double dZ_in, double dX_in, double Gradient, double CliffHeight)
 {
 	/* initialise a sloping cliff Hiro object */
 	printf("\nHiro.Initialise: Initialised a Hiro as a slope\n");
@@ -168,7 +168,6 @@ void Hiro::Initialise(double dZ_in, double dX_in, double Gradient)
 	BrokenWavePressure_Dw = 0.1;
 	
 	//Cliff control params
-	CliffHeight = 10.;
 	CliffFailureDepth = 1.;
 	
 	//Declare spatial stuff
@@ -411,7 +410,31 @@ void Hiro::UpdateSeaLevel()
 void Hiro::UpdateSeaLevel(double InputSeaLevel)
 {
 	/*Update sea level based on a constant sea level rise rate*/
-	SeaLevel = InputSeaLevel;
+	//First catch large difference in SeaLevel
+	if (fabs(InputSeaLevel-SeaLevel) > 1)
+	{
+		for (int i=0; i<NZNodes; ++i)
+		{
+			if (InputSeaLevel > Z[i])
+			{
+				SeaLevel = Z[i-1];
+				SeaLevelInd = i-1;
+				break;
+			}
+		}
+	}
+	else
+	{
+		for (int i=SeaLevelInd-5; i<SeaLevelInd; ++i)
+		{
+			if (InputSeaLevel < Z[i])
+			{
+				SeaLevel = Z[i-1];
+				SeaLevelInd = i-1;
+				break;
+			}
+		}
+	}
 }
 
 void Hiro::CalculateBackwearing()

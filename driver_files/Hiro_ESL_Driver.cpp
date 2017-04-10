@@ -59,9 +59,10 @@ using namespace std;
 int main()
 {
 	//initialisation parameters
-	double dZ = 0.1;
-	double dX = 0.1;
-	double Gradient = 1.;
+	double dZ = 0.2;
+	double dX = 0.2;
+	double Gradient = 0.5;
+	double CliffHeight = 75.;
 
 	//Time control parameters
 	double EndTime = 10000;
@@ -74,15 +75,15 @@ int main()
 	string OutputFileName = "ShoreProfile.xz";
 	
 	//initialise Hiro Model
-	Hiro PlatformModel = Hiro(dZ, dX, Gradient);
+	Hiro PlatformModel = Hiro(dZ, dX, Gradient, CliffHeight);
 	
 	//Initialise Tides
-	double TidalRange = 8.;
+	double TidalRange = 2.;
 	PlatformModel.InitialiseTides(TidalRange);
 		
 	//Initialise Waves
 	//Single Wave for now but could use the waveclimate object from COVE!?
-	double WaveHeight_Mean = 3.;
+	double WaveHeight_Mean = 1.5;
 	double WaveHeight_StD = 0.;
 	double WavePeriod_Mean = 6.;
 	double WavePeriod_StD = 0;
@@ -101,20 +102,26 @@ int main()
 	//reset the geology
 	//"CliffHeight" has to be larger than the total sea level range plus tidal range
 	// could make this grow dynamically in future
-	double CliffHeight = 75.;
 	double CliffFailureDepth = 1.;
 	double Resistance = 0.01;
 	double WeatheringRate = 0.001;
 	PlatformModel.InitialiseGeology(CliffHeight, CliffFailureDepth, Resistance, WeatheringRate);
-				
-
+	PlatformModel.ResetModel();			
+	PlatformModel.UpdateMorphology();
+	
 	//Loop through time
 	while (Time <= EndTime)
 	{
 		//Update Sea Level
 		InstantSeaLevel = EustaticSeaLevel.get_SeaLevel(Time);
 		PlatformModel.UpdateSeaLevel(InstantSeaLevel);
-
+		
+		//Update Tides
+		PlatformModel.InitialiseTides(TidalRange);
+		
+		//Update the Morphology 
+		PlatformModel.UpdateMorphology();
+		
 		//Get the wave conditions
 		PlatformModel.GetWave();
 
@@ -126,21 +133,12 @@ int main()
 		PlatformModel.ErodeBackwearing();
 		PlatformModel.ErodeDownwearing();
 
-		//Update the Morphology 
-		PlatformModel.UpdateMorphology();	  
-		
 		//Implement Weathering
 		PlatformModel.IntertidalWeathering();
 		
-		//Update the Morphology 
-		PlatformModel.UpdateMorphology();
-
 		//Check for Mass Failure
 		PlatformModel.MassFailure();
 		
-		//Update the Morphology 
-		PlatformModel.UpdateMorphology();
-				
 		//print?
 		if (Time >= PrintTime)
 		{

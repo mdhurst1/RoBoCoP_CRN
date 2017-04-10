@@ -42,8 +42,12 @@ E_Signal = (E_Amplitude/np.pi)*np.arctan(1./np.tan(np.pi*(Time+Offset)/E_WaveLen
 E_Signal += E_Mean+0.1*E_Amplitude*np.sin(2.*np.pi*Time/E_WaveLength)
 #E_Signal *= 1
 
+
 #Total signal
 Total_Signal = O_Signal+P_Signal+E_Signal
+
+print np.max(Total_Signal)-np.min(Total_Signal)
+
 #make the plot
 plt.figure(1,figsize=(6.6,6.6))
 Time /= 1000

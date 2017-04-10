@@ -34,6 +34,7 @@ def make_plot(FileName,ColourMap):
     f = open(ProfileName,'r')
     Lines = f.readlines()
     NoLines = len(Lines)
+    StartTime = float(Lines[1].strip().split(" ")[0])
     EndTime = float(Lines[-1].strip().split(" ")[0])
 
     # Get info on vertical from header
@@ -42,8 +43,8 @@ def make_plot(FileName,ColourMap):
     dz = Header[1]
     
     # Only plot every 1 000 years
-    PlotTime = 0
-    PlotInterval = 1000
+    PlotTime = StartTime
+    PlotInterval = 100000
     
     ax1 = plt.subplot(111)
 
@@ -59,17 +60,21 @@ def make_plot(FileName,ColourMap):
         Z = np.linspace(CliffHeight,-CliffHeight, NValues)
         
         if (Time >= PlotTime):
-            ax1.plot(X,Z,'-',lw=1.5,color='k')
+            colour = Time/StartTime
+            ax1.plot(X,Z,'-',lw=1.5,color=cm.RdBu(colour))
             PlotTime += PlotInterval
     
+    ax1.plot(X,Z,'k-',lw=1.5)
+            
+        
     print Z[0], Z[-1]           
     # tweak the plot
     #ax1.set_xticklabels([])
     plt.xlabel("Distance (m)")
     plt.ylabel("Elevation (m)")
     xmin, xmax = ax1.get_xlim()
-    plt.xlim(xmin-10,xmax+10)
-    plt.ylim(-CliffHeight,CliffHeight)
+    #plt.xlim(xmin-10,xmax+10)
+    #plt.ylim(-CliffHeight,CliffHeight)
     #plt.ylim(-30,30)
     plt.tight_layout()
     plt.show()

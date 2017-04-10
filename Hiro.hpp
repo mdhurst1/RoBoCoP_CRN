@@ -185,7 +185,7 @@ class Hiro
 		//Initialise Functions
 		void Initialise();
 		void Initialise(double dZ, double dX);
-		void Initialise(double dZ_in, double dX_in, double Gradient);
+		void Initialise(double dZ_in, double dX_in, double Gradient, double CliffHeight);
 		
 	protected:
 
@@ -206,14 +206,14 @@ class Hiro
 			Initialise(dZ, dX);
 		}
 		
-		Hiro(double dZ, double dX, double Gradient)
+		Hiro(double dZ, double dX, double Gradient, double CliffHeight)
 		{
-			Initialise(dZ, dX, Gradient);
+			Initialise(dZ, dX, Gradient, CliffHeight);
 		}
 		
 		void ResetModel()
 		{
-			Initialise(dZ,dX, InitialGradient);
+			Initialise(dZ,dX, InitialGradient, CliffHeight);
 		}
     		
 		//Initialise Tides

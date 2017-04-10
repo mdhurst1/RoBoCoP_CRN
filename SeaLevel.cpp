@@ -78,8 +78,10 @@ void SeaLevel::Initialise()
 		// Precession signal
 		MeanSeaLevels[t] += Precession_Amp*cos(2.*M_PI*(Times[t]+Precession_Offset*Precession_Period)/Precession_Period);
 		// Eccentricity signal
-		MeanSeaLevels[t] += Eccentricity_Amp*cos(2.*M_PI*(Times[t]+Eccentricity_Offset*Eccentricity_Period)/Eccentricity_Period);
+		MeanSeaLevels[t] += (Eccentricity_Amp/M_PI)*atan(1./tan(M_PI*(Times[t]+Eccentricity_Offset)/Eccentricity_Period));
 	}
+	// break here and check
+	cout << "SeaLevel.Initialise: Sea Level History Created." << endl;
 }
 
 void SeaLevel::Initialise(string SeaLevelDataFile)
