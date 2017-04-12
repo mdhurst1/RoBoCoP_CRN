@@ -109,6 +109,11 @@ int main()
 	PlatformModel.ResetModel();			
 	PlatformModel.UpdateMorphology();
 	
+	//Open file to write sea level output
+	string SeaLevelFileName = "SeaLevel.z";
+	ofstream WriteFile;
+	WriteFile.open(SeaLevelFileName.c_str());
+	
 	//Loop through time
 	while (Time <= EndTime)
 	{
@@ -143,6 +148,8 @@ int main()
 		if (Time >= PrintTime)
 		{
 			PlatformModel.WriteProfile(OutputFileName, Time);
+			WriteFile << Time << " " << InstantSeaLevel << endl;
+	
 			PrintTime += PrintInterval;
 			//cout << endl;
 		}
@@ -151,6 +158,9 @@ int main()
 		Time += TimeInterval;
 		
 	}
+	
+	//close filestream
+	WriteFile.close();
 	
 	//a few blank lines to finish
 	cout << endl << endl;
