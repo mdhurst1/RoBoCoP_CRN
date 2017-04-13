@@ -565,34 +565,36 @@ void Hiro::CalculateDownwearing()
 	vector<double> ZZeros(NZNodes,0);
 	Dw_Erosion = ZZeros;
 	
+	//Loop across the tidal range water levels
 	for (int i=MaxTideZInd; i<=MinTideZInd; ++i)
 	{
 		//Get wave function needs to calculate a bunch of stuff?
 		GetWave();
 		
-		//Loop from water level down and determine force
-		for (int ii=WaterLevelYInd; ii>0; --ii)
+		//Standing Waves
+		if (Xz[i]<BreakingPointX)
 		{
-			//Standing Waves
-			if (X[i]<BreakingPointX)
-			{
-				WaveForce = StandingWaveConst*WaveHeight*ErosionShapeFunction[i-MaxTideZInd]*StandingWavePressure_Dw;
-				DepthDecay = -log(SubmarineDecayConst)/WaveHeight;
-			}	
-			//Breaking Waves
-			else if (X[i]<(BreakingPointX+BreakingWaveDist))
-			{
-				WaveForce = BreakingWaveConst*WaveHeight*ErosionShapeFunction[i-MaxTideZInd]*BreakingWavePressure_Dw*exp(-BreakingWaveDecay*(X[i]-BreakingPointX));
-				DepthDecay = -log(SubmarineDecayConst)/(WaveHeight*exp(-BreakingWaveDecay*(X[i]-BreakingPointX)));
-			}
-			//Broken Waves
-			else
-			{
-				WaveForce = BrokenWaveConst*WaveHeight*ErosionShapeFunction[i-MaxTideZInd]*BrokenWavePressure_Dw*exp(-BrokenWaveDecay*(X[i]-(BreakingPointX+BreakingWaveDist)));
-				DepthDecay = -log(SubmarineDecayConst)/(WaveHeight*exp(-BrokenWaveDecay*(X[i]-(BreakingPointX+BreakingWaveDist))));
-			}
+			WaveForce = StandingWaveConst*WaveHeight*ErosionShapeFunction[i-MaxTideZInd]*StandingWavePressure_Dw;
+			DepthDecay = -log(SubmarineDecayConst)/WaveHeight;
+		}	
+		//Breaking Waves
+		else if (Xz[i]<(BreakingPointX+BreakingWaveDist))
+		{
+			WaveForce = BreakingWaveConst*WaveHeight*ErosionShapeFunction[i-MaxTideZInd]*BreakingWavePressure_Dw*exp(-BreakingWaveDecay*(Xz[i]-BreakingPointX));
+			DepthDecay = -log(SubmarineDecayConst)/(WaveHeight*exp(-BreakingWaveDecay*(Xz[i]-BreakingPointX)));
+		}
+		//Broken Waves
+		else
+		{
+			WaveForce = BrokenWaveConst*WaveHeight*ErosionShapeFunction[i-MaxTideZInd]*BrokenWavePressure_Dw*exp(-BrokenWaveDecay*(Xz[i]-(BreakingPointX+BreakingWaveDist)));
+			DepthDecay = -log(SubmarineDecayConst)/(WaveHeight*exp(-BrokenWaveDecay*(Xz[i]-(BreakingPointX+BreakingWaveDist))));
+		}
+		//Loop from water level down and determine force
+		for (int ii=i; ii<i+(3./dz); ++ii)
+		{
+			
 			WaterDepth = Z[i]-Z[ii];
-			Dw_Erosion[i] += WaveForce*exp(-DepthDecay*WaterDepth);
+			Dw_Erosion[ii] += WaveForce*exp(-DepthDecay*WaterDepth);
 		}
 	}
 }
