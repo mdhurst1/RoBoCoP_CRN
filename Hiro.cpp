@@ -77,7 +77,7 @@ void Hiro::Initialise(double dZ_in, double dX_in)
 	StandingWaveConst = 0.01;
 	BreakingWaveConst = 10.;
 	BrokenWaveConst = 0.1;
-	BreakingWaveDecay = 0.1;
+	BreakingWaveDecay = 0.2;
 	BrokenWaveDecay = 0.01;
 	WeatheringConst = 0.005;
 	RockResistance = 0.5;
@@ -275,7 +275,7 @@ void Hiro::InitialiseTides(double TideRange)
 	{
 		for (int i=0; i<0.55*NTideValues; ++i)
 		{
-			ErosionShapeFunction[i] = sin(i*dZ*M_PI/(0.55*TidalRange));
+			ErosionShapeFunction[i] += sin(i*dZ*M_PI/(0.55*TidalRange));
 			Total += ErosionShapeFunction[i];
 			if (ErosionShapeFunction[i] > Max) Max = ErosionShapeFunction[i];
 		}
