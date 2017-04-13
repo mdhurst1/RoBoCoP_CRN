@@ -425,9 +425,9 @@ void Hiro::UpdateSeaLevel(double InputSeaLevel)
 	}
 	else
 	{
-		for (int i=SeaLevelInd-5; i<SeaLevelInd; ++i)
+		for (int i=SeaLevelInd-5; i<SeaLevelInd+5; ++i)
 		{
-			if (InputSeaLevel < Z[i])
+			if (Z[i] < InputSeaLevel)
 			{
 				SeaLevel = Z[i-1];
 				SeaLevelInd = i-1;
@@ -442,7 +442,7 @@ void Hiro::CalculateBackwearing()
 	//Declare temporary variables
 	double WaveForce, SurfZoneBottomZ; //, SurfZoneBottomX;
 	int WaveType;
-	int BreakingPointZInd = 0;
+	BreakingPointZInd = 0;
 	
 	//Reset backwear vector
 	vector<double> ZZeros(NZNodes,0);
@@ -572,13 +572,13 @@ void Hiro::CalculateDownwearing()
 		GetWave();
 		
 		//Standing Waves
-		if (Xz[i]<BreakingPointX)
+		if (Xz[i] < Xz[BreakingPointZInd])
 		{
 			WaveForce = StandingWaveConst*WaveHeight*ErosionShapeFunction[i-MaxTideZInd]*StandingWavePressure_Dw;
 			DepthDecay = -log(SubmarineDecayConst)/WaveHeight;
 		}	
 		//Breaking Waves
-		else if (Xz[i]<(BreakingPointX+BreakingWaveDist))
+		else if (Xz[i]<(Xz[BreakingPointZInd]+BreakingWaveDist))
 		{
 			WaveForce = BreakingWaveConst*WaveHeight*ErosionShapeFunction[i-MaxTideZInd]*BreakingWavePressure_Dw*exp(-BreakingWaveDecay*(Xz[i]-BreakingPointX));
 			DepthDecay = -log(SubmarineDecayConst)/(WaveHeight*exp(-BreakingWaveDecay*(Xz[i]-BreakingPointX)));
@@ -590,7 +590,7 @@ void Hiro::CalculateDownwearing()
 			DepthDecay = -log(SubmarineDecayConst)/(WaveHeight*exp(-BrokenWaveDecay*(Xz[i]-(BreakingPointX+BreakingWaveDist))));
 		}
 		//Loop from water level down and determine force
-		for (int ii=i; ii<i+(3./dz); ++ii)
+		for (int ii=i; ii<i+(3./dZ); ++ii)
 		{
 			
 			WaterDepth = Z[i]-Z[ii];
