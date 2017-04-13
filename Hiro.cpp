@@ -565,7 +565,7 @@ void Hiro::CalculateDownwearing()
 	vector<double> ZZeros(NZNodes,0);
 	Dw_Erosion = ZZeros;
 	
-	for (int i=MinTideZInd; i<=MaxTideZInd; ++i)
+	for (int i=MaxTideZInd; i<=MinTideZInd; ++i)
 	{
 		//Get wave function needs to calculate a bunch of stuff?
 		GetWave();
