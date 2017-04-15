@@ -141,8 +141,8 @@ class Hiro
 		double BreakingWaveDist, BrokenWaveDist;
 		double BreakingWaveWaterDepth;
 		double BreakingWaveAttenuation, BrokenWaveAttenuation;
-		double BreakingPointX, BreakingPointY;
-		int BreakingPointXInd, BreakingPointYInd;
+		double BreakingPointX, BreakingPointZ;
+		int BreakingPointXInd, BreakingPointZInd;
 		
 		
 		//TIME CONTROL PARAMETERS
@@ -284,6 +284,8 @@ class Hiro
 		///	@author Martin D. Hurst 
 		/// @date 27/02/2017
 		vector<double> get_Z() const { return Z; }
+		
+		double get_SeaLevel() const { return SeaLevel; }
 		
 		void Set_InitialGradient(double Gradient)
 		{

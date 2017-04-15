@@ -68,16 +68,17 @@ int main()
 	double Time = 0.;
 	double TimeInterval = 1;
 
-	// Do an earthquake
+//	// Do an earthquake
 	double EarthquakeTime = 5000.;
 	double EarthquakeSeaLevel = -1.;
+
 	//Print Control
 	double PrintInterval = 1.;
 	double PrintTime = Time;
-	string OutputFileName = "Kaikoura_ShoreProfiles.xz";
+	string OutputFileName = "Kaikoura_ShoreProfiles_1m.xz";
 	
 	//initialise Hiro Model
-	Hiro PlatformModel = Hiro(dZ, dX, Gradient);
+	Hiro PlatformModel = Hiro(dZ, dX, Gradient, CliffHeight);
 	
 	//Initialise Tides
 	double TidalRange = 2.;
@@ -102,10 +103,9 @@ int main()
 	PlatformModel.Set_WaveCoefficients(StandingCoefficient, BreakingCoefficient, BrokenCoefficient);
 
 	//reset the geology
-	double CliffHeight = 10.;
 	double CliffFailureDepth = 1.;
-	double Resistance = 0.01;
-	double WeatheringRate = 0.001;
+	double Resistance = 0.001;
+	double WeatheringRate = 0.0001;
 	PlatformModel.InitialiseGeology(CliffHeight, CliffFailureDepth, Resistance, WeatheringRate);
 				
 
@@ -116,6 +116,7 @@ int main()
 		if (Time > EarthquakeTime)
 		{
 			PlatformModel.UpdateSeaLevel(EarthquakeSeaLevel);
+			PlatformModel.UpdateMorphology();
 			EarthquakeTime = 0.;
 		}
 
@@ -124,11 +125,11 @@ int main()
 
 		//Calculate forces acting on the platform
 		PlatformModel.CalculateBackwearing();
-		PlatformModel.CalculateDownwearing();
+		//PlatformModel.CalculateDownwearing();
 
 		//Do erosion
 		PlatformModel.ErodeBackwearing();
-		PlatformModel.ErodeDownwearing();
+		//PlatformModel.ErodeDownwearing();
 
 		//Update the Morphology 
 		PlatformModel.UpdateMorphology();	  
@@ -157,6 +158,10 @@ int main()
 		Time += TimeInterval;
 		
 	}
+	
+	// Need to implement a WRITE METADATA FUNCTION!
+	// GIVE EACH MODEL RUN A UNIQUE ID NUMBER?
+	// OR INPUT FILES TO CONTROL PARAMETERS?
 	
 	//a few blank lines to finish
 	cout << endl << endl;

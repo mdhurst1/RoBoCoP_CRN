@@ -425,7 +425,7 @@ void Hiro::UpdateSeaLevel(double InputSeaLevel)
 	}
 	else
 	{
-		for (int i=SeaLevelInd-5; i<SeaLevelInd+5; ++i)
+		for (int i=SeaLevelInd-11; i<SeaLevelInd+11; ++i)
 		{
 			if (Z[i] < InputSeaLevel)
 			{
