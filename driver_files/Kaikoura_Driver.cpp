@@ -1,21 +1,25 @@
 /*------------------------------------------------------------------------
 
-	Hiro_Driver.cpp
+	Kaikoura_Driver.cpp
 	
-	Driver file for running the shore platform model of Matsumoto et al. (2016)
-	
-	Matsumoto, H., Dickson, M. E., & Kench, P. S. (2016)
+	DC++ implementation of Hiro Matsumoto's Shore Platform Model
+
+	Matsumoto, H., Dickson, M. E., & Kench, P. S. (2016a)
 	An exploratory numerical model of rocky shore profile evolution. 
 	Geomorphology, 268, 98-109. http://doi.org/10.1016/j.geomorph.2016.05.017
 	
+	Matsumoto, H., Dickson, M.E., and Kench, P.S. (2016b)
+	Modelling the Development of Varied Shore Profile Geometry on Rocky Coasts.
+	Journal of Coastal Research, 75, 597–601, http://dx.doi.org/10.2112/SI75-120.1
+
 	Martin D. Hurst, University of Glasgow
 	Hironori Matsumoto, University of Auckland
 	
-	February 2017
+	March 2017
 	
 	Copyright (C) 2017, Martin Hurst
 	
-	Developer can be contacted:
+	Developer can be contacted
 	martin.hurst@glasgow.ac.uk
   
 	Martin D. Hurst
