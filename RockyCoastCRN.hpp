@@ -71,8 +71,8 @@ These pages describe the software.
 #include <sstream>
 #include <cstdlib>
 #include <omp.h>
-#include "RoBoCoP.hpp"
-#include "Hiro.hpp"
+#include <RoBoCoP.hpp>
+#include <Hiro.hpp>
 
 using namespace std;
 

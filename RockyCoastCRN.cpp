@@ -72,8 +72,8 @@
 #include <sstream>
 #include <cstdlib>
 #include <omp.h>
-#include "RockyCoastCRN.hpp"
-#include "Hiro.hpp"
+#include <RockyCoastCRN.hpp>
+#include <Hiro.hpp>
 
 using namespace std;
 
