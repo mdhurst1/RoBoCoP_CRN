@@ -14,6 +14,9 @@ LD=g++
 CFLAGS= -g -c -Wall -Werror -Wextra -pedantic -pg $(INCDIR)
 LDFLAGS= -g -Wall -pg
 
+# INCLUDE PATH FOR RoBoCoP_CRN
+INCLUDE = -I../
+
 # SOURCE FILES MACROS IN DEPENDENCY ORDER? SHOULDNT MATTER THANKS TO HEADERS
 SOURCES = ../Hiro.cpp ./Hiro_Driver.cpp
 
@@ -32,7 +35,7 @@ $(EXECUTABLE): $(OBJECTS)
 	$(CC) $(LDFLAGS) $(OBJECTS) $(LIBS) -o $@
 
 .cpp.o:
-	$(CC) $(CFLAGS) $< -o $@
+	$(CC) $(CFLAGS) $(INCLUDE) $< -o $@
 
 clean:
 	rm -f ../*.o *.o *.out *.xz *.xn

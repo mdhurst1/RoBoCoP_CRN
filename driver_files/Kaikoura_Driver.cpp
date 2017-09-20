@@ -55,7 +55,7 @@
 #include <cstdlib>
 #include <omp.h>
 #include <unistd.h>
-#include "../Hiro.hpp"
+#include <Hiro.hpp>
 
 using namespace std;
 

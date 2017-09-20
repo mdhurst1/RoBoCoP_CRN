@@ -67,8 +67,8 @@
 #include <cstdlib>
 #include <omp.h>
 #include <unistd.h>
-#include "../Hiro.hpp"
-#include "../RockyCoastCRN.hpp"
+#include <Hiro.hpp>
+#include <RockyCoastCRN.hpp>
 
 using namespace std;
 

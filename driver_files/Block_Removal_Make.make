@@ -14,6 +14,9 @@ LD=g++
 CFLAGS= -g -c -Wall -pg  $(INCDIR)
 LDFLAGS= -g -Wall -pg  
 
+# INCLUDE PATH FOR RoBoCoP_CRN
+INCLUDE = -I../
+
 # SOURCE FILES MACROS IN DEPENDENCY ORDER? SHOULDNT MATTER THANKS TO HEADERS
 SOURCES = ../RockyCoastCRN.cpp ./Block_Removal_Driver.cpp
 
@@ -32,5 +35,5 @@ $(EXECUTABLE): $(OBJECTS)
 	$(CC) $(LDFLAGS) $(OBJECTS) $(LIBS) -o $@
 
 .cpp.o:
-	$(CC) $(CFLAGS) $< -o $@
+	$(CC) $(CFLAGS) $(INCLUDE) $< -o $@
 

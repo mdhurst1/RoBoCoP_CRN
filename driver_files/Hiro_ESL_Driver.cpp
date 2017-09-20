@@ -65,8 +65,8 @@
 #include <cstdlib>
 #include <omp.h>
 #include <unistd.h>
-#include "../Hiro.hpp"
-#include "../SeaLevel.hpp"
+#include <Hiro.hpp>
+#include <SeaLevel.hpp>
 
 using namespace std;
 

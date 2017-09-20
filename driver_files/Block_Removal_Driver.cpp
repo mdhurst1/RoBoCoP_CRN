@@ -48,7 +48,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <cstdlib>
 #include <omp.h>
 #include <unistd.h>
-#include "../RockyCoastCRN.hpp"
+#include <RockyCoastCRN.hpp>
 
 using namespace std;
 
