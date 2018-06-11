@@ -111,6 +111,12 @@ class RoBoCoP
 				
 		//TIME CONTROL PARAMETERS
 		double Time, MaxTime, dt;
+		
+		//PHYSICAL CONSTANTS
+		static const double rho_w = 1025.;
+		static const double g = 9.81;
+		static const double k = 0.02;
+		static const double M = 0.0001;
 					
     /* FUNCTION DECLARATIONS */
 
@@ -162,6 +168,9 @@ class RoBoCoP
 		
 		//Update Sea Level
 		void UpdateSeaLevel(double SLRRate);
+		
+		// drop sea level according to uplift amount
+		void Uplift(double Uplift);
 		
 		//Sample a wave
 		void GetWave();

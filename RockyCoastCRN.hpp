@@ -413,7 +413,7 @@ class RockyCoastCRN
 		/// @author Martin D. Hurst
 		/// @param RoBoCoPCoast A RoBoCoP Coastal model object
     	/// @date 14/03/2016
-		//void UpdateMorphology(RoBoCoP RoBoCoPCoast);
+		void UpdateMorphology(RoBoCoP RoBoCoPCoast);
 		
 		/// @brief Updates the platform morphology
 		/// @details This function calculates the amount of platform downwear and 

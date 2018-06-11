@@ -53,23 +53,32 @@ using namespace std;
 
 int main()
 {
-  //initialisation parameters
-  double dZ = 0.1;
-  double PlatformGradient = 1./10.;
-  double CliffPositionX = 0.;
+    //initialisation parameters
+    double dZ = 0.1;
+    double PlatformGradient = 1./10.;
+    double CliffPositionX = 0.;
   
-  //Rate of sea level rise
-  double SLR = 0.0;
-  
+    //Rate of sea level rise
+    double SLR = 0.0;
+
+    // Tectonics
+    double Uplift_Mean = 1.0;
+    double Uplift_StD = 0.5;
+    double UpliftTime_Mean = 500.;
+    double UpliftTime_StD = 250.;
+    double Uplift = 0;
+       
   	// Time Control
 	double EndTime = 10000.;
 	double Time = 0.;
 	double TimeInterval = 1.;
+	double UpliftTime = UpliftTime_Mean;
+    double rand1, rand2;
+    
+    //initialise RoBoCoP
+    RoBoCoP PlatformModel = RoBoCoP(dZ,PlatformGradient,CliffPositionX,TimeInterval);
 
-  //initialise RoBoCoP
-  RoBoCoP PlatformModel = RoBoCoP(dZ,PlatformGradient,CliffPositionX,TimeInterval);
-
-  //Initialise RockyCoastCRN
+    //Initialise RockyCoastCRN
 	RockyCoastCRN PlatformCRN = RockyCoastCRN(PlatformModel);
 	
 	//Initialise Tides
@@ -94,37 +103,52 @@ int main()
 	
 	//print initial conditions to file first
 	PlatformModel.WriteProfile(OutputMorphologyFileName, Time);
-  PlatformCRN.WriteCRNProfile(OutputConcentrationFileName, Time);
+    PlatformCRN.WriteCRNProfile(OutputConcentrationFileName, Time);
   
 	//Loop through time
 	while (Time < EndTime)
 	{
-	  //Update Sea Level
-	  PlatformModel.UpdateSeaLevel(SLR);
-	  
-	  //Get a new wave
-	  PlatformModel.GetWave();
-	  
-	  //Evolve the coast
-	  PlatformModel.EvolveCoast();
-	  
-	  //Update the morphology inside RockyCoastCRN
-	  PlatformCRN.UpdateMorphology(PlatformModel);
-	  
-	  //Update the CRN concentrations
-	  PlatformCRN.UpdateCRNs();
-    
-    //update time
-	  Time += TimeInterval;
-	      
-	  //print?
-	  if (Time >= PrintTime)
-	  {
-	    PlatformModel.WriteProfile(OutputMorphologyFileName, Time);
-	    PlatformCRN.WriteCRNProfile(OutputConcentrationFileName, Time);
-	    PrintTime += PrintInterval;
-	  }
-	  //cout << "Time is " << Time << endl;
+        //Update Sea Level
+        PlatformModel.UpdateSeaLevel(SLR);
+
+        //Do earthquakes
+        if (Time > UpliftTime)
+        {
+            // Get two random numbers and generate uplift event
+            rand1 = (double)rand()/RAND_MAX; rand2 = (double)rand()/RAND_MAX;
+            Uplift = Uplift_Mean + Uplift_StD*sqrt(-2.*log(rand1))*cos(2.*M_PI*(rand2));
+            
+            // set the time to next uplift event
+            rand1 = (double)rand()/RAND_MAX; rand2 = (double)rand()/RAND_MAX;
+            UpliftTime += UpliftTime_Mean + UpliftTime_StD*sqrt(-2.*log(rand1))*cos(2.*M_PI*(rand2));
+            
+            //Do the uplift
+            PlatformModel.Uplift(Uplift)
+        }
+
+        //Get a new wave
+        PlatformModel.GetWave();
+
+        //Evolve the coast
+        PlatformModel.EvolveCoast();
+
+        //Update the morphology inside RockyCoastCRN
+        PlatformCRN.UpdateMorphology(PlatformModel);
+
+        //Update the CRN concentrations
+        PlatformCRN.UpdateCRNs();
+
+        //update time
+        Time += TimeInterval;
+          
+        //print?
+        if (Time >= PrintTime)
+        {
+        PlatformModel.WriteProfile(OutputMorphologyFileName, Time);
+        PlatformCRN.WriteCRNProfile(OutputConcentrationFileName, Time);
+        PrintTime += PrintInterval;
+        }
+        //cout << "Time is " << Time << endl;
 	}
 	//write a gap at the end
 	cout << endl << endl;

@@ -201,6 +201,12 @@ void RoBoCoP::UpdateSeaLevel(double SLRRate)
 	SeaLevel += SLRRate*dt;
 }
 
+void RoBoCoP::Uplift(double Uplift)
+{
+    // update sea level based on uplift magnitude
+    SeaLevel -= Uplift;
+}
+
 void RoBoCoP::EvolveCoast()
 {
   /* Function to evolve the coastal profile through time following
