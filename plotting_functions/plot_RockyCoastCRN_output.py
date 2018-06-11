@@ -37,7 +37,7 @@ ax1 = fig.add_subplot(211)
 ax2 = fig.add_subplot(212)
 
 # choose colour map
-ColourMap = cm.Greys_r
+ColourMap = cm.YlGnBu_r
 MaxTime = float(Lines[1].strip().split(" ")[0])
 
 #Loop through data and plot

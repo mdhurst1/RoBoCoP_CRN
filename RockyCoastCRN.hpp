@@ -70,7 +70,6 @@ These pages describe the software.
 #include <fstream>
 #include <sstream>
 #include <cstdlib>
-#include <omp.h>
 #include "RoBoCoP.hpp"
 #include "Hiro.hpp"
 
