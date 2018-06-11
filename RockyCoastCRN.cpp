@@ -72,8 +72,7 @@
 #include <sstream>
 #include <cstdlib>
 #include <omp.h>
-#include <RockyCoastCRN.hpp>
-#include <Hiro.hpp>
+#include "./RockyCoastCRN.hpp"
 
 using namespace std;
 
@@ -697,19 +696,19 @@ void RockyCoastCRN::RunModel(string outfilename, int WriteResultsFlag)
 		//Get sea level rise from local record
 		//SLR = GetSeaLevelRise(Time);
 		
-    //update CRN concentrations
-    UpdateCRNs();
-    
-    //update morphology
-    UpdateEquillibriumMorphology();
-    
-    //write output?
-    if ((WriteResultsFlag != 0) && (Time <= WriteTime))
-    {
-      WriteProfile(OutFileName, Time);
-      WriteCRNProfile(OutFileName, Time);
-      WriteTime -= WriteInterval;
-    }
+        //update CRN concentrations
+        UpdateCRNs();
+
+        //update morphology
+        UpdateEquillibriumMorphology();
+
+        //write output?
+        if ((WriteResultsFlag != 0) && (Time <= WriteTime))
+        {
+            WriteProfile(OutFileName, Time);
+            WriteCRNProfile(OutFileName, Time);
+            WriteTime -= WriteInterval;
+        }
     
 		//update cliff position and time
 		CliffPositionX -= RetreatRate*dt;
