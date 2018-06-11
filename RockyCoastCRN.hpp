@@ -72,6 +72,7 @@ These pages describe the software.
 #include <cstdlib>
 #include <omp.h>
 #include "RoBoCoP.hpp"
+#include "Hiro.hpp"
 
 using namespace std;
 
@@ -237,8 +238,9 @@ class RockyCoastCRN
 		//Initialise Function
 		void Initialise();
 		void Initialise(vector<int> WhichNuclides);
-		void Initialise(double retreatrate, double beachwidth, int beachtype, double bermheight, double platformgradient, double cliffheight, double junctionelevation, double tidalamplitude, double slr, int steppedplatform=0, double stepsize=0);
-		void Initialise(double retreatrate1, double retreatrate2, int retreattype, double changetime, double beachwidth, int beachtype, double bermheight, double platformgradient, double cliffheight, double junctionelevation, double tidalamplitude, double SLR, int steppedplatform=0, double stepsize=0);
+		void Initialise(double retreatrate, double beachwidth, int beachtype, double bermheight, double platformgradient, double cliffheight, double junctionelevation, double tidalamplitude, double slr, int steppedplatform, double stepsize, vector<int> WhichNuclides);
+		void Initialise(double retreatrate1, double retreatrate2, int retreattype, double changetime, double beachwidth, int beachtype, double bermheight, double platformgradient, double cliffheight, double junctionelevation, double tidalamplitude, double SLR, int steppedplatform, double stepsize, vector<int> WhichNuclides);
+		
 		void Initialise(RoBoCoP RoBoCoPCoast, vector<int> WhichNuclides);
 		void Initialise(Hiro HiroCoast, vector<int> WhichNuclides);
 		
@@ -280,9 +282,9 @@ class RockyCoastCRN
 		/// @param tidalamplitude Amplitude of diurnal tides
 	  ///	@author Martin D. Hurst 
     /// @date 14/09/2015
-		RockyCoastCRN(double retreatrate1, double retreatrate2, int retreattype, double changetime, double beachwidth, int beachtype, double bermheight, double platformgradient, double cliffheight, double junctionelevation, double tidalamplitude, double slr, int steppedplatform=0, double stepsize=0)
+		RockyCoastCRN(double retreatrate1, double retreatrate2, int retreattype, double changetime, double beachwidth, int beachtype, double bermheight, double platformgradient, double cliffheight, double junctionelevation, double tidalamplitude, double slr, int steppedplatform, double stepsize, vector<int> WhichNuclides)
 		{
-			Initialise(retreatrate1, retreatrate2, retreattype, changetime, beachwidth, beachtype, bermheight, platformgradient, cliffheight, junctionelevation, tidalamplitude, slr, steppedplatform, stepsize);
+			Initialise(retreatrate1, retreatrate2, retreattype, changetime, beachwidth, beachtype, bermheight, platformgradient, cliffheight, junctionelevation, tidalamplitude, slr, steppedplatform, stepsize, WhichNuclides);
 		}
 		
 		/// @brief Update function for two retreat rate scenario.
@@ -296,9 +298,9 @@ class RockyCoastCRN
 		/// @param tidalamplitude Amplitude of diurnal tides
 	  ///	@author Martin D. Hurst 
     /// @date 14/09/2015
-		void UpdateParameters(double retreatrate1, double retreatrate2, int retreattype, double changetime, double beachwidth, int beachtype, double bermheight, double platformgradient, double cliffheight, double junctionelevation, double slr, double tidalamplitude, int steppedplatform=0, double stepsize=0)
+		void UpdateParameters(double retreatrate1, double retreatrate2, int retreattype, double changetime, double beachwidth, int beachtype, double bermheight, double platformgradient, double cliffheight, double junctionelevation, double tidalamplitude, double slr, int steppedplatform, double stepsize, vector<int> WhichNuclides)
 		{
-			Initialise(retreatrate1, retreatrate2, retreattype, changetime, beachwidth, beachtype, bermheight, platformgradient, cliffheight, junctionelevation, slr, tidalamplitude, steppedplatform, stepsize);
+			Initialise(retreatrate1, retreatrate2, retreattype, changetime, beachwidth, beachtype, bermheight, platformgradient, cliffheight, junctionelevation,  tidalamplitude, slr, steppedplatform, stepsize, WhichNuclides);
 		}
 		
 		
@@ -311,9 +313,9 @@ class RockyCoastCRN
 		/// @param tidalamplitude Amplitude of diurnal tides
 		/// @author Martin D. Hurst 
 		/// @date 14/09/2015
-		RockyCoastCRN(double retreatrate, double beachwidth, int beachtype, double platformgradient, double cliffheight, double junctionelevation, double tidalamplitude, double slr, int steppedplatform=0, double stepsize=0)
+		RockyCoastCRN(double retreatrate, double beachwidth, int beachtype, double bermheight, double platformgradient, double cliffheight, double junctionelevation, double tidalamplitude, double slr, int steppedplatform, double stepsize, vector<int> WhichNuclides)
 		{
-			Initialise(retreatrate, beachwidth, beachtype, platformgradient, cliffheight, junctionelevation, tidalamplitude, slr, steppedplatform, stepsize);
+			Initialise(retreatrate, beachwidth, beachtype, bermheight, platformgradient, cliffheight, junctionelevation, tidalamplitude, slr, steppedplatform, stepsize, WhichNuclides);
 		}
 		
 		/// @brief Initialisation function with friend class RoBoCoP as the morphological model

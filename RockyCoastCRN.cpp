@@ -73,6 +73,7 @@
 #include <cstdlib>
 #include <omp.h>
 #include "./RockyCoastCRN.hpp"
+#include "./Hiro.hpp"
 
 using namespace std;
 
@@ -136,6 +137,7 @@ void RockyCoastCRN::Initialise(vector<int> WhichNuclides)
 	vector<double> EmptyXNDV(NXNodes,NDV);
 	X = EmptyX;
 	Z = EmptyZ;
+	BeachThickness = EmptyZ;
 	PlatformElevation = EmptyXNDV;
 	PlatformElevationOld = EmptyXNDV;
 	SurfaceElevation = EmptyXNDV;
@@ -149,14 +151,14 @@ void RockyCoastCRN::Initialise(vector<int> WhichNuclides)
 
 	for (int j=0; j<NZNodes; ++j) Z[j] = (((ZMax-ZMin)/2.)-j*((ZMax-ZMin)/(NZNodes-1)));	
 	 
-	//Initialise Geomagnetic Scaling as constant
+	//I Geomagnetic Scaling as constant
 	GeoMagScalingFactor = 1;
 
 	//Set Sea level to zero
 	SeaLevel = 0;
 }
 
-void RockyCoastCRN::Initialise(double retreatrate, double beachwidth, int beachtype, double bermheight, double platformgradient, double cliffheight, double junctionelevation, double tidalamplitude, double slr, int steppedplatform, double stepsize)
+void RockyCoastCRN::Initialise(double retreatrate, double beachwidth, int beachtype, double bermheight, double platformgradient, double cliffheight, double junctionelevation, double tidalamplitude, double slr, int steppedplatform, double stepsize, vector<int> WhichNuclides)
 {
 	/* initialise a platform object for single retreat rate scenarios
 	retreatrate is the rate of cliff retreat (m/yr)
@@ -168,10 +170,10 @@ void RockyCoastCRN::Initialise(double retreatrate, double beachwidth, int beacht
 	tidalamplitude is the average tidal amplitude for diurnal tides. */
 	int retreattype = 0;
   double changetime = 0;
-	Initialise(retreatrate, retreatrate, retreattype, changetime, beachwidth, beachtype, bermheight, platformgradient, cliffheight, junctionelevation, slr, tidalamplitude, steppedplatform, stepsize);
+	Initialise(retreatrate, retreatrate, retreattype, changetime, beachwidth, beachtype, bermheight, platformgradient, cliffheight, junctionelevation, slr, tidalamplitude, steppedplatform, stepsize, WhichNuclides);
 }
 	
-void RockyCoastCRN::Initialise(double retreatrate1, double retreatrate2, int retreattype, double changetime, double beachwidth, int beachtype, double bermheight, double platformgradient, double cliffheight, double junctionelevation, double SLR, double tidalamplitude, int steppedplatform, double stepsize)
+void RockyCoastCRN::Initialise(double retreatrate1, double retreatrate2, int retreattype, double changetime, double beachwidth, int beachtype, double bermheight, double platformgradient, double cliffheight, double junctionelevation, double tidalamplitude, double SLR, int steppedplatform, double stepsize, vector<int> WhichNuclides)
 {
   /* initialise a platform object for two retreat rate scenarios
   retreatrate1 runs from 7.5ka until changetime, after which retreatrate2 continues to present
@@ -185,11 +187,11 @@ void RockyCoastCRN::Initialise(double retreatrate1, double retreatrate2, int ret
 	tidalamplitude is the average tidal amplitude for diurnal tides. */
 	
 	//Geometric parameters
-	NXNodes = 201;											//Number of nodes in cross shore
-	NZNodes = 201;											//Number of nodes in profile
+	NXNodes = 201;								//Number of nodes in cross shore
+	NZNodes = 201;								//Number of nodes in profile
 	PlatformWidth = 1000.;						//width of model domain (m)
-	PlatformDepth = 20.;							//Depth to which CRN will be tracked (needs to be large enough that sea level rise is ok)
-	NDV = -9999;											//Place holder for no data
+	PlatformDepth = 20.;						//Depth to which CRN will be tracked (needs to be large enough that sea level rise is ok)
+	NDV = -9999;								//Place holder for no data
 	
 	//Assign Parameters
 	RetreatRate1 = retreatrate1;
@@ -217,10 +219,16 @@ void RockyCoastCRN::Initialise(double retreatrate1, double retreatrate2, int ret
 		
 	//initialise tides, geomag and RSL data
 	InitialiseTides(TidalAmplitude,TidalPeriod);
+	
 	//InitialiseGeomagData();
 	//InitialiseRSLData();
+	
 	//Initialise Geomagnetic Scaling as constant
 	GeoMagScalingFactor = 1;
+	
+	//Initialise the nuclides
+	InitialiseNuclides(WhichNuclides);
+	
 	//Initialise Platform
 	InitialisePlanarPlatformMorphology();
 }
@@ -451,6 +459,7 @@ void RockyCoastCRN::InitialisePlanarPlatformMorphology()
 	vector<double> EmptyXNDV(NXNodes,NDV);
 	X = EmptyX;
 	Z = EmptyZ;
+	BeachThickness = EmptyZ;
 	PlatformElevation = EmptyXNDV;
 	PlatformElevationOld = EmptyXNDV;
 	SurfaceElevation = EmptyXNDV;
@@ -582,21 +591,7 @@ void RockyCoastCRN::RunModel(string outfilename, int WriteResultsFlag)
 	OutFileName = outfilename;
 
 	//Setup Surface Arrays
-	vector<double> EmptyZ(NZNodes,0);
-	vector<double> EmptyX(NXNodes,0);
-	vector<double> EmptyXNDV(NXNodes,NDV);
-	X = EmptyX;
-	Z = EmptyZ;
-	PlatformElevation = EmptyXNDV;
-	PlatformElevationOld = EmptyXNDV;
-	SurfaceElevation = EmptyXNDV;
-	vector< vector <double> > EmptySurfaceNs(NoNuclides,EmptyX);
-	SurfaceN = EmptySurfaceNs;
-	
-	//Setup CRN Arrays 	
-	vector< vector<double> > EmptyN(NXNodes,EmptyZ);
-	vector< vector< vector<double> > > EmptyNs(NoNuclides,EmptyN);
-	N = EmptyNs;
+	InitialisePlanarPlatformMorphology();
 	
 	//set Sea level parameters
 	//SLR = 0.0002;     //Rate of relative sea level rise (m/y)  
@@ -708,6 +703,7 @@ void RockyCoastCRN::RunModel(string outfilename, int WriteResultsFlag)
             WriteProfile(OutFileName, Time);
             WriteCRNProfile(OutFileName, Time);
             WriteTime -= WriteInterval;
+            cout << "Time is " << Time << " ka" << endl;
         }
     
 		//update cliff position and time
@@ -716,7 +712,7 @@ void RockyCoastCRN::RunModel(string outfilename, int WriteResultsFlag)
 		SeaLevel += SLRRate*dt;
 		if (CliffPositionX < X[CliffPositionInd]) CliffPositionInd -= 1;
 		//if (SeaLevel < Z[ZTrackInd]) ZTrackInd += 1;
-    if (CliffPositionInd < 0) CliffPositionInd = 0;
+        if (CliffPositionInd < 0) CliffPositionInd = 0;
     
 	}
 	

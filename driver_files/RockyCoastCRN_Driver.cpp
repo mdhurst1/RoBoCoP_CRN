@@ -25,17 +25,24 @@ int main()
 	double Amp = 2.4;                     //Tidal amplitude (1/2 tidal range)
 	double CliffHeight = 10.;             //Cliff height for shielding
 	double BeachWidth = 0.;               //Beach width (currently assumes total shielding)
-	double ElevInit = 0.;                 //Elevation of the platform/cliff junction
+	double BermHeight = 0.;
+	int BeachType = 0;                    // Constant beach width = 0
+	double ElevInit = 0.;                 // Elevation of the platform/cliff junction
+	double SeaLevelRise = 0.0;            // Rate of sea level rise
 	
 	int SteppedPlatformFlag = 0;          //Flag for a stepped platform (1 = steps, 0=no steps)
 	double StepSize = 0.0;                //size of step (0=no steps)
 	
+	//Set up which nuclides to track, 10 is 10Be, 14 is 14C, 26 is 26Al, 36 is 36Cl
+	vector<int> WhichNuclides;
+	WhichNuclides.push_back(10);
+	
 	//Create Platform CRN object
-	RockyCoastCRN RockyCoastCRNModel(RetreatRate1, RetreatRate2, RetreatType, ChangeTime, BeachWidth, PlatformGradient, CliffHeight, ElevInit, Amp, SteppedPlatformFlag, StepSize);
+	RockyCoastCRN RockyCoastCRNModel(RetreatRate1, RetreatRate2, RetreatType, ChangeTime, BeachWidth, BeachType, BermHeight, PlatformGradient, CliffHeight, ElevInit, Amp, SeaLevelRise, SteppedPlatformFlag, StepSize, WhichNuclides);
 
     //Run the model
     //First for no steps
-    string OutFileName = "NoSteps";
+    string OutFileName = "RockyCoastCRN.dat";
 	RockyCoastCRNModel.RunModel(OutFileName);
 	
 	cout << endl;
