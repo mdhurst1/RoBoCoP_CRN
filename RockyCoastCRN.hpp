@@ -250,7 +250,7 @@ class RockyCoastCRN
 		void InitialisePlanarPlatformMorphology();
 				
 		//function to retrieve topographic shielding factor
-		double GetTopographicShieldingFactor(double X, double CliffHeight);
+		double GetTopographicShieldingFactor(double Distance, double CliffHeight);
 		
 		//functions to read and retrieve geomagnetic scaling factor
 		void InitialiseGeomagData();		

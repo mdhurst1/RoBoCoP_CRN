@@ -800,7 +800,14 @@ void RockyCoastCRN::UpdateCRNs()
 			P_Muon_Fast[n][j] = Po_Muon_Fast[n];
 			P_Muon_Slow[n][j] = Po_Muon_Slow[n];
 		}
-			
+	}
+	
+	//LOOP Through the concentrations arrays
+	for (int j=0; j<NXNodes; ++j)
+	{	
+		//Get topographic shielding factor
+		TopoShieldingFactor = GetTopographicShieldingFactor(X[j]-CliffPositionX, CliffHeight);
+		
 		//Sort out the water shielding
 		if (SurfaceElevation[j] < SeaLevel+0.5*TidalRange)
 		{
@@ -837,7 +844,10 @@ void RockyCoastCRN::UpdateCRNs()
 				P_Muon_Slow[n][j] /= NTidalValues;
 			}
 		}
-		
+	}
+	//LOOP Through the concentrations arrays
+	for (int j=0; j<NXNodes; ++j)
+	{	
 		bool Top = false;
 		
 		for (int i=0; i<NZNodes; ++i)
@@ -867,9 +877,17 @@ void RockyCoastCRN::UpdateCRNs()
 					for (int n=0; n<NoNuclides; ++n)
 					{
 						//update concentration at the platform surface, accounting for beach cover
-						SurfaceN[n][j] = N[n][j][i];
-						Top = 1;
+						//SurfaceN[n][j] = N[n][j][i];
+						
+						//linearly interpolate to get concentration at the surface
+						if (PlatformElevationOld[j] == -9999) PlatformElevationOld[j] = SeaLevel+JunctionElevation;
+						else if (SurfaceN[n][j] > 0) SurfaceN[n][j] -= (((PlatformElevationOld[j]-PlatformElevation[j])/(PlatformElevationOld[j]-Z[i]))*(SurfaceN[n][j]-N[n][j][i]));
+						// Update surface concentrations
+						SurfaceN[n][j] += dt*P_Spal[n][j]*exp(0/z_rs);	//spallation
+					    SurfaceN[n][j] += dt*P_Muon_Fast[n][j]*exp(0/z_rm);	//muons
+					    SurfaceN[n][j] += dt*P_Muon_Slow[n][j]*exp(0/z_rm);	//muons
 					}
+					Top = 1;
 				}
 			}
 		}
@@ -1062,7 +1080,7 @@ void RockyCoastCRN::UpdateMorphology(vector<double> XCoast, vector<double> ZCoas
 	PlatformElevation = SurfaceElevation;
 }
 
-double RockyCoastCRN::GetTopographicShieldingFactor(double X, double CliffHeight)
+double RockyCoastCRN::GetTopographicShieldingFactor(double Distance, double CliffHeight)
 {
 	/* 
 	Function to calculate topographic shielding factor due to presence of a cliff.
@@ -1072,9 +1090,14 @@ double RockyCoastCRN::GetTopographicShieldingFactor(double X, double CliffHeight
 	October 2014
 	*/    
 
-	if (X == CliffPositionX-dX) return 0.5;
-	else if (CliffPositionX-X > 5*CliffHeight) return 1.0;
-	else if (X<CliffPositionX)
+    //if (X == CliffPositionX-dX) return 0.5;
+	//else if (CliffPositionX-X > 5*CliffHeight) return 1.0;
+	//else if (X<CliffPositionX)
+	
+	if (Distance < 0) return 1.0;
+	else if (Distance < dX) return 0.5;
+	else if (Distance > 5*CliffHeight) return 1.0;
+	else
 	{
 		//##### Cliff Shielding parameters #####
 		double d_theta_phi = (M_PI/180.)*5.0;				//azimuth and angle stepping
@@ -1085,13 +1108,12 @@ double RockyCoastCRN::GetTopographicShieldingFactor(double X, double CliffHeight
 
 		for (double Az=-90; Az<=90.; Az+= 5.) 
 		{
-		Viewshed = atan(CliffHeight*cos((M_PI/180.)*Az)/X);
-		F+= d_theta_phi*Po_10Be_Spal/(3.3)*pow(sin(Viewshed),3.3);
+		    Viewshed = atan(CliffHeight*cos((M_PI/180.)*Az)/Distance);
+		    F+= d_theta_phi*Po_10Be_Spal/(3.3)*pow(sin(Viewshed),3.3);
 		}
 
 		return (FMax-F)/FMax;
 	}
-	else return 0;
 }
 
 double RockyCoastCRN::GetGeoMagScalingFactor(double Time)
