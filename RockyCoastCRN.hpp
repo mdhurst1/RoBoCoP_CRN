@@ -208,6 +208,7 @@ class RockyCoastCRN
 		double CliffPositionX;        //tracks the cliff position in X (m)
 		int CliffPositionInd;         //tracks the index of the cliff position in X
 		double XMin, XMax;            //Extent of the model domain in X (m)
+		double ZMin, ZMax;
 		int ZTrackInd;
 				
 		//sea level parameters

@@ -87,13 +87,18 @@ void RockyCoastCRN::Initialise()
 
 void RockyCoastCRN::Initialise(vector<int> WhichNuclides)
 {
-  /* initialise an empty platform object
+    /* 
+    initialise an empty platform object
 	retreatrate is the rate of cliff retreat (m/yr)
 	beachwidth is the width of the beach (m), protecting the platform from CRN production
 	JunctionElevation is the elevation of the platform/cliff junction
 	platformgradient is the average slope of the platform surface (m/m) 
 	cliffheight is the height of the adjacent cliff (m)
-	tidalamplitude is the average tidal amplitude for diurnal tides. */
+	tidalamplitude is the average tidal amplitude for diurnal tides.
+	
+	I think this might now be obselete 13/6/18 MDH
+
+	*/
 	
 	cout << "Warning: You have initialised an empty RockCoastCRN object." << endl;
 	cout << "This is only appropriate when reading in platform morphology from a file" << endl;
@@ -111,8 +116,8 @@ void RockyCoastCRN::Initialise(vector<int> WhichNuclides)
 	
 	XMin = -1;
 	XMax = -1;
-	double ZMax = 5;
-  	double ZMin = -20;
+	ZMax = 20;
+  	ZMin = -20;
   	
   	//Cliff is at the start of the vector
 	CliffHeight = 10.;
@@ -184,13 +189,6 @@ void RockyCoastCRN::Initialise(double retreatrate1, double retreatrate2, int ret
 	platformgradient is the average slope of the platform surface (m/m) 
 	cliffheight is the height of the adjacent cliff (m)
 	tidalamplitude is the average tidal amplitude for diurnal tides. */
-	
-	//Geometric parameters
-	NXNodes = 201;								//Number of nodes in cross shore
-	NZNodes = 201;								//Number of nodes in profile
-	PlatformWidth = 1000.;						//width of model domain (m)
-	PlatformDepth = 20.;						//Depth to which CRN will be tracked (needs to be large enough that sea level rise is ok)
-	NDV = -9999;								//Place holder for no data
 	
 	//Assign Parameters
 	RetreatRate1 = retreatrate1;
@@ -453,7 +451,33 @@ void RockyCoastCRN::InitialiseNuclides(vector<int> WhichNuclides)
 
 void RockyCoastCRN::InitialisePlanarPlatformMorphology()
 {
- 	//Setup Surface Arrays
+ 	//Geometric parameters
+	dZ = 0.1;                           // Spacing of Elevation nodes
+	dX = 5.;                            // Horizontal node spacing
+	XMax = 1000.;						// width of model domain (m)
+	NDV = -9999;						// Place holder for no data
+	
+	//Work out start time from assumed cliff retreat rates.
+	if (RetreatType == 0) MaxTime = XMax/RetreatRate1;
+	else if (RetreatType == 1)
+	{
+	  double ChangeX = ChangeTime*RetreatRate2;
+	  MaxTime = ChangeTime + (XMax-ChangeX)/RetreatRate1;
+	}
+	else if (RetreatType == 2) MaxTime = 7000;
+	else 
+	{
+	  cout << "Retreat Type Unknown" << endl;
+	  exit(EXIT_SUCCESS);
+	}
+	
+	// Max elevation required set by sea level rise and change time
+	ZMax = MaxTime*SLRRate+JunctionElevation;
+	ZMin = -10.;
+	NZNodes = (int)(ZMax-ZMin)/dZ + 1;
+	NXNodes = (int)XMax/dX + 1;
+	
+	//Setup Surface Arrays
 	vector<double> EmptyZ(NZNodes,0);
 	vector<double> EmptyX(NXNodes,0);
 	vector<double> EmptyXNDV(NXNodes,NDV);
@@ -472,8 +496,8 @@ void RockyCoastCRN::InitialisePlanarPlatformMorphology()
 	N = EmptyNs;
 	
 	// Create initial morphology
-	for (int j=0; j<NZNodes; ++j) Z[j] = ((PlatformDepth/2.)-j*(PlatformDepth/(NZNodes-1)));
-	for (int i=0; i<NXNodes; ++i) X[i] = (i*(PlatformWidth/(NXNodes-1)));
+	for (int j=0; j<NZNodes; ++j) Z[j] = (ZMax-j*dZ);
+	for (int i=0; i<NXNodes; ++i) X[i] = i*dX;
 }
 
 void RockyCoastCRN::InitialiseTides(double A, double T)
@@ -590,15 +614,6 @@ void RockyCoastCRN::RunModel(string outfilename, int WriteResultsFlag)
 	//Filenames
 	OutFileName = outfilename;
 
-	//Setup Surface Arrays
-	InitialisePlanarPlatformMorphology();
-	
-	//set Sea level parameters
-	//SLR = 0.0002;     //Rate of relative sea level rise (m/y)  
-	SeaLevel = 0;			//Sea Level Tracker	
-	MeanBeachWidth = BeachWidth;
-	InitialBeachWidth = BeachWidth;
-	
 	//Time control
 	Time = 0;			//time in years
 	dt = 5;		    //time step
@@ -608,22 +623,14 @@ void RockyCoastCRN::RunModel(string outfilename, int WriteResultsFlag)
 	double WriteTime;
 	double WriteInterval = 1000;
 	
-	//Work out start time from assumed cliff retreat rates.
-	if (RetreatType == 0) MaxTime = XMax/RetreatRate1;
-	else if (RetreatType == 1)
-	{
-	  double ChangeX = ChangeTime*RetreatRate2;
-	  MaxTime = ChangeTime + (XMax-ChangeX)/RetreatRate1;
-	}
-	else if (RetreatType == 2) MaxTime = 7000;
-	else 
-	{
-	  cout << "Retreat Type Unknown" << endl;
-	  exit(EXIT_SUCCESS);
-	}
-
-  //limit start time to 10ka
-	//MaxTime = 10000;
+	    //Setup Surface Arrays
+	InitialisePlanarPlatformMorphology();
+	
+	//set Sea level parameters
+	SeaLevel = 0;			//Sea Level Tracker	
+	MeanBeachWidth = BeachWidth;
+	InitialBeachWidth = BeachWidth;
+	
 	
 	cout << "Start time is " << MaxTime << " ka" << endl;
 	Time = MaxTime;
@@ -716,8 +723,8 @@ void RockyCoastCRN::RunModel(string outfilename, int WriteResultsFlag)
     
 	}
 	
-	WriteProfile(OutFileName, Time);
-	WriteCRNProfile(OutFileName, Time);
+	WriteProfile(OutFileName, Time+dt);
+	WriteCRNProfile(OutFileName, Time+dt);
 	
   CliffPositionInd = 0;
   
@@ -779,6 +786,9 @@ void RockyCoastCRN::UpdateCRNs()
 	//LOOP Through the concentrations arrays
 	for (int j=0; j<NXNodes; ++j)
 	{	
+		//skip if we're on non existant topography
+		if (SurfaceElevation[j] == NDV) continue;
+		
 		//Get topographic shielding factor
 		TopoShieldingFactor = GetTopographicShieldingFactor(X[j]-CliffPositionX, CliffHeight);
 		
@@ -1039,7 +1049,7 @@ void RockyCoastCRN::UpdateMorphology(vector<double> XCoast, vector<double> ZCoas
 	PlatformElevationOld = PlatformElevation;
   
 	// may come back and add dynamic growth of CRN model later
-//	// Add nodes to front of RockyCoastCRN as required
+	// Add nodes to front of RockyCoastCRN as required
 //	vector<double> EmptyZ(NZNodes,0.0);
 //	while (XMin < X[0]) 
 //	{
