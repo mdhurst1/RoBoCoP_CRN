@@ -130,7 +130,7 @@ double MCMC_RockyCoast::CalculateLikelihood()
 	   
 	//declarations
 	double DiffX, Scale;
-	double Likelihood = 1;
+	long double Likelihood = 1.L;
 
   //Work out the resulting model predictions
 	XDataModel = MCMCPlatformCRN.get_X();
@@ -170,8 +170,9 @@ double MCMC_RockyCoast::RunCoastIteration(double RetreatRate1_Test, double Retre
 	    Martin Hurst, March 2015 */
 	    
 	//Run a coastal iteration
+	int WriteResultsFlag = 0;
 	MCMCPlatformCRN.UpdateParameters(RetreatRate1_Test, RetreatRate2_Test, ChangeTime_Test, BeachWidth_Test, ElevInit_Test);
-	MCMCPlatformCRN.RunModel(RetreatType);
+	MCMCPlatformCRN.RunModel(RetreatType,WriteResultsFlag);
 	
 	//Calculate likelihood
 	return CalculateLikelihood();
