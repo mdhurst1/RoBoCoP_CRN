@@ -208,6 +208,7 @@ void RockyCoastCRN::Initialise(double retreatrate1, double retreatrate2, int ret
 	JunctionElevation = junctionelevation;
 	SLRRate = SLR;
 	TidalAmplitude = tidalamplitude;
+	TidalRange = 2.*TidalAmplitude;
 	
 	SteppedPlatform = steppedplatform;
 	StepSize = stepsize;
@@ -778,39 +779,21 @@ void RockyCoastCRN::UpdateCRNs()
 
 	//LOOP Through the concentrations arrays
 	for (int j=0; j<NXNodes; ++j)
-	{
-		//Get topographic shielding factor
-		TopoShieldingFactor = GetTopographicShieldingFactor(X[j]-CliffPositionX, CliffHeight);
-		
-		//FOR EACH NUCLIDE OF INTEREST SET SURFACE PRODUCTION RATES
-		//Add in here if we're close enough to the cliff we're going to need some extra production'
-		
-		for (int n=0; n<NoNuclides; ++n)
-		{
-//			CliffDepth = X[j]-CliffPositionX;
-//			if ((CliffDepth > 0) && (CliffDepth < 3.))
-//			{
-//				P_Cliff = 0.5*Po_Spal[n]*(1+exp((Z[i]-SurfaceElevation[j])/z_rs));
-//				P_Spal[n][j] = P_Cliff*exp(CliffDepth/z_rs)
-//			}
-//			else
-//			{
-//				P_Spal[n][j] = Po_Spal[n];
-//			}
-			P_Spal[n][j] = Po_Spal[n];
-			P_Muon_Fast[n][j] = Po_Muon_Fast[n];
-			P_Muon_Slow[n][j] = Po_Muon_Slow[n];
-		}
-	}
-	
-	//LOOP Through the concentrations arrays
-	for (int j=0; j<NXNodes; ++j)
 	{	
 		//Get topographic shielding factor
 		TopoShieldingFactor = GetTopographicShieldingFactor(X[j]-CliffPositionX, CliffHeight);
 		
-		//Sort out the water shielding
-		if (SurfaceElevation[j] < SeaLevel+0.5*TidalRange)
+		//Sort out the water shielding to set surface production rates
+		if (SurfaceElevation[j] > SeaLevel+TidalAmplitude)
+		{
+		    for (int n=0; n<NoNuclides; ++n)
+			{
+			    P_Spal[n][j] = Po_Spal[n];
+			    P_Muon_Fast[n][j] = Po_Muon_Fast[n];
+			    P_Muon_Slow[n][j] = Po_Muon_Slow[n];
+			}
+		}
+		else
 		{
 			//if under water calculate production modified for water depth
 			for (int n=0; n<NoNuclides; ++n)
