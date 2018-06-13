@@ -123,14 +123,14 @@ void MCMC_RockyCoast::Initialise(char* CRNDatafile, char* PlatformXSectionDatafi
   RockyCoastCRN MCMCRockyCoastCRN = RockyCoastCRN();  
 }
 
-double MCMC_RockyCoast::CalculateLikelihood()
+long double MCMC_RockyCoast::CalculateLikelihood()
 {
 	/* Function to calculate the likelihood by comparing measured and modelled data
 	   Martin Hurst, March 2015 */
 	   
 	//declarations
 	double DiffX, Scale;
-	double Likelihood = 1;
+	long double Likelihood = 1.L;
 
   //Work out the resulting model predictions
 	XDataModel = MCMCPlatformCRN.get_X();
@@ -163,15 +163,16 @@ double MCMC_RockyCoast::CalculateLikelihood()
 
 
 
-double MCMC_RockyCoast::RunCoastIteration(double RetreatRate1_Test, double RetreatRate2_Test, double ChangeTime_Test, double BeachWidth_Test, double ElevInit_Test, int RetreatType)
+long double MCMC_RockyCoast::RunCoastIteration(double RetreatRate1_Test, double RetreatRate2_Test, double ChangeTime_Test, double BeachWidth_Test, double ElevInit_Test, int RetreatType)
 {
 	/* runs a single instance of the RockyCostCRN model, then report 
 	    the likelihood of the parameters 
 	    Martin Hurst, March 2015 */
 	    
 	//Run a coastal iteration
+	int WriteResultsFlag = 0;
 	MCMCPlatformCRN.UpdateParameters(RetreatRate1_Test, RetreatRate2_Test, ChangeTime_Test, BeachWidth_Test, ElevInit_Test);
-	MCMCPlatformCRN.RunModel(RetreatType);
+	MCMCPlatformCRN.RunModel(RetreatType,WriteResultsFlag);
 	
 	//Calculate likelihood
 	return CalculateLikelihood();
@@ -191,9 +192,9 @@ void MCMC_RockyCoast::RunMetropolisChain(int NIterations, char* ParameterFilenam
      Martin Hurst, January 2015 */
   
 	//Declarations
-	double LastLikelihood;			//Last accepted likelihood
-	double NewLikelihood;				//New likelihood
-	double LikelihoodRatio;			//Ratio between last and new likelihoods
+	long double LastLikelihood = 0.L;			//Last accepted likelihood
+	long double NewLikelihood = 0.L;				//New likelihood
+	long double LikelihoodRatio = 0.L;			//Ratio between last and new likelihoods
 	double AcceptanceProbability; //New iteration is accepted if likelihood ratio exceeds
 	
 	int RetreatType;        //Style of cliff retreat 0 = single rate, 1 = step change in rates, 2 = linear change in rates

@@ -11,8 +11,8 @@ LD=g++
 # -pg does what?!
 # -O3 is an optimisation flag, not good for debugging
 
-CFLAGS= -g -c -Wall -pg -O3 -fopenmp  $(INCDIR)
-LDFLAGS= -g -Wall -pg -O3 -fopenmp
+CFLAGS= -g -c -Wall -O3  $(INCDIR)
+LDFLAGS= -g -Wall -O3
 
 # SOURCE FILES MACROS IN DEPENDENCY ORDER? SHOULDNT MATTER THANKS TO HEADERS
 SOURCES = ./MCMC_RockyCoast_Driver.cpp ./MCMC_RockyCoast.cpp ./RockyCoastCRN.cpp
@@ -34,3 +34,5 @@ $(EXECUTABLE): $(OBJECTS)
 .cpp.o:
 	$(CC) $(CFLAGS) $< -o $@
 
+clean:
+	rm -f ../*.o *.o *.out *.exe

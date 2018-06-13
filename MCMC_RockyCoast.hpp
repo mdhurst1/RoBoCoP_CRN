@@ -109,10 +109,10 @@ class MCMC_RockyCoast
 		RockyCoastCRN MCMCPlatformCRN;
 		
 		// calcualtes the likelihood using measured and modelled data
-		double CalculateLikelihood();
+		long double CalculateLikelihood();
 		
 		// runs a single iteration of the coastal model, then reports the likelihood of the parameters
-		double RunCoastIteration(double RetreatRate1_Test, double RetreatRate2_Test, double ChangeTime_Test, double BeachWidth_Test, double ElevInit_Test, int RetreatType);
+		long double RunCoastIteration(double RetreatRate1_Test, double RetreatRate2_Test, double ChangeTime_Test, double BeachWidth_Test, double ElevInit_Test, int RetreatType);
 
 	public:
 	
