@@ -966,8 +966,12 @@ void RockyCoastCRN::UpdateMorphology(RoBoCoP RoBoCoPCoast)
     SurfaceElevation.insert(SurfaceElevation.begin(), NDV);
     PlatformElevation.insert(PlatformElevation.begin(), NDV);
     PlatformElevationOld.insert(PlatformElevationOld.begin(), NDV);
-    SurfaceN.insert(SurfaceN.begin(),0);
-    N.insert(N.begin(),EmptyZ);
+    
+    for (int n=0; n<NoNuclides; ++n)
+	{
+        SurfaceN[n].insert(SurfaceN[n].begin(),0);
+        N[n].insert(N[n].begin(),EmptyZ);
+	}
     ++NXNodes;
   }
   
