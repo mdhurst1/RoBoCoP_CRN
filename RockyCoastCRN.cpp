@@ -162,7 +162,7 @@ void RockyCoastCRN::Initialise(vector<int> WhichNuclides)
 	SeaLevel = 0;
 }
 
-void RockyCoastCRN::Initialise(double retreatrate, double beachwidth, int beachtype, double bermheight, double platformgradient, double cliffheight, double junctionelevation, double tidalamplitude, double slr, int steppedplatform, double stepsize, vector<int> WhichNuclides)
+void RockyCoastCRN::Initialise(double retreatrate, double beachwidth, int beachtype, double bermheight, double platformgradient, double cliffheight, double cliffgradient, double junctionelevation, double tidalamplitude, double slr, int steppedplatform, double stepsize, vector<int> WhichNuclides)
 {
 	/* initialise a platform object for single retreat rate scenarios
 	retreatrate is the rate of cliff retreat (m/yr)
@@ -174,10 +174,10 @@ void RockyCoastCRN::Initialise(double retreatrate, double beachwidth, int beacht
 	tidalamplitude is the average tidal amplitude for diurnal tides. */
 	int retreattype = 0;
   double changetime = 0;
-	Initialise(retreatrate, retreatrate, retreattype, changetime, beachwidth, beachtype, bermheight, platformgradient, cliffheight, junctionelevation, slr, tidalamplitude, steppedplatform, stepsize, WhichNuclides);
+	Initialise(retreatrate, retreatrate, retreattype, changetime, beachwidth, beachtype, bermheight, platformgradient, cliffheight, cliffgradient, junctionelevation, slr, tidalamplitude, steppedplatform, stepsize, WhichNuclides);
 }
 	
-void RockyCoastCRN::Initialise(double retreatrate1, double retreatrate2, int retreattype, double changetime, double beachwidth, int beachtype, double bermheight, double platformgradient, double cliffheight, double junctionelevation, double tidalamplitude, double SLR, int steppedplatform, double stepsize, vector<int> WhichNuclides)
+void RockyCoastCRN::Initialise(double retreatrate1, double retreatrate2, int retreattype, double changetime, double beachwidth, int beachtype, double bermheight, double platformgradient, double cliffheight, double cliffgradient, double junctionelevation, double tidalamplitude, double SLR, int steppedplatform, double stepsize, vector<int> WhichNuclides)
 {
   /* initialise a platform object for two retreat rate scenarios
   retreatrate1 runs from 7.5ka until changetime, after which retreatrate2 continues to present
@@ -197,6 +197,7 @@ void RockyCoastCRN::Initialise(double retreatrate1, double retreatrate2, int ret
 	ChangeTime = changetime;
 	PlatformGradient = platformgradient;
 	CliffHeight = cliffheight;
+	CliffGradient = cliffgradient;
 	BeachWidth = beachwidth;
 	MeanBeachWidth = BeachWidth;
 	InitialBeachWidth = BeachWidth;
@@ -1091,6 +1092,9 @@ double RockyCoastCRN::GetTopographicShieldingFactor(double Distance, double Clif
     //if (X == CliffPositionX-dX) return 0.5;
 	//else if (CliffPositionX-X > 5*CliffHeight) return 1.0;
 	//else if (X<CliffPositionX)
+	
+	//
+	Distance += CliffHeight/CliffGradient;
 	
 	if (Distance < 0) return 1.0;
 	else if (Distance < dX) return 0.5;

@@ -23,6 +23,7 @@ int main()
 	double PlatformGradient = 1./50.;    //Platform gradient (average if stepped platform)
 	double Amp = 4;                     //Tidal amplitude (1/2 tidal range)
 	double CliffHeight = 35.;             //Cliff height for shielding
+	double CliffGradient = 25./35.;       // slope of the coastal bluff
 	double BeachWidth = 2.;               //Beach width 
 	double BermHeight = 0.;
 	int BeachType = 0;                    // Constant beach width = 0
@@ -37,7 +38,7 @@ int main()
 	WhichNuclides.push_back(10);
 	
 	//Create Platform CRN object
-	RockyCoastCRN RockyCoastCRNModel(RetreatRate1, RetreatRate2, RetreatType, ChangeTime, BeachWidth, BeachType, BermHeight, PlatformGradient, CliffHeight, ElevInit, Amp, SeaLevelRise, SteppedPlatformFlag, StepSize, WhichNuclides);
+	RockyCoastCRN RockyCoastCRNModel(RetreatRate1, RetreatRate2, RetreatType, ChangeTime, BeachWidth, BeachType, BermHeight, PlatformGradient, CliffHeight, CliffGradient, ElevInit, Amp, SeaLevelRise, SteppedPlatformFlag, StepSize, WhichNuclides);
 
     //Run the model
     //First for no steps
