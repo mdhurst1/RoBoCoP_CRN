@@ -15,7 +15,7 @@ using namespace std;
 int main()
 {
 	//Input parameters
-	double RetreatRate1 = 0.08;            //Retreat Rate (m/yr) at the start of the model run
+	double RetreatRate1 = 0.05;            //Retreat Rate (m/yr) at the start of the model run
 	double RetreatRate2 = 0.2;            //Retreat Rate (m/yr) at the end of the model run
 	int RetreatType = 0;	                //Scenario of retreat 0 = constant, 1 = step change, 2 = gradual change
 	double ChangeTime = 0;                //Time to change retreat rates if a step change (years))
@@ -40,6 +40,10 @@ int main()
 	//Create Platform CRN object
 	RockyCoastCRN RockyCoastCRNModel(RetreatRate1, RetreatRate2, RetreatType, ChangeTime, BeachWidth, BeachType, BermHeight, PlatformGradient, CliffHeight, CliffGradient, ElevInit, Amp, SeaLevelRise, SteppedPlatformFlag, StepSize, WhichNuclides);
 
+    // Read in sea level data ? //comment out these two lines for constant RSL change
+    string RSLFilename = "Bradley_GIAModel_Sussex.data";
+    RockyCoastCRNModel.InitialiseRSLData(RSLFilename);
+    
     //Run the model
     //First for no steps
     string OutFileName = "RockyCoastCRN.dat";

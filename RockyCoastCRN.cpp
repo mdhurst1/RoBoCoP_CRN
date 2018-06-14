@@ -219,9 +219,6 @@ void RockyCoastCRN::Initialise(double retreatrate1, double retreatrate2, int ret
 	//initialise tides, geomag and RSL data
 	InitialiseTides(TidalAmplitude,TidalPeriod);
 	
-	//InitialiseGeomagData();
-	//InitialiseRSLData();
-	
 	//Initialise Geomagnetic Scaling as constant
 	GeoMagScalingFactor = 1;
 	
@@ -472,8 +469,10 @@ void RockyCoastCRN::InitialisePlanarPlatformMorphology()
 	  exit(EXIT_SUCCESS);
 	}
 	
+	if (MaxTime > 7000) MaxTime = 7000;
+	
 	// Max elevation required set by sea level rise and change time
-	ZMax = MaxTime*SLRRate+JunctionElevation;
+	ZMax = MaxTime*0.002+JunctionElevation;
 	ZMin = -10.;
 	NZNodes = (int)(ZMax-ZMin)/dZ + 1;
 	NXNodes = (int)XMax/dX + 1;
@@ -542,33 +541,33 @@ void RockyCoastCRN::InitialiseGeomagData()
 	}
 }
 
-void RockyCoastCRN::InitialiseRSLData()
+void RockyCoastCRN::InitialiseRSLData(string RSLFilename)
 {
 	//AND RELATIVE SEALEVEL
 	double indata;
 	char Dummy[32];
 	
-	//read in RSL data from Bradley et al. (2011) model
-	string GIAFilename = "Bradley_GIAModel_Sussex.data";
-	ifstream GIAIn(GIAFilename.c_str());
-	if (!GIAIn)
+	//read in RSL data
+	ifstream RSLIn(RSLFilename.c_str());
+	if (!RSLIn)
 	{
-	  printf("RockyCoastCRN::%s: line %d Relative Sea Level data file \"%s\" doesn't exist\n\n", __func__, __LINE__, GIAFilename.c_str());
+	  printf("RockyCoastCRN::%s: line %d Relative Sea Level data file \"%s\" doesn't exist\n\n", __func__, __LINE__, RSLFilename.c_str());
 	  printf("Setting Realtive Sea Level to zero");
 	}
 	else
 	{
-		GIAIn >> Dummy;
-		GIAIn >> Dummy;
-		while (!GIAIn.eof())
+		RSLIn >> Dummy;
+		RSLIn >> Dummy;
+		while (!RSLIn.eof())
 		{
-		  GIAIn >> indata;
+		  RSLIn >> indata;
 		  RSLTime.push_back(indata);
-		  GIAIn >> indata;
+		  RSLIn >> indata;
 		  RSLRate.push_back(indata);
 		}
-		GIAIn.close();
+		RSLIn.close();
 	}
+	SLRRate = NDV;
 }
 	
 void RockyCoastCRN::UpdateParameters( double RetreatRate1_Test, double RetreatRate2_Test, 
@@ -696,8 +695,8 @@ void RockyCoastCRN::RunModel(string outfilename, int WriteResultsFlag)
 		//Get geomag scaling factor
 		GeoMagScalingFactor = GetGeoMagScalingFactor(Time);
 		
-		//Get sea level rise from local record
-		//SLR = GetSeaLevelRise(Time);
+		
+		
 		
         //update CRN concentrations
         UpdateCRNs();
@@ -714,10 +713,19 @@ void RockyCoastCRN::RunModel(string outfilename, int WriteResultsFlag)
             cout << "Time is " << Time << " ka" << endl;
         }
     
+        //Get sea level rise from local record
+		if (SLRRate == NDV)
+		{
+		    SeaLevel += GetSeaLevelRise(Time)*dt;
+		}
+		else
+		{
+		    SeaLevel += SLRRate*dt;		
+		}
+		
 		//update cliff position and time
 		CliffPositionX -= RetreatRate*dt;
 		Time -= dt;
-		SeaLevel += SLRRate*dt;
 		if (CliffPositionX < X[CliffPositionInd]) CliffPositionInd -= 1;
 		//if (SeaLevel < Z[ZTrackInd]) ZTrackInd += 1;
         if (CliffPositionInd < 0) CliffPositionInd = 0;

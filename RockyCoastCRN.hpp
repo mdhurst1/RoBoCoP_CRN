@@ -259,7 +259,6 @@ class RockyCoastCRN
 		double GetGeoMagScalingFactor(double Time);
 		
 		//factor to retrieve a rate of sea level rise
-		void InitialiseRSLData();
 		double GetSeaLevelRise(double Time);
 		
 		//function to get sinusoid beachwidth through time
@@ -468,6 +467,10 @@ class RockyCoastCRN
 		/// @date 14/09/2015
 		//vector<double> get_SurfaceN() const { return SurfaceN; }
 		
+		/// @brief Initialise Relative Sea Level history fro ma file
+		///	@author Martin D. Hurst 
+		/// @date 14/06/2018
+		void InitialiseRSLData(string RSLFilename);
 };
 
 #endif
