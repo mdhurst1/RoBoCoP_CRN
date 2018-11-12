@@ -624,7 +624,7 @@ void RockyCoastCRN::RunModel(string outfilename, int WriteResultsFlag)
 	double WriteTime;
 	double WriteInterval = 1000;
 	
-	    //Setup Surface Arrays
+	//Setup Surface Arrays
 	InitialisePlanarPlatformMorphology();
 	
 	//set Sea level parameters
@@ -633,7 +633,7 @@ void RockyCoastCRN::RunModel(string outfilename, int WriteResultsFlag)
 	InitialBeachWidth = BeachWidth;
 	
 	
-	cout << "Start time is " << MaxTime << " ka" << endl;
+	cout << "Start time is " << MaxTime << " y" << endl;
 	Time = MaxTime;
 	WriteTime = MaxTime;
 	
@@ -655,6 +655,7 @@ void RockyCoastCRN::RunModel(string outfilename, int WriteResultsFlag)
 	ZTrackInd = 0;
 	
 	double TempBeachThickness;
+	int BeachFlag = 1;
 	
 	for (int i=0; i<NXNodes; ++i)
 	{
@@ -667,13 +668,19 @@ void RockyCoastCRN::RunModel(string outfilename, int WriteResultsFlag)
 	    //update beach thickness
 	    if ((X[i]-CliffPositionX) < BeachWidth) TempBeachThickness = JunctionElevation+BermHeight-PlatformElevation[i];
 	    else TempBeachThickness = (JunctionElevation+BermHeight-A*pow((X[i]-CliffPositionX-BeachWidth),2./3.)) - PlatformElevation[i];
-	    if (TempBeachThickness > 0) BeachThickness[i] = TempBeachThickness;
-	    else BeachThickness[i] = 0;	    
+	    if (TempBeachThickness > 0 && BeachFlag == 1) BeachThickness[i] = TempBeachThickness;
+	    else
+		{
+			// need to flag when we've got to bottom of beach here
+			BeachFlag = 0;
+			BeachThickness[i] = 0;
+		}
 	  }
 	  else CliffPositionInd = i;
 	  
 	  SurfaceElevation[i] = PlatformElevation[i]+BeachThickness[i];
 	}
+
   PlatformElevationOld = PlatformElevation;
   
   
@@ -696,10 +703,7 @@ void RockyCoastCRN::RunModel(string outfilename, int WriteResultsFlag)
 		//Get geomag scaling factor
 		GeoMagScalingFactor = GetGeoMagScalingFactor(Time);
 		
-		
-		
-		
-        //update CRN concentrations
+		//update CRN concentrations
         UpdateCRNs();
 
         //update morphology
@@ -711,18 +715,20 @@ void RockyCoastCRN::RunModel(string outfilename, int WriteResultsFlag)
             WriteProfile(OutFileName, Time);
             WriteCRNProfile(OutFileName, Time);
             WriteTime -= WriteInterval;
-            cout << "Time is " << Time << " ka" << endl;
-			cout << "Sea level is " << SeaLevel << " (m)" << endl;
+            cout << "Time is " << Time << " y" << endl;
+			//cout << "Sea level is " << SeaLevel << " (m)" << endl;
         }
     
         //Get sea level rise from local record
 		if (SLRRate == NDV)
 		{
-		    SeaLevel += GetSeaLevelRise(Time)*dt;
+		    SeaLevelChange = GetSeaLevelRise(Time)*dt;
+			SeaLevel += SeaLevelChange;
 		}
 		else
 		{
-		    SeaLevel += SLRRate*dt;		
+		    SeaLevelChange = SLRRate*dt;
+			SeaLevel += SeaLevelChange;
 		}
 		
 		//update cliff position and time
@@ -880,16 +886,18 @@ void RockyCoastCRN::UpdateCRNs()
 				{
 					for (int n=0; n<NoNuclides; ++n)
 					{
-						//update concentration at the platform surface, accounting for beach cover
-						//SurfaceN[n][j] = N[n][j][i];
-						
-						//linearly interpolate to get concentration at the surface
-						if (PlatformElevationOld[j] == -9999) PlatformElevationOld[j] = SeaLevel+JunctionElevation;
-						else if (SurfaceN[n][j] > 0) SurfaceN[n][j] -= (((PlatformElevationOld[j]-PlatformElevation[j])/(PlatformElevationOld[j]-Z[i]))*(SurfaceN[n][j]-N[n][j][i]));
 						// Update surface concentrations
 						SurfaceN[n][j] += dt*P_Spal[n][j]*exp(0/z_rs);	//spallation
 					    SurfaceN[n][j] += dt*P_Muon_Fast[n][j]*exp(0/z_rm);	//muons
 					    SurfaceN[n][j] += dt*P_Muon_Slow[n][j]*exp(0/z_rm);	//muons
+
+						//linearly interpolate to get concentration at the surface
+						//if (PlatformElevationOld[j] == -9999) PlatformElevationOld[j] = SeaLevel+JunctionElevation;
+						if (PlatformElevation[j] < PlatformElevationOld[j]) SurfaceN[n][j] -= (((PlatformElevationOld[j]-PlatformElevation[j])/(PlatformElevationOld[j]-Z[i]))*(SurfaceN[n][j]-N[n][j][i]));
+						if (isnan(SurfaceN[n][j]))
+						{
+							cout << "NANANANAN HERE!!!" << endl;
+						}
 					}
 					Top = 1;
 				}
@@ -910,6 +918,7 @@ void RockyCoastCRN::UpdateEquillibriumMorphology()
   
   //temp parameters
   double TempPlatformElevChange, TempBeachThickness;
+	int BeachFlag = 1;
 	
   //Update surface elevations
   PlatformElevationOld = PlatformElevation;
@@ -927,7 +936,7 @@ void RockyCoastCRN::UpdateEquillibriumMorphology()
 			{
 				if (SteppedPlatform == 0) 
 				{
-				  TempPlatformElevChange = dt*(RetreatRate*PlatformGradient-SLRRate);
+				  TempPlatformElevChange = dt*RetreatRate*PlatformGradient-SeaLevelChange;
 				  if (TempPlatformElevChange < 0) TempPlatformElevChange = 0;
 				  PlatformElevation[i] -= TempPlatformElevChange;
 				}
@@ -937,14 +946,18 @@ void RockyCoastCRN::UpdateEquillibriumMorphology()
 				  PlatformElevation[i] = round(PlatformElevation[i]/StepSize)*StepSize;
 				}
 			}
-			
-	    //update beach thickness
-	    if ((X[i]-CliffPositionX) < BeachWidth) TempBeachThickness = JunctionElevation+BermHeight-PlatformElevation[i];
-	    else TempBeachThickness = BermHeight-A*pow((X[i]-CliffPositionX-BeachWidth),2./3.);
+		
+			//update beach thickness
+		    if ((X[i]-CliffPositionX) < BeachWidth) TempBeachThickness = JunctionElevation+BermHeight-PlatformElevation[i];
+		    else TempBeachThickness = (JunctionElevation+BermHeight-A*pow((X[i]-CliffPositionX-BeachWidth),2./3.)) - PlatformElevation[i];
+		    if (TempBeachThickness > 0 && BeachFlag == 1) BeachThickness[i] = TempBeachThickness;
+		    else
+			{
+				// need to flag when we've got to bottom of beach here
+				BeachFlag = 0;
+				BeachThickness[i] = 0;
+			}
 
-	    if (TempBeachThickness > 0) BeachThickness[i] = TempBeachThickness;
-	    else BeachThickness[i] = 0;	    
-	    
 	    SurfaceElevation[i] = PlatformElevation[i]+BeachThickness[i];
 		}
 	}
@@ -1187,7 +1200,7 @@ double RockyCoastCRN::GetSeaLevelRise(double Time)
 		Factor = (Time-RSLTime[ind-1])/(RSLTime[ind]-RSLTime[ind-1]);
 		Rate = RSLRate[ind-1]+Factor*(RSLRate[ind]-RSLRate[ind-1]);
 
-		return -Rate;
+		return Rate;
 	}
 }
 

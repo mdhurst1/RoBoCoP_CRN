@@ -7,7 +7,7 @@ Created on Mon Feb  8 15:10:34 2016
 
 #import modules
 import matplotlib
-matplotlib.use('Agg')
+#matplotlib.use('Agg')
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -21,49 +21,44 @@ ax2 = fig.add_subplot(212)
 # choose colour map
 ColourMap = cm.copper
 
-# List of erosion rates
-Rates = [0.08]
+# get filename
+FileName = "../driver_files/RockyCoastCRN.dat"
 
-for Rate in Rates:
+# open the file
+f = open(FileName,'r')
 
-	# get filename
-	FileName = "../driver_files/RockyCoastCRN_"+str(Rate)+"m.dat"
+# get the lines and find out how many lines
+Lines = f.readlines()
+NoLines = len(Lines)
 
-	# open the file
-	f = open(FileName,'r')
+#Get header info and setup X coord
+Header = Lines[0].strip().split(" ")
+NXNodes = float(Header[0])
+PlatformWidth = float(Header[1])
 
-	# get the lines and find out how many lines
-	Lines = f.readlines()
-	NoLines = len(Lines)
+MaxTime = float(Lines[1].strip().split(" ")[0])
 
-	#Get header info and setup X coord
-	Header = Lines[0].strip().split(" ")
-	NXNodes = float(Header[0])
-	PlatformWidth = float(Header[1])
-
-	MaxTime = float(Lines[1].strip().split(" ")[0])
+for i in range(1,NoLines,3):
     
-	#Get data  
-	XLine = Lines[-3].strip().split(" ")  
-	ZLine = Lines[-2].strip().split(" ")
-	NLine = Lines[-1].strip().split(" ")
-	Time = float(ZLine[0])
-	X = np.array(XLine[1:],dtype="float64")
-	Z = np.array(ZLine[1:],dtype="float64")
-	N = np.array(NLine[1:],dtype="float64")
+    #Get data  
+    X = np.array(Lines[i].strip().split(" ")[1:], dtype="float64")
+    Z = np.array(Lines[i+1].strip().split(" ")[1:], dtype="float64")
+    N = np.array(Lines[i+2].strip().split(" ")[1:], dtype="float64")
+    Time = float(Lines[i].strip().split(" ")[0])
     
-	#mask for NDVs
-	mask = Z != -9999
-	Zplot = Z[mask]
-	Xplot = X[mask]
-	Nplot = N[mask]
-    
-	Colour = (Rate-np.min(Rates))/(np.max(Rates)-np.min(Rates))
-	ax1.plot(Xplot,Zplot,'-',c=ColourMap(Colour))
-	ax2.plot(Xplot,Nplot,'-',c=ColourMap(Colour))
-    
+    #mask for NDVs
+    mask = Z != -9999
+    Zplot = Z[mask]
+    Xplot = X[mask]
+    Nplot = N[mask]
+
+    Colour = Time/MaxTime
+    ax1.plot(Xplot,Zplot,'-',c=ColourMap(Colour))
+    ax2.plot(Xplot,Nplot,'-',c=ColourMap(Colour))
+
 ax2.set_xlabel("Distance (m)")
 ax2.set_ylabel(r"$^{10}$Be Concentration")
 ax1.set_ylabel("Elevation (m)")
 
 plt.savefig("test_output_1.png", dpi=300)  
+plt.show()

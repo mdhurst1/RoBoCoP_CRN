@@ -213,7 +213,7 @@ class RockyCoastCRN
 		int ZTrackInd;
 				
 		//sea level parameters
-		double SeaLevel, SLRRate;
+		double SeaLevel, SLRRate, SeaLevelChange;
 		
 		//Scaling parameters
 		double GeoMagScalingFactor, TopoShieldingFactor;
