@@ -558,12 +558,13 @@ void RockyCoastCRN::InitialiseRSLData(string RSLFilename)
 	{
 		RSLIn >> Dummy;
 		RSLIn >> Dummy;
-		while (!RSLIn.eof())
+		while (true)
 		{
-		  RSLIn >> indata;
-		  RSLTime.push_back(indata);
-		  RSLIn >> indata;
-		  RSLRate.push_back(indata);
+		  	RSLIn >> indata;
+			if(RSLIn.eof() ) break;
+		  	RSLTime.push_back(indata);
+		  	RSLIn >> indata;
+		  	RSLRate.push_back(indata);
 		}
 		RSLIn.close();
 	}
@@ -711,6 +712,7 @@ void RockyCoastCRN::RunModel(string outfilename, int WriteResultsFlag)
             WriteCRNProfile(OutFileName, Time);
             WriteTime -= WriteInterval;
             cout << "Time is " << Time << " ka" << endl;
+			cout << "Sea level is " << SeaLevel << " (m)" << endl;
         }
     
         //Get sea level rise from local record
