@@ -162,7 +162,7 @@ void RockyCoastCRN::Initialise(vector<int> WhichNuclides)
 	SeaLevel = 0;
 }
 
-void RockyCoastCRN::Initialise(double retreatrate, double beachwidth, int beachtype, double bermheight, double platformgradient, double cliffheight, double cliffgradient, double junctionelevation, double tidalamplitude, double slr, int steppedplatform, double stepsize, vector<int> WhichNuclides)
+void RockyCoastCRN::Initialise(double retreatrate, double beachwidth, int beachtype, double bermheight, double beachsteepness, double platformgradient, double cliffheight, double cliffgradient, double junctionelevation, double tidalamplitude, double slr, int steppedplatform, double stepsize, vector<int> WhichNuclides)
 {
 	/* initialise a platform object for single retreat rate scenarios
 	retreatrate is the rate of cliff retreat (m/yr)
@@ -174,13 +174,14 @@ void RockyCoastCRN::Initialise(double retreatrate, double beachwidth, int beacht
 	tidalamplitude is the average tidal amplitude for diurnal tides. */
 	int retreattype = 0;
   double changetime = 0;
-	Initialise(retreatrate, retreatrate, retreattype, changetime, beachwidth, beachtype, bermheight, platformgradient, cliffheight, cliffgradient, junctionelevation, slr, tidalamplitude, steppedplatform, stepsize, WhichNuclides);
+	Initialise(retreatrate, retreatrate, retreattype, changetime, beachwidth, beachtype, bermheight, beachsteepness, platformgradient, cliffheight, cliffgradient, junctionelevation, slr, tidalamplitude, steppedplatform, stepsize, WhichNuclides);
 }
 	
 void RockyCoastCRN::Initialise( double retreatrate1, double retreatrate2, int retreattype, double changetime, 
-                                double beachwidth, int beachtype, double bermheight, double platformgradient, 
+                                double beachwidth, int beachtype, double bermheight, double beachsteepness, double platformgradient, 
                                 double cliffheight, double cliffgradient, double junctionelevation, double tidalamplitude, 
                                 double SLR, int steppedplatform, double stepsize, vector<int> WhichNuclides)
+
 {
     /* initialise a platform object for two retreat rate scenarios
     retreatrate1 runs from 7.5ka until changetime, after which retreatrate2 continues to present
@@ -191,6 +192,7 @@ void RockyCoastCRN::Initialise( double retreatrate1, double retreatrate2, int re
 	beachwidth is the width of the beach (m), protecting the platform from CRN production
     beachtype is a flag that allows beach width to vary through time 0 is constant, 1 is sine wave, 2 is thinning
     bermheight is the height of the beach above the platform at the cliff/junction angle
+    beachsteepness is the A parameter fro mthe Bruun profile controlling steepness of the beach
 	platformgradient is the average slope of the platform surface (m/m) 
 	cliffheight is the height of the adjacent cliff (m)
     cliff gradient is the gradient of the adjacent cliff
@@ -211,6 +213,7 @@ void RockyCoastCRN::Initialise( double retreatrate1, double retreatrate2, int re
 	InitialBeachWidth = BeachWidth;
 	BeachType = beachtype;
 	BermHeight = bermheight;
+    BruunA = beachsteepness;
 	PlatformGradient = platformgradient;
 	CliffHeight = cliffheight;
 	CliffGradient = cliffgradient;
@@ -677,7 +680,7 @@ void RockyCoastCRN::RunModel(string outfilename, int WriteResultsFlag)
 	    
 	    //update beach thickness
 	    if ((X[i]-CliffPositionX) < BeachWidth) TempBeachThickness = SeaLevel+JunctionElevation+BermHeight-PlatformElevation[i];
-	    else TempBeachThickness = (SeaLevel+JunctionElevation+BermHeight-A*pow((X[i]-CliffPositionX-BeachWidth),2./3.)) - PlatformElevation[i];
+	    else TempBeachThickness = (SeaLevel+JunctionElevation+BermHeight-BruunA*pow((X[i]-CliffPositionX-BeachWidth),2./3.)) - PlatformElevation[i];
 	    if (TempBeachThickness > 0 && BeachFlag == 1) BeachThickness[i] = TempBeachThickness;
 	    else
 		{
@@ -960,7 +963,7 @@ void RockyCoastCRN::UpdateEquillibriumMorphology()
 		
 			//update beach thickness
 		    if ((X[i]-CliffPositionX) < BeachWidth) TempBeachThickness = SeaLevel+JunctionElevation+BermHeight-PlatformElevation[i];
-		    else TempBeachThickness = (SeaLevel+JunctionElevation+BermHeight-A*pow((X[i]-CliffPositionX-BeachWidth),2./3.)) - PlatformElevation[i];
+		    else TempBeachThickness = (SeaLevel+JunctionElevation+BermHeight-BruunA*pow((X[i]-CliffPositionX-BeachWidth),2./3.)) - PlatformElevation[i];
 		    if (TempBeachThickness > 0 && BeachFlag == 1) BeachThickness[i] = TempBeachThickness;
 		    else
 			{
@@ -1269,6 +1272,11 @@ void RockyCoastCRN::WriteProfile(string OutputFileName, double Time)
 		WritePlatform << endl;
 		
 		//write SurfaceElevation
+		WritePlatform << Time;
+		for (int i=0; i<NXNodes; ++i) WritePlatform << setprecision(5) << " " << PlatformElevation[i];
+		WritePlatform << endl;
+
+        //write SurfaceElevation
 		WritePlatform << Time;
 		for (int i=0; i<NXNodes; ++i) WritePlatform << setprecision(5) << " " << SurfaceElevation[i];
 		WritePlatform << endl;

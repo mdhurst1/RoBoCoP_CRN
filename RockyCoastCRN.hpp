@@ -225,12 +225,13 @@ class RockyCoastCRN
 		int SteppedPlatform;
 		double StepSize;
 	
-	  //Beach profile stuff
-	  vector<double> BeachThickness;
-	  double InitialBeachWidth; //Initial value of beach width when using a thinning beach width
-	  double BeachWidth;      //Width of beach at BermHeight
-	  double MeanBeachWidth;  //Mean Width of Beach when using a variable beach width
+	    //Beach profile stuff
+	    vector<double> BeachThickness;
+	    double InitialBeachWidth; //Initial value of beach width when using a thinning beach width
+	    double BeachWidth;      //Width of beach at BermHeight
+	    double MeanBeachWidth;  //Mean Width of Beach when using a variable beach width
 		double BermHeight;      //Height of Berm
+        double BruunA;          //Beach steepness factor of bruun profile
 		int BeachType;          //Style of beach evolution, 0 = fixed beach, 1 = sinusoidal beach width, 2 = thinning beach width
 		double A;               //Sediment Scale Parameter in Bruun Profile (m^1/3)
 
@@ -239,8 +240,8 @@ class RockyCoastCRN
 		//Initialise Function
 		void Initialise();
 		void Initialise(vector<int> WhichNuclides);
-		void Initialise(double retreatrate, double beachwidth, int beachtype, double bermheight, double platformgradient, double cliffheight, double cliffgradient, double junctionelevation, double tidalamplitude, double slr, int steppedplatform, double stepsize, vector<int> WhichNuclides);
-		void Initialise(double retreatrate1, double retreatrate2, int retreattype, double changetime, double beachwidth, int beachtype, double bermheight, double platformgradient, double cliffheight, double cliffgradient, double junctionelevation, double tidalamplitude, double SLR, int steppedplatform, double stepsize, vector<int> WhichNuclides);
+		void Initialise(double retreatrate, double beachwidth, int beachtype, double bermheight, double beachsteepness, double platformgradient, double cliffheight, double cliffgradient, double junctionelevation, double tidalamplitude, double slr, int steppedplatform, double stepsize, vector<int> WhichNuclides);
+		void Initialise(double retreatrate1, double retreatrate2, int retreattype, double changetime, double beachwidth, int beachtype, double bermheight, double beachsteepness, double platformgradient, double cliffheight, double cliffgradient, double junctionelevation, double tidalamplitude, double SLR, int steppedplatform, double stepsize, vector<int> WhichNuclides);
 		
 		void Initialise(RoBoCoP RoBoCoPCoast, vector<int> WhichNuclides);
 		void Initialise(Hiro HiroCoast, vector<int> WhichNuclides);
@@ -282,9 +283,9 @@ class RockyCoastCRN
 		/// @param tidalamplitude Amplitude of diurnal tides
 	  ///	@author Martin D. Hurst 
     /// @date 14/09/2015
-		RockyCoastCRN(double retreatrate1, double retreatrate2, int retreattype, double changetime, double beachwidth, int beachtype, double bermheight, double platformgradient, double cliffheight, double cliffgradient, double junctionelevation, double tidalamplitude, double slr, int steppedplatform, double stepsize, vector<int> WhichNuclides)
+		RockyCoastCRN(double retreatrate1, double retreatrate2, int retreattype, double changetime, double beachwidth, int beachtype, double bermheight, double beachsteepness, double platformgradient, double cliffheight, double cliffgradient, double junctionelevation, double tidalamplitude, double slr, int steppedplatform, double stepsize, vector<int> WhichNuclides)
 		{
-			Initialise(retreatrate1, retreatrate2, retreattype, changetime, beachwidth, beachtype, bermheight, platformgradient, cliffheight, cliffgradient, junctionelevation, tidalamplitude, slr, steppedplatform, stepsize, WhichNuclides);
+			Initialise(retreatrate1, retreatrate2, retreattype, changetime, beachwidth, beachtype, bermheight, beachsteepness, platformgradient, cliffheight, cliffgradient, junctionelevation, tidalamplitude, slr, steppedplatform, stepsize, WhichNuclides);
 		}
 		
 		/// @brief Update function for two retreat rate scenario.
@@ -298,9 +299,9 @@ class RockyCoastCRN
 		/// @param tidalamplitude Amplitude of diurnal tides
 	  ///	@author Martin D. Hurst 
     /// @date 14/09/2015
-		void UpdateParameters(double retreatrate1, double retreatrate2, int retreattype, double changetime, double beachwidth, int beachtype, double bermheight, double platformgradient, double cliffheight, double cliffgradient, double junctionelevation, double tidalamplitude, double slr, int steppedplatform, double stepsize, vector<int> WhichNuclides)
+		void UpdateParameters(double retreatrate1, double retreatrate2, int retreattype, double changetime, double beachwidth, int beachtype, double bermheight, double beachsteepness, double platformgradient, double cliffheight, double cliffgradient, double junctionelevation, double tidalamplitude, double slr, int steppedplatform, double stepsize, vector<int> WhichNuclides)
 		{
-			Initialise(retreatrate1, retreatrate2, retreattype, changetime, beachwidth, beachtype, bermheight, platformgradient, cliffheight, cliffgradient, junctionelevation,  tidalamplitude, slr, steppedplatform, stepsize, WhichNuclides);
+			Initialise(retreatrate1, retreatrate2, retreattype, changetime, beachwidth, beachtype, bermheight, beachsteepness, platformgradient, cliffheight, cliffgradient, junctionelevation,  tidalamplitude, slr, steppedplatform, stepsize, WhichNuclides);
 		}
 		
 		
@@ -313,9 +314,9 @@ class RockyCoastCRN
 		/// @param tidalamplitude Amplitude of diurnal tides
 		/// @author Martin D. Hurst 
 		/// @date 14/09/2015
-		RockyCoastCRN(double retreatrate, double beachwidth, int beachtype, double bermheight, double platformgradient, double cliffheight, double cliffgradient, double junctionelevation, double tidalamplitude, double slr, int steppedplatform, double stepsize, vector<int> WhichNuclides)
+		RockyCoastCRN(double retreatrate, double beachwidth, int beachtype, double bermheight, double beachsteepness, double platformgradient, double cliffheight, double cliffgradient, double junctionelevation, double tidalamplitude, double slr, int steppedplatform, double stepsize, vector<int> WhichNuclides)
 		{
-			Initialise(retreatrate, beachwidth, beachtype, bermheight, platformgradient, cliffheight, cliffgradient, junctionelevation, tidalamplitude, slr, steppedplatform, stepsize, WhichNuclides);
+			Initialise(retreatrate, beachwidth, beachtype, bermheight, beachsteepness, platformgradient, cliffheight, cliffgradient, junctionelevation, tidalamplitude, slr, steppedplatform, stepsize, WhichNuclides);
 		}
 		
 		/// @brief Initialisation function with friend class RoBoCoP as the morphological model

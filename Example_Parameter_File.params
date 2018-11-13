@@ -16,6 +16,7 @@ BeachWidthMax(m): 20
 BeachWidthStd(m): 0
 BeachWidthInit(m): 100
 BermHeight(m): 4
+BeachSteepness(A): 0.3
 JunctionElevation(m): 2
 PlatformGradient: 0.02
 CliffHeight(m): 35.
