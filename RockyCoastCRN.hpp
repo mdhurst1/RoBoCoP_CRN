@@ -465,7 +465,7 @@ class RockyCoastCRN
 		/// @return Surface CRN concentration
 		///	@author Martin D. Hurst 
 		/// @date 14/09/2015
-		//vector<double> get_SurfaceN() const { return SurfaceN; }
+		vector< vector<double> > get_SurfaceN() const { return SurfaceN; }
 		
 		/// @brief Initialise Relative Sea Level history fro ma file
 		///	@author Martin D. Hurst 

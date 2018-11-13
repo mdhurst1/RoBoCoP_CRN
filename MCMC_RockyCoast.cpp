@@ -132,23 +132,23 @@ long double MCMC_RockyCoast::CalculateLikelihood()
 	double DiffX, Scale;
 	long double Likelihood = 1.L;
 
-  //Work out the resulting model predictions
+    //Work out the resulting model predictions
 	XDataModel = MCMCPlatformCRN.get_X();
-	CRNConcModel = MCMCPlatformCRN.get_SurfaceN();
+	CRNConcModel = MCMCPlatformCRN.get_SurfaceN()[0];
 	vector<double> NModel(NData);
 	vector<double> Residuals(NData);
 	
 	//Interpolate to sample locations
 	for (int i=0; i<NData; ++i)
 	{
-	  //Take X value of sample and interpolate to get model results at this point
-	  int j=0;
-	  while ((XDataModel[j]-XData[i]) < 0) ++j;
-	  DiffX = XDataModel[j]-XData[i];
-    Scale = DiffX/(XDataModel[j]-XDataModel[j-1]);
+	    //Take X value of sample and interpolate to get model results at this point
+	    int j=0;
+	    while ((XDataModel[j]-XData[i]) < 0) ++j;
+	    DiffX = XDataModel[j]-XData[i];
+        Scale = DiffX/(XDataModel[j]-XDataModel[j-1]);
   
-    //Get Interpolated N value
-    NModel[i] = CRNConcModel[j]-Scale*(CRNConcModel[j]-CRNConcModel[j-1]);
+        //Get Interpolated N value
+        NModel[i] = CRNConcModel[j]-Scale*(CRNConcModel[j]-CRNConcModel[j-1]);
 	}
 	
 	//Calculate likelihood
@@ -171,8 +171,9 @@ long double MCMC_RockyCoast::RunCoastIteration(double RetreatRate1_Test, double 
 	    
 	//Run a coastal iteration
 	int WriteResultsFlag = 0;
+    string OutfileName = "emptyfilename";
 	MCMCPlatformCRN.UpdateParameters(RetreatRate1_Test, RetreatRate2_Test, ChangeTime_Test, BeachWidth_Test, ElevInit_Test);
-	MCMCPlatformCRN.RunModel(RetreatType,WriteResultsFlag);
+	MCMCPlatformCRN.RunModel(OutfileName,WriteResultsFlag);
 	
 	//Calculate likelihood
 	return CalculateLikelihood();
@@ -198,9 +199,8 @@ void MCMC_RockyCoast::RunMetropolisChain(int NIterations, char* ParameterFilenam
 	double AcceptanceProbability; //New iteration is accepted if likelihood ratio exceeds
 	
 	int RetreatType;        //Style of cliff retreat 0 = single rate, 1 = step change in rates, 2 = linear change in rates
-	
-	double ElevInit = 0;    //initial elev init value set to zero
-	
+	int BeachType = 0;      // Beach type is fixed width
+
 	int NAccepted = 0;      //count accepted parameters
 	int NRejected = 0;      //count rejected parameters
 	
@@ -211,8 +211,12 @@ void MCMC_RockyCoast::RunMetropolisChain(int NIterations, char* ParameterFilenam
 	        RetreatRate2_New, RetreatRate2_Old, RetreatRate2_Min, RetreatRate2_Max, RetreatRate2_Std, RetreatRate2_Init,
 	        ChangeTime_New, ChangeTime_Old, ChangeTime_Min, ChangeTime_Max, ChangeTime_Std, ChangeTime_Init,
 	        BeachWidth_New, BeachWidth_Old, BeachWidth_Min, BeachWidth_Max, BeachWidth_Std, BeachWidth_Init,
-	        PlatformGradient, CliffHeight, TidalAmplitude;
-	double ElevInit_New;
+	        BermHeight, JunctionElevation, PlatformGradient, CliffHeight, CliffGradient, TidalAmplitude, SLR;
+    
+    int WhichNuclideTemp;
+	int SteppedPlatform = 0;
+    double StepSize = 0;
+
 	double dRR1, dRR2, dCT, dBW;  // change in parameter values for RetreatRate1, RetreatRate2, ChangeTime and BeachWidth
 	double MeanChange = 0.;       //Change in parameter values centred on zero to allow changes in both directions (pos and neg)
 	
@@ -226,7 +230,7 @@ void MCMC_RockyCoast::RunMetropolisChain(int NIterations, char* ParameterFilenam
 	//Create datafile out and write ParameterFilename
 	ofstream ChainFileOut(OutFilename);
 	ChainFileOut << "ParameterFile: " << ParameterFilename << endl;
-	ChainFileOut  << "i RetreatRate1_New RetreatRate2_New ChangeTime_New BeachWidth_New ElevInit_New NewLikelihood LastLikelihood NAccepted NRejected" << endl;
+	ChainFileOut  << "i RetreatRate1_New RetreatRate2_New ChangeTime_New BeachWidth_New NewLikelihood LastLikelihood NAccepted NRejected" << endl;
 	
 	//Read in parameters for monte carlo run from parameter file
 	//Min and max values for paramters from param file
@@ -242,12 +246,20 @@ void MCMC_RockyCoast::RunMetropolisChain(int NIterations, char* ParameterFilenam
 	            >> Dummy >> RetreatRate2_Min >> Dummy >> RetreatRate2_Max >> Dummy >> RetreatRate2_Std >> Dummy >> RetreatRate2_Init
 	            >> Dummy >> ChangeTime_Min   >> Dummy >> ChangeTime_Max >> Dummy >> ChangeTime_Std >> Dummy >> ChangeTime_Init
 	            >> Dummy >> BeachWidth_Min   >> Dummy >> BeachWidth_Max >> Dummy >> BeachWidth_Std >> Dummy >> BeachWidth_Init
-	            >> Dummy >> PlatformGradient >> Dummy >> CliffHeight >> Dummy >> TidalAmplitude;
+	            >> Dummy >> BermHeight >> JunctionElevation >> Dummy >> PlatformGradient >> Dummy >> CliffHeight >> Dummy >> CliffGradient >> Dummy >> TidalAmplitude
+                >> Dummy >> SLR >> Dummy >> WhichNuclideTemp;
 	
 	ParamFileIn.close();
-	
+
+    // set up nuclide tracker to be beryllium 10 only	
+    vector<int> WhichNuclides;
+    WhichNuclides.push_back(WhichNuclideTemp);
+
 	//Initialise RockyCoastCRN object
-	MCMCPlatformCRN = RockyCoastCRN(RetreatRate1_Init, RetreatRate2_Init, ChangeTime_Init, BeachWidth_Init, PlatformGradient, CliffHeight, ElevInit, TidalAmplitude);
+	MCMCPlatformCRN = RockyCoastCRN(RetreatRate1_Init, RetreatRate2_Init, RetreatType, ChangeTime_Init, 
+                                    BeachWidth_Init, BeachType, BermHeight, PlatformGradient, 
+                                    CliffHeight, CliffGradient, JunctionElevation, TidalAmplitude,
+                                    SLR, SteppedPlatform, StepSize, WhichNuclides);
 
 	/*  start the chain with a guess this guess is a very coarse approximation of what the 'real' values 
 	    might be. The Metropolis algorithm will sample around this */
@@ -258,18 +270,18 @@ void MCMC_RockyCoast::RunMetropolisChain(int NIterations, char* ParameterFilenam
 
 	//Get ElevInit from Beach Width
   	//Find index that minimises TopoXData and BeachWidth
-  	int i=0;
-  	double DiffX, Scale;
+  	//int i=0;
+  	//double DiffX, Scale;
   
-  	while ((TopoXData[i]-BeachWidth_New) < 0) ++i;
-  	DiffX = TopoXData[i]-BeachWidth_New;
-  	Scale = DiffX/(TopoXData[i]-TopoXData[i-1]);
+  	//while ((TopoXData[i]-BeachWidth_New) < 0) ++i;
+  	//DiffX = TopoXData[i]-BeachWidth_New;
+  	//Scale = DiffX/(TopoXData[i]-TopoXData[i-1]);
   
   	//Get Interpolated Z value
-  	ElevInit_New = TopoZData[i]+Scale*(TopoZData[i]-TopoZData[i-1]);
+  	//ElevInit_New = TopoZData[i]+Scale*(TopoZData[i]-TopoZData[i-1]);
    	
 	//Run a single coastal iteration to get the initial Likelihood for the initial parameters
-	LastLikelihood = RunCoastIteration(RetreatRate1_New, RetreatRate2_New, ChangeTime_New, BeachWidth_New, ElevInit_New, RetreatType);
+	LastLikelihood = RunCoastIteration(RetreatRate1_New, RetreatRate2_New, ChangeTime_New, BeachWidth_New, JunctionElevation, RetreatType);
 	
 	//set old parameters for comparison and updating
 	RetreatRate1_Old = RetreatRate1_New;
@@ -331,17 +343,17 @@ void MCMC_RockyCoast::RunMetropolisChain(int NIterations, char* ParameterFilenam
 		
 		//Get ElevInit from Beach Width
 	  	//Find index that minimises TopoXData and BeachWidth
-	  	i=0;
+	  	//i=0;
 	  	
-		while ((TopoXData[i]-BeachWidth_New) < 0) ++i;
-	  	DiffX = TopoXData[i]-BeachWidth_New;
-	  	Scale = DiffX/(TopoXData[i]-TopoXData[i-1]);
+		//while ((TopoXData[i]-BeachWidth_New) < 0) ++i;
+	  	//DiffX = TopoXData[i]-BeachWidth_New;
+	  	//Scale = DiffX/(TopoXData[i]-TopoXData[i-1]);
 	  
 	  	//Get Interpolated Z value
-	  	ElevInit_New = TopoZData[i]+Scale*(TopoZData[i]-TopoZData[i-1]);
+	  	//ElevInit_New = TopoZData[i]+Scale*(TopoZData[i]-TopoZData[i-1]);
 
 		//Run a model iteration with new parameters
-		NewLikelihood = RunCoastIteration(RetreatRate1_New, RetreatRate2_New, ChangeTime_New, BeachWidth_New, ElevInit_New, RetreatType);
+		NewLikelihood = RunCoastIteration(RetreatRate1_New, RetreatRate2_New, ChangeTime_New, BeachWidth_New, JunctionElevation, RetreatType);
 		
 		//Get the likelihood ratio
 		LikelihoodRatio = NewLikelihood/LastLikelihood;
@@ -367,7 +379,7 @@ void MCMC_RockyCoast::RunMetropolisChain(int NIterations, char* ParameterFilenam
 		//write the result to the output file
 		ChainFileOut  << j << " " 
 		              << RetreatRate1_New << " " << RetreatRate2_New << " " 
-		              << ChangeTime_New << " " << BeachWidth_New << " " << ElevInit_New << " "
+		              << ChangeTime_New << " " << BeachWidth_New << " "
 		              << NewLikelihood << " " << LastLikelihood << " " 
 		              << NAccepted << " " << NRejected << endl;
     }

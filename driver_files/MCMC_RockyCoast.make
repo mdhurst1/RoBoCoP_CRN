@@ -15,7 +15,7 @@ CFLAGS= -g -c -Wall -O3  $(INCDIR)
 LDFLAGS= -g -Wall -O3
 
 # SOURCE FILES MACROS IN DEPENDENCY ORDER? SHOULDNT MATTER THANKS TO HEADERS
-SOURCES = ./MCMC_RockyCoast_Driver.cpp ./MCMC_RockyCoast.cpp ./RockyCoastCRN.cpp
+SOURCES = ./MCMC_RockyCoast_Driver.cpp ../MCMC_RockyCoast.cpp ../RockyCoastCRN.cpp
 
 # LIBRARIES MACRO
 LIBS   = -lm -lstdc++ 

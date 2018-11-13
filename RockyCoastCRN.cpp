@@ -177,43 +177,53 @@ void RockyCoastCRN::Initialise(double retreatrate, double beachwidth, int beacht
 	Initialise(retreatrate, retreatrate, retreattype, changetime, beachwidth, beachtype, bermheight, platformgradient, cliffheight, cliffgradient, junctionelevation, slr, tidalamplitude, steppedplatform, stepsize, WhichNuclides);
 }
 	
-void RockyCoastCRN::Initialise(double retreatrate1, double retreatrate2, int retreattype, double changetime, double beachwidth, int beachtype, double bermheight, double platformgradient, double cliffheight, double cliffgradient, double junctionelevation, double tidalamplitude, double SLR, int steppedplatform, double stepsize, vector<int> WhichNuclides)
+void RockyCoastCRN::Initialise( double retreatrate1, double retreatrate2, int retreattype, double changetime, 
+                                double beachwidth, int beachtype, double bermheight, double platformgradient, 
+                                double cliffheight, double cliffgradient, double junctionelevation, double tidalamplitude, 
+                                double SLR, int steppedplatform, double stepsize, vector<int> WhichNuclides)
 {
-  /* initialise a platform object for two retreat rate scenarios
-  retreatrate1 runs from 7.5ka until changetime, after which retreatrate2 continues to present
+    /* initialise a platform object for two retreat rate scenarios
+    retreatrate1 runs from 7.5ka until changetime, after which retreatrate2 continues to present
 	retreatrate1 is the first rate of cliff retreat (m/yr)
 	retreatrate2 is the 2nd rate of cliff retreat (m/yr)
+    retreattype is the style of cliff retreat 0 is single, 1 is gradual change, 2 is step change
 	changetime is the time to switch from retreatrate1 to retreatrate2 (years BP)
 	beachwidth is the width of the beach (m), protecting the platform from CRN production
-	JunctionElevation is the elevation of the platform/cliff junction
+    beachtype is a flag that allows beach width to vary through time 0 is constant, 1 is sine wave, 2 is thinning
+    bermheight is the height of the beach above the platform at the cliff/junction angle
 	platformgradient is the average slope of the platform surface (m/m) 
 	cliffheight is the height of the adjacent cliff (m)
-	tidalamplitude is the average tidal amplitude for diurnal tides. */
+    cliff gradient is the gradient of the adjacent cliff
+	JunctionElevation is the elevation of the platform/cliff junction
+	tidalamplitude is the average tidal amplitude for diurnal tides. 
+    SLR is the rate of sea level rise (if not from file)
+    steppedplatform is a flag to evolve a stepped platform
+    stepsize is the size of each step on the platform
+    WhichNuclides is a vector list of nuclides to track */
 	
 	//Assign Parameters
 	RetreatRate1 = retreatrate1;
 	RetreatRate2 = retreatrate2;
 	RetreatType = retreattype;
 	ChangeTime = changetime;
-	PlatformGradient = platformgradient;
-	CliffHeight = cliffheight;
-	CliffGradient = cliffgradient;
-	BeachWidth = beachwidth;
+    BeachWidth = beachwidth;
 	MeanBeachWidth = BeachWidth;
 	InitialBeachWidth = BeachWidth;
 	BeachType = beachtype;
 	BermHeight = bermheight;
+	PlatformGradient = platformgradient;
+	CliffHeight = cliffheight;
+	CliffGradient = cliffgradient;
 	JunctionElevation = junctionelevation;
-	SLRRate = SLR;
 	TidalAmplitude = tidalamplitude;
 	TidalRange = 2.*TidalAmplitude;
-	
+	SLRRate = SLR;
 	SteppedPlatform = steppedplatform;
 	StepSize = stepsize;
 
 	TidalPeriod = 12.42;
 		
-	//constant for Bruun profile beaches
+	//constant for Bruun profile beaches might make this a parameter in time
 	A = 0.125;
 		
 	//initialise tides, geomag and RSL data
@@ -691,7 +701,7 @@ void RockyCoastCRN::RunModel(string outfilename, int WriteResultsFlag)
 	//MAIN MODEL LOOP
 	//////////////////////////////////////////////////////////
 
-	while (CliffPositionX > 0)
+	while (CliffPositionX >= 0)
 	{
 		//Get retreat rate depending on style of retreat
 		GetRetreatRate();
@@ -739,8 +749,9 @@ void RockyCoastCRN::RunModel(string outfilename, int WriteResultsFlag)
         if (CliffPositionInd < 0) CliffPositionInd = 0;
     
 	}
-	
-	WriteProfile(OutFileName, Time+dt);
+
+	cout << "End time is " << Time << " y" << endl;
+    WriteProfile(OutFileName, Time+dt);
 	WriteCRNProfile(OutFileName, Time+dt);
 	
   CliffPositionInd = 0;
