@@ -901,13 +901,16 @@ void RockyCoastCRN::UpdateCRNs()
 					for (int n=0; n<NoNuclides; ++n)
 					{
 						// Update surface concentrations
-						SurfaceN[n][j] += dt*P_Spal[n][j]*exp(0/z_rs);	//spallation
-					    SurfaceN[n][j] += dt*P_Muon_Fast[n][j]*exp(0/z_rm);	//muons
-					    SurfaceN[n][j] += dt*P_Muon_Slow[n][j]*exp(0/z_rm);	//muons
+						SurfaceN[n][j] += dt*P_Spal[n][j]*exp((PlatformElevation[j]-SurfaceElevation[j])/z_rs);	//spallation
+					    SurfaceN[n][j] += dt*P_Muon_Fast[n][j]*exp((PlatformElevation[j]-SurfaceElevation[j])/z_rm);	//muons
+					    SurfaceN[n][j] += dt*P_Muon_Slow[n][j]*exp((PlatformElevation[j]-SurfaceElevation[j])/z_rm);	//muons
 
 						//linearly interpolate to get concentration at the surface
 						//if (PlatformElevationOld[j] == -9999) PlatformElevationOld[j] = SeaLevel+JunctionElevation;
-						if (PlatformElevation[j] < PlatformElevationOld[j]) SurfaceN[n][j] -= (((PlatformElevationOld[j]-PlatformElevation[j])/(PlatformElevationOld[j]-Z[i]))*(SurfaceN[n][j]-N[n][j][i]));
+						if (PlatformElevation[j] < PlatformElevationOld[j]) 
+                        {
+                            SurfaceN[n][j] -= (((PlatformElevationOld[j]-PlatformElevation[j])/(PlatformElevationOld[j]-Z[i]))*(SurfaceN[n][j]-N[n][j][i]));
+                        }
 						if (isnan(SurfaceN[n][j]))
 						{
 							cout << "NANANANAN HERE!!!" << endl;

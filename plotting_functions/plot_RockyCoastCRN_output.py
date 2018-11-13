@@ -42,8 +42,8 @@ for i in range(1,NoLines,4):
     
     #Get data  
     X = np.array(Lines[i].strip().split(" ")[1:], dtype="float64")
-    ZBeach = np.array(Lines[i+1].strip().split(" ")[1:], dtype="float64")
-    ZPlatform = np.array(Lines[i+2].strip().split(" ")[1:], dtype="float64")
+    ZPlatform = np.array(Lines[i+1].strip().split(" ")[1:], dtype="float64")
+    ZBeach = np.array(Lines[i+2].strip().split(" ")[1:], dtype="float64")
     N = np.array(Lines[i+3].strip().split(" ")[1:], dtype="float64")
     Time = float(Lines[i].strip().split(" ")[0])
     
@@ -56,7 +56,7 @@ for i in range(1,NoLines,4):
 
     Colour = Time/MaxTime
     ax1.plot(Xplot,Zbeach,'--',c=ColourMap(Colour))
-    ax1.plot(Xplot,Zplat,'--',c=ColourMap(Colour))
+    ax1.plot(Xplot,Zplat,'-',c=ColourMap(Colour))
     ax2.plot(Xplot,Nplot,'-',c=ColourMap(Colour))
 
 ax2.set_xlabel("Distance (m)")
