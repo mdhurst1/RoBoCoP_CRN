@@ -24,8 +24,8 @@ int main()
 	double Amp = 4;                     //Tidal amplitude (1/2 tidal range)
 	double CliffHeight = 35.;             //Cliff height for shielding
 	double CliffGradient = 25./35.;       // slope of the coastal bluff
-	double BeachWidth = 0.;               //Beach width 
-	double BermHeight = 0.;
+	double BeachWidth = 2.;               //Beach width 
+	double BermHeight = 2.;
 	int BeachType = 0;                    // Constant beach width = 0
 	double ElevInit = 2.;                 // Elevation of the platform/cliff junction
 	double SeaLevelRise = 0.001;          // Rate of sea level rise

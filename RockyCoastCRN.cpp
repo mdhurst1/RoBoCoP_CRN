@@ -224,7 +224,7 @@ void RockyCoastCRN::Initialise( double retreatrate1, double retreatrate2, int re
 	TidalPeriod = 12.42;
 		
 	//constant for Bruun profile beaches might make this a parameter in time
-	A = 0.125;
+	A = 0.25;
 		
 	//initialise tides, geomag and RSL data
 	InitialiseTides(TidalAmplitude,TidalPeriod);
@@ -676,8 +676,8 @@ void RockyCoastCRN::RunModel(string outfilename, int WriteResultsFlag)
 	    if (SteppedPlatform == 1) PlatformElevation[i] = round(PlatformElevation[i]/StepSize)*StepSize;
 	    
 	    //update beach thickness
-	    if ((X[i]-CliffPositionX) < BeachWidth) TempBeachThickness = JunctionElevation+BermHeight-PlatformElevation[i];
-	    else TempBeachThickness = (JunctionElevation+BermHeight-A*pow((X[i]-CliffPositionX-BeachWidth),2./3.)) - PlatformElevation[i];
+	    if ((X[i]-CliffPositionX) < BeachWidth) TempBeachThickness = SeaLevel+JunctionElevation+BermHeight-PlatformElevation[i];
+	    else TempBeachThickness = (SeaLevel+JunctionElevation+BermHeight-A*pow((X[i]-CliffPositionX-BeachWidth),2./3.)) - PlatformElevation[i];
 	    if (TempBeachThickness > 0 && BeachFlag == 1) BeachThickness[i] = TempBeachThickness;
 	    else
 		{
@@ -959,8 +959,8 @@ void RockyCoastCRN::UpdateEquillibriumMorphology()
 			}
 		
 			//update beach thickness
-		    if ((X[i]-CliffPositionX) < BeachWidth) TempBeachThickness = JunctionElevation+BermHeight-PlatformElevation[i];
-		    else TempBeachThickness = (JunctionElevation+BermHeight-A*pow((X[i]-CliffPositionX-BeachWidth),2./3.)) - PlatformElevation[i];
+		    if ((X[i]-CliffPositionX) < BeachWidth) TempBeachThickness = SeaLevel+JunctionElevation+BermHeight-PlatformElevation[i];
+		    else TempBeachThickness = (SeaLevel+JunctionElevation+BermHeight-A*pow((X[i]-CliffPositionX-BeachWidth),2./3.)) - PlatformElevation[i];
 		    if (TempBeachThickness > 0 && BeachFlag == 1) BeachThickness[i] = TempBeachThickness;
 		    else
 			{
