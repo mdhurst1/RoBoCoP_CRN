@@ -78,8 +78,8 @@ using namespace std;
 
 void RockyCoastCRN::Initialise()
 {
-	cout << "Warning: You have not specified which nuclides you wish to track" << endl;
-	cout << "Defaulting to 10Be only" << endl;
+	//cout << "Warning: You have not specified which nuclides you wish to track" << endl;
+	//cout << "Defaulting to 10Be only" << endl;
 	
 	vector<int> WhichNuclides(1,10);
 	Initialise(WhichNuclides);
@@ -101,7 +101,6 @@ void RockyCoastCRN::Initialise(vector<int> WhichNuclides)
 	*/
 	
 	cout << "Warning: You have initialised an empty RockCoastCRN object." << endl;
-	cout << "This is only appropriate when reading in platform morphology from a file" << endl;
 	
 	NDV = -9999;
 	RetreatRate1 = NDV;
@@ -161,6 +160,7 @@ void RockyCoastCRN::Initialise(vector<int> WhichNuclides)
 	//Set Sea level to zero
 	SeaLevel = 0;
 }
+
 
 void RockyCoastCRN::Initialise(double retreatrate, double beachwidth, int beachtype, double bermheight, double beachsteepness, double platformgradient, double cliffheight, double cliffgradient, double junctionelevation, double tidalamplitude, double slr, int steppedplatform, double stepsize, vector<int> WhichNuclides)
 {
@@ -585,8 +585,7 @@ void RockyCoastCRN::InitialiseRSLData(string RSLFilename)
 }
 	
 void RockyCoastCRN::UpdateParameters( double RetreatRate1_Test, double RetreatRate2_Test, 
-                                    double ChangeTime_Test, double BeachWidth_Test, 
-                                    double JunctionElevation_Test)
+                                    double ChangeTime_Test, double BeachWidth_Test)
 {
   /*  Function to update model parameters for a new model run. 
   This is designed for use with the MCMC_RockyCoast object in order to save a 
@@ -603,8 +602,6 @@ void RockyCoastCRN::UpdateParameters( double RetreatRate1_Test, double RetreatRa
   BeachWidth = BeachWidth_Test;
   MeanBeachWidth = BeachWidth;
   InitialBeachWidth = BeachWidth;
-  JunctionElevation = JunctionElevation_Test;
-
 }
 
 void RockyCoastCRN::RunModel(string outfilename, int WriteResultsFlag)
@@ -646,7 +643,7 @@ void RockyCoastCRN::RunModel(string outfilename, int WriteResultsFlag)
 	InitialBeachWidth = BeachWidth;
 	
 	
-	cout << "Start time is " << MaxTime << " y" << endl;
+	if (WriteResultsFlag != 0) cout << "Start time is " << MaxTime << " y" << endl;
 	Time = MaxTime;
 	WriteTime = MaxTime;
 	
@@ -753,9 +750,12 @@ void RockyCoastCRN::RunModel(string outfilename, int WriteResultsFlag)
     
 	}
 
-	cout << "End time is " << Time << " y" << endl;
-    WriteProfile(OutFileName, Time+dt);
-	WriteCRNProfile(OutFileName, Time+dt);
+	if (WriteResultsFlag != 0)
+    {
+        cout << "End time is " << Time << " y" << endl;
+        WriteProfile(OutFileName, Time+dt);
+    	WriteCRNProfile(OutFileName, Time+dt);
+    }
 	
   CliffPositionInd = 0;
   

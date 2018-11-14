@@ -235,7 +235,7 @@ class RockyCoastCRN
 		int BeachType;          //Style of beach evolution, 0 = fixed beach, 1 = sinusoidal beach width, 2 = thinning beach width
 		double A;               //Sediment Scale Parameter in Bruun Profile (m^1/3)
 
-	  string OutFileName;
+	    string OutFileName;
 	  
 		//Initialise Function
 		void Initialise();
@@ -285,7 +285,7 @@ class RockyCoastCRN
     /// @date 14/09/2015
 		RockyCoastCRN(double retreatrate1, double retreatrate2, int retreattype, double changetime, double beachwidth, int beachtype, double bermheight, double beachsteepness, double platformgradient, double cliffheight, double cliffgradient, double junctionelevation, double tidalamplitude, double slr, int steppedplatform, double stepsize, vector<int> WhichNuclides)
 		{
-			Initialise(retreatrate1, retreatrate2, retreattype, changetime, beachwidth, beachtype, bermheight, beachsteepness, platformgradient, cliffheight, cliffgradient, junctionelevation, tidalamplitude, slr, steppedplatform, stepsize, WhichNuclides);
+			RockyCoastCRN::Initialise(retreatrate1, retreatrate2, retreattype, changetime, beachwidth, beachtype, bermheight, beachsteepness, platformgradient, cliffheight, cliffgradient, junctionelevation, tidalamplitude, slr, steppedplatform, stepsize, WhichNuclides);
 		}
 		
 		/// @brief Update function for two retreat rate scenario.
@@ -301,7 +301,7 @@ class RockyCoastCRN
     /// @date 14/09/2015
 		void UpdateParameters(double retreatrate1, double retreatrate2, int retreattype, double changetime, double beachwidth, int beachtype, double bermheight, double beachsteepness, double platformgradient, double cliffheight, double cliffgradient, double junctionelevation, double tidalamplitude, double slr, int steppedplatform, double stepsize, vector<int> WhichNuclides)
 		{
-			Initialise(retreatrate1, retreatrate2, retreattype, changetime, beachwidth, beachtype, bermheight, beachsteepness, platformgradient, cliffheight, cliffgradient, junctionelevation,  tidalamplitude, slr, steppedplatform, stepsize, WhichNuclides);
+			RockyCoastCRN::Initialise(retreatrate1, retreatrate2, retreattype, changetime, beachwidth, beachtype, bermheight, beachsteepness, platformgradient, cliffheight, cliffgradient, junctionelevation,  tidalamplitude, slr, steppedplatform, stepsize, WhichNuclides);
 		}
 		
 		
@@ -316,7 +316,7 @@ class RockyCoastCRN
 		/// @date 14/09/2015
 		RockyCoastCRN(double retreatrate, double beachwidth, int beachtype, double bermheight, double beachsteepness, double platformgradient, double cliffheight, double cliffgradient, double junctionelevation, double tidalamplitude, double slr, int steppedplatform, double stepsize, vector<int> WhichNuclides)
 		{
-			Initialise(retreatrate, beachwidth, beachtype, bermheight, beachsteepness, platformgradient, cliffheight, cliffgradient, junctionelevation, tidalamplitude, slr, steppedplatform, stepsize, WhichNuclides);
+			RockyCoastCRN::Initialise(retreatrate, beachwidth, beachtype, bermheight, beachsteepness, platformgradient, cliffheight, cliffgradient, junctionelevation, tidalamplitude, slr, steppedplatform, stepsize, WhichNuclides);
 		}
 		
 		/// @brief Initialisation function with friend class RoBoCoP as the morphological model
@@ -325,7 +325,7 @@ class RockyCoastCRN
     	/// @date 8/3/2016
 		RockyCoastCRN(RoBoCoP RoBoCoPCoast, vector<int> WhichNuclides)
 		{
-			Initialise(RoBoCoPCoast, WhichNuclides);
+			RockyCoastCRN::Initialise(RoBoCoPCoast, WhichNuclides);
 		}
 		
 		/// @brief Initialisation function with friend class Hiro as the morphological model
@@ -334,7 +334,7 @@ class RockyCoastCRN
 		/// @date 13/3/2017
 		RockyCoastCRN(Hiro HiroCoast, vector<int> WhichNuclides)
 		{
-			Initialise(HiroCoast, WhichNuclides);
+			RockyCoastCRN::Initialise(HiroCoast, WhichNuclides);
 		}
 		
 		/// @brief Empty initialisation function, will throw an error.
@@ -342,7 +342,7 @@ class RockyCoastCRN
     	/// @date 14/09/2015
 		RockyCoastCRN(vector<int> WhichNuclides)
 		{
-			Initialise(WhichNuclides);
+			RockyCoastCRN::Initialise(WhichNuclides);
 		}
 		
 		/// @brief Empty initialisation function, will throw an error.
@@ -350,7 +350,7 @@ class RockyCoastCRN
     	/// @date 14/09/2015
 		RockyCoastCRN()
 		{
-			Initialise();
+			RockyCoastCRN::Initialise();
 		}
 		
 		/// @brief function to initialise the tides
@@ -367,10 +367,9 @@ class RockyCoastCRN
 		/// @param RetreatRate2_Test second rate of cliff retreat (m/yr)
 		/// @param ChangeTime_Test New time to switch from retreatrate1 to retreatrate2 (years BP)
 		/// @param BeachWidth_Test New width of the beach (constant) blocking CRN production
-		/// @param JunctionElevation_Test New elevation of platform at the cliff
 		///	@author Martin D. Hurst 
     /// @date 14/09/2015
-		void UpdateParameters(double RetreatRate1_Test, double RetreatRate2_Test, double ChangeTime_Test, double BeachWidth_Test, double JunctionElevation_Test);
+		void UpdateParameters(double RetreatRate1_Test, double RetreatRate2_Test, double ChangeTime_Test, double BeachWidth_Test);
 		
 		/// @brief Launch the main program loop to evolve coast and predict CRN concentrations
 		/// @details This function evolves a rocky coastal platform through time assumming gradual

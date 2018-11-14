@@ -70,21 +70,12 @@ void MCMC_RockyCoast::Initialise()
 
 void MCMC_RockyCoast::Initialise(char* CRNDatafile)
 {
-  /* initialise an empty Markov Chain Monte Carlo object
- 	   Martin Hurst, March 2015 */
- 	   
-  cout << "unable to initialise with char*, TestObject is an empty object" << endl;
-  exit(EXIT_SUCCESS);  
-}
-
-void MCMC_RockyCoast::Initialise(char* CRNDatafile, char* PlatformXSectionDatafile)
-{
-  /* initialise a Markov Chain Monte Carlo object with CRN data and the platform XSection
+  /* initialise a Markov Chain Monte Carlo object with CRN data
       Martin Hurst, March 2015 */
   
   //Declare temp variables
 	char Dummy[32];
-	float TempXData, TempCRNConcData, TempCRNConcErrorData, TempTopoXData, TempTopoZData;
+	float TempXData, TempCRNConcData, TempCRNConcErrorData;
   
   //Generate input filestream and read data into vectors
 	ifstream ReadCRNDataFile(CRNDatafile);
@@ -102,22 +93,6 @@ void MCMC_RockyCoast::Initialise(char* CRNDatafile, char* PlatformXSectionDatafi
     CRNConcErrorData.push_back(TempCRNConcErrorData);
   }
 
-  
-  //Generate input filestream and read topography into vectors
-  ifstream ReadTopoDataFile(PlatformXSectionDatafile);
-	if (!ReadTopoDataFile)
-	{
-	  printf("MCMC_Coast::%s: line %d Input topographic data file \"%s\" doesn't exist\n\n", __func__, __LINE__, PlatformXSectionDatafile);
-	  exit(EXIT_SUCCESS);
-	}
-	ReadTopoDataFile >> Dummy >> Dummy;
-  while(ReadTopoDataFile >> TempTopoXData >> TempTopoZData)
-  {
-    TopoXData.push_back(TempTopoXData);
-    TopoZData.push_back(TempTopoZData);
-  }
-    
-  NTopoData = TopoXData.size();
   NData = XData.size();
   
   RockyCoastCRN MCMCRockyCoastCRN = RockyCoastCRN();  
@@ -163,7 +138,7 @@ long double MCMC_RockyCoast::CalculateLikelihood()
 
 
 
-long double MCMC_RockyCoast::RunCoastIteration(double RetreatRate1_Test, double RetreatRate2_Test, double ChangeTime_Test, double BeachWidth_Test, double ElevInit_Test, int RetreatType)
+long double MCMC_RockyCoast::RunCoastIteration(double RetreatRate1_Test, double RetreatRate2_Test, double ChangeTime_Test, double BeachWidth_Test)
 {
 	/* runs a single instance of the RockyCostCRN model, then report 
 	    the likelihood of the parameters 
@@ -172,7 +147,7 @@ long double MCMC_RockyCoast::RunCoastIteration(double RetreatRate1_Test, double 
 	//Run a coastal iteration
 	int WriteResultsFlag = 0;
     string OutfileName = "emptyfilename";
-	MCMCPlatformCRN.UpdateParameters(RetreatRate1_Test, RetreatRate2_Test, ChangeTime_Test, BeachWidth_Test, ElevInit_Test);
+	MCMCPlatformCRN.UpdateParameters(RetreatRate1_Test, RetreatRate2_Test, ChangeTime_Test, BeachWidth_Test);
 	MCMCPlatformCRN.RunModel(OutfileName,WriteResultsFlag);
 	
 	//Calculate likelihood
@@ -211,7 +186,7 @@ void MCMC_RockyCoast::RunMetropolisChain(int NIterations, char* ParameterFilenam
 	        RetreatRate2_New, RetreatRate2_Old, RetreatRate2_Min, RetreatRate2_Max, RetreatRate2_Std, RetreatRate2_Init,
 	        ChangeTime_New, ChangeTime_Old, ChangeTime_Min, ChangeTime_Max, ChangeTime_Std, ChangeTime_Init,
 	        BeachWidth_New, BeachWidth_Old, BeachWidth_Min, BeachWidth_Max, BeachWidth_Std, BeachWidth_Init,
-	        BermHeight, JunctionElevation, PlatformGradient, CliffHeight, CliffGradient, TidalAmplitude, SLR;
+	        BermHeight, BeachSteepness, JunctionElevation, PlatformGradient, CliffHeight, CliffGradient, TidalAmplitude, SLR;
     
     int WhichNuclideTemp;
 	int SteppedPlatform = 0;
@@ -221,8 +196,9 @@ void MCMC_RockyCoast::RunMetropolisChain(int NIterations, char* ParameterFilenam
 	double MeanChange = 0.;       //Change in parameter values centred on zero to allow changes in both directions (pos and neg)
 	
 	char Dummy[32];
-	
-	
+	string RSLFilename;	
+    SLR = -9999;
+
 	//Initialise seed for random number generation
 	int RandomSeed = 1;
 	srand(RandomSeed);
@@ -246,8 +222,9 @@ void MCMC_RockyCoast::RunMetropolisChain(int NIterations, char* ParameterFilenam
 	            >> Dummy >> RetreatRate2_Min >> Dummy >> RetreatRate2_Max >> Dummy >> RetreatRate2_Std >> Dummy >> RetreatRate2_Init
 	            >> Dummy >> ChangeTime_Min   >> Dummy >> ChangeTime_Max >> Dummy >> ChangeTime_Std >> Dummy >> ChangeTime_Init
 	            >> Dummy >> BeachWidth_Min   >> Dummy >> BeachWidth_Max >> Dummy >> BeachWidth_Std >> Dummy >> BeachWidth_Init
-	            >> Dummy >> BermHeight >> JunctionElevation >> Dummy >> PlatformGradient >> Dummy >> CliffHeight >> Dummy >> CliffGradient >> Dummy >> TidalAmplitude
-                >> Dummy >> SLR >> Dummy >> WhichNuclideTemp;
+	            >> Dummy >> BermHeight >> Dummy >> BeachSteepness >> Dummy >> JunctionElevation >> Dummy >> PlatformGradient 
+                >> Dummy >> CliffHeight >> Dummy >> CliffGradient >> Dummy >> TidalAmplitude
+                >> Dummy >> RSLFilename >> Dummy >> WhichNuclideTemp;
 	
 	ParamFileIn.close();
 
@@ -257,9 +234,12 @@ void MCMC_RockyCoast::RunMetropolisChain(int NIterations, char* ParameterFilenam
 
 	//Initialise RockyCoastCRN object
 	MCMCPlatformCRN = RockyCoastCRN(RetreatRate1_Init, RetreatRate2_Init, RetreatType, ChangeTime_Init, 
-                                    BeachWidth_Init, BeachType, BermHeight, PlatformGradient, 
+                                    BeachWidth_Init, BeachType, BermHeight, BeachSteepness, PlatformGradient, 
                                     CliffHeight, CliffGradient, JunctionElevation, TidalAmplitude,
                                     SLR, SteppedPlatform, StepSize, WhichNuclides);
+    
+    //Initialise Sea Level history
+    MCMCPlatformCRN.InitialiseRSLData(RSLFilename);
 
 	/*  start the chain with a guess this guess is a very coarse approximation of what the 'real' values 
 	    might be. The Metropolis algorithm will sample around this */
@@ -281,7 +261,7 @@ void MCMC_RockyCoast::RunMetropolisChain(int NIterations, char* ParameterFilenam
   	//ElevInit_New = TopoZData[i]+Scale*(TopoZData[i]-TopoZData[i-1]);
    	
 	//Run a single coastal iteration to get the initial Likelihood for the initial parameters
-	LastLikelihood = RunCoastIteration(RetreatRate1_New, RetreatRate2_New, ChangeTime_New, BeachWidth_New, JunctionElevation, RetreatType);
+	LastLikelihood = RunCoastIteration(RetreatRate1_New, RetreatRate2_New, ChangeTime_New, BeachWidth_New);
 	
 	//set old parameters for comparison and updating
 	RetreatRate1_Old = RetreatRate1_New;
@@ -353,7 +333,7 @@ void MCMC_RockyCoast::RunMetropolisChain(int NIterations, char* ParameterFilenam
 	  	//ElevInit_New = TopoZData[i]+Scale*(TopoZData[i]-TopoZData[i-1]);
 
 		//Run a model iteration with new parameters
-		NewLikelihood = RunCoastIteration(RetreatRate1_New, RetreatRate2_New, ChangeTime_New, BeachWidth_New, JunctionElevation, RetreatType);
+		NewLikelihood = RunCoastIteration(RetreatRate1_New, RetreatRate2_New, ChangeTime_New, BeachWidth_New);
 		
 		//Get the likelihood ratio
 		LikelihoodRatio = NewLikelihood/LastLikelihood;

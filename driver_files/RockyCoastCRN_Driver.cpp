@@ -26,7 +26,7 @@ int main()
 	double CliffGradient = 25./35.;       // slope of the coastal bluff
 	double BeachWidth = 2.;               // Beach width 
 	double BermHeight = 5.;               // Height of the beach berm
-    double BeachSteepnessFactor = 0.5;    // Scaling factor related to grain size controlling beach steepness
+    double BeachSteepnessFactor = 0.6;    // Scaling factor related to grain size controlling beach steepness
 	int BeachType = 0;                    // Constant beach width = 0
 	double ElevInit = 2.;                 // Elevation of the platform/cliff junction
 	double SeaLevelRise = 0.001;          // Rate of sea level rise

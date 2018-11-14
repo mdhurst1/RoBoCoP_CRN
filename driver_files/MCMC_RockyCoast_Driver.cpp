@@ -21,7 +21,7 @@ int main (int nNumberofArgs,char *argv[])
 {
     //argv1 should be the input dataset
 	//Test for correct input arguments
-	if (nNumberofArgs!=6)
+	if (nNumberofArgs!=5)
 	{
 		cout 	<< "FATAL ERROR: not enough inputs. The program needs:" << endl
 					<< "\t1) the CRN input data filename" << endl
@@ -33,13 +33,12 @@ int main (int nNumberofArgs,char *argv[])
 
 	// the name of the data
 	char* DataFilename = argv[1];
-	char* PlatformXSectionDataFilename = argv[2];
-    char* ParamFilename = argv[3];
-    char* ChainFilename = argv[4];
-    int NIterations = atoi(argv[5]);
+	char* ParamFilename = argv[2];
+    char* ChainFilename = argv[3];
+    int NIterations = atoi(argv[4]);
   	
 	// load an MCMC driver object
-    MCMC_RockyCoast My_MCMC_Coast = MCMC_RockyCoast(DataFilename, PlatformXSectionDataFilename);
+    MCMC_RockyCoast My_MCMC_Coast = MCMC_RockyCoast(DataFilename);
   
     //now run the metropolis algorithm along a chain
 	My_MCMC_Coast.RunMetropolisChain(NIterations, ParamFilename, ChainFilename);

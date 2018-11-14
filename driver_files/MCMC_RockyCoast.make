@@ -11,11 +11,11 @@ LD=g++
 # -pg does what?!
 # -O3 is an optimisation flag, not good for debugging
 
-CFLAGS= -g -c -Wall -O3  $(INCDIR)
+CFLAGS= -g -c -Wall -O3 $(INCDIR)
 LDFLAGS= -g -Wall -O3
 
 # SOURCE FILES MACROS IN DEPENDENCY ORDER? SHOULDNT MATTER THANKS TO HEADERS
-SOURCES = ./MCMC_RockyCoast_Driver.cpp ../MCMC_RockyCoast.cpp ../RockyCoastCRN.cpp
+SOURCES = ../RockyCoastCRN.cpp ../MCMC_RockyCoast.cpp ./MCMC_RockyCoast_Driver.cpp
 
 # LIBRARIES MACRO
 LIBS   = -lm -lstdc++ 

@@ -70,7 +70,7 @@
 #include <sstream>
 #include <cstdlib>
 #include <omp.h>
-#include "RockyCoastCRN.hpp"
+#include "./RockyCoastCRN.hpp"
 
 using namespace std;
 
@@ -84,7 +84,9 @@ using namespace std;
 ///@brief Main Markov Chain Monte Carlo object.
 class MCMC_RockyCoast
 {
-	private:
+	friend class RockyCoastCRN;
+
+    private:
 		//Initialise Function
 		void Initialise();
 		void Initialise(char* CRNDatafile);
@@ -106,13 +108,14 @@ class MCMC_RockyCoast
 		vector<double> TopoXData;
 		vector<double> TopoZData;
 		
+        // Declare rocky coast object
 		RockyCoastCRN MCMCPlatformCRN;
 		
 		// calcualtes the likelihood using measured and modelled data
 		long double CalculateLikelihood();
 		
 		// runs a single iteration of the coastal model, then reports the likelihood of the parameters
-		long double RunCoastIteration(double RetreatRate1_Test, double RetreatRate2_Test, double ChangeTime_Test, double BeachWidth_Test, double ElevInit_Test, int RetreatType);
+		long double RunCoastIteration(double RetreatRate1_Test, double RetreatRate2_Test, double ChangeTime_Test, double BeachWidth_Test);
 
 	public:
 	
@@ -123,16 +126,17 @@ class MCMC_RockyCoast
     /// @date 16/09/2015
 		MCMC_RockyCoast()
 		{
-			Initialise();
+			MCMC_RockyCoast::Initialise();
 		}
 		
 		/// @brief Initialisation function where only 1 argument provided throws an error.
 		/// @param CRNDatafile
 		///	@author Martin D. Hurst 
-    /// @date 16/09/2015
+        /// @date 16/09/2015
 		MCMC_RockyCoast(char* CRNDatafile)	
 		{
-		  Initialise(CRNDatafile);
+            //break here		  
+            MCMC_RockyCoast::Initialise(CRNDatafile);
 		}
 		
 		/// @brief Initialisation function for MCMC_RockyCoast objects
@@ -142,7 +146,7 @@ class MCMC_RockyCoast
     /// @date 16/09/2015
 		MCMC_RockyCoast(char* CRNDatafile, char* PlatformXSectionDatafile)	
 		{
-		  Initialise(CRNDatafile, PlatformXSectionDatafile);
+		    MCMC_RockyCoast::Initialise(CRNDatafile, PlatformXSectionDatafile);
 		}
 		
 		// this runs the metropolis algorithm along a chain with NIterations it prints to the file 'OutFilename'
