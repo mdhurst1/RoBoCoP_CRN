@@ -255,8 +255,7 @@ class RockyCoastCRN
 		//function to retrieve topographic shielding factor
 		double GetTopographicShieldingFactor(double Distance, double CliffHeight);
 		
-		//functions to read and retrieve geomagnetic scaling factor
-		void InitialiseGeomagData();		
+		//retrieve geomagnetic scaling factor
 		double GetGeoMagScalingFactor(double Time);
 		
 		//factor to retrieve a rate of sea level rise
@@ -472,6 +471,11 @@ class RockyCoastCRN
 		///	@author Martin D. Hurst 
 		/// @date 14/06/2018
 		void InitialiseRSLData(string RSLFilename);
+        
+        /// @brief Initialise Scaling timeseries from file
+		///	@author Martin D. Hurst 
+		/// @date 14/11/2018
+		void InitialiseScalingData(string ScalingFilename);
 };
 
 #endif

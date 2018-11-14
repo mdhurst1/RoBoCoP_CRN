@@ -524,18 +524,17 @@ void RockyCoastCRN::InitialiseTides(double A, double T)
 	WaterLevels.resize(NTidalValues);
 }
 
-void RockyCoastCRN::InitialiseGeomagData()
+void RockyCoastCRN::InitialiseScalingData(string ScalingFilename)
 {	
 	/// GEOMAG VARIATION
 	double indata;
 	char Dummy[32];
 	
 	//read in geomag data from Lifton et al. (2014) model
-	string GeoMagFilename = "Lifton_GeoMagModel_Sussex.data";
-	ifstream GeoMagIn(GeoMagFilename.c_str());
+	ifstream GeoMagIn(ScalingFilename.c_str());
 	if (!GeoMagIn)
 	{
-		printf("RockyCoastCRN::%s: line %d GeoMag data file \"%s\" doesn't exist\n\n", __func__, __LINE__, GeoMagFilename.c_str());
+		printf("RockyCoastCRN::%s: line %d GeoMag data file \"%s\" doesn't exist\n\n", __func__, __LINE__, ScalingFilename.c_str());
 		printf("Setting Geomagnetic scaling factor to 1");
 		GeoMagScalingFactor = 1;	
 	}

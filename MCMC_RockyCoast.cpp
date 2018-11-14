@@ -197,7 +197,7 @@ void MCMC_RockyCoast::RunMetropolisChain(int NIterations, char* ParameterFilenam
 	double MeanChange = 0.;       //Change in parameter values centred on zero to allow changes in both directions (pos and neg)
 	
 	char Dummy[32];
-	string RSLFilename;	
+	string RSLFilename, ScalingFilename;	
     SLR = -9999;
 
 	//Initialise seed for random number generation
@@ -225,7 +225,7 @@ void MCMC_RockyCoast::RunMetropolisChain(int NIterations, char* ParameterFilenam
 	            >> Dummy >> BeachWidth_Min   >> Dummy >> BeachWidth_Max >> Dummy >> BeachWidth_Std >> Dummy >> BeachWidth_Init
 	            >> Dummy >> BermHeight >> Dummy >> BeachSteepness >> Dummy >> JunctionElevation >> Dummy >> PlatformGradient 
                 >> Dummy >> CliffHeight >> Dummy >> CliffGradient >> Dummy >> TidalAmplitude
-                >> Dummy >> RSLFilename >> Dummy >> WhichNuclideTemp;
+                >> Dummy >> RSLFilename >> Dummy >> ScalingFilename >> Dummy >> WhichNuclideTemp;
 	
 	ParamFileIn.close();
 
@@ -241,6 +241,9 @@ void MCMC_RockyCoast::RunMetropolisChain(int NIterations, char* ParameterFilenam
     
     //Initialise Sea Level history
     MCMCPlatformCRN.InitialiseRSLData(RSLFilename);
+
+    //Initialise Geomag Scaling
+    MCMCPlatformCRN.InitialiseScalingData(ScalingFilename);
 
 	/*  start the chain with a guess this guess is a very coarse approximation of what the 'real' values 
 	    might be. The Metropolis algorithm will sample around this */
