@@ -15,9 +15,9 @@ using namespace std;
 int main()
 {
 	//Input parameters
-	double RetreatRate1 = 0.06;            //Retreat Rate (m/yr) at the start of the model run
-	double RetreatRate2 = 0.1;            //Retreat Rate (m/yr) at the end of the model run
-	int RetreatType = 0;	              //Scenario of retreat 0 = constant, 1 = step change, 2 = gradual change
+	double RetreatRate1 = 0.1;            //Retreat Rate (m/yr) at the start of the model run
+	double RetreatRate2 = 0.01;            //Retreat Rate (m/yr) at the end of the model run
+	int RetreatType = 2;	              //Scenario of retreat 0 = constant, 1 = step change, 2 = gradual change
 	double ChangeTime = 0;                //Time to change retreat rates if a step change (years))
 	
 	double PlatformGradient = 1./50.;     // Platform gradient (average if stepped platform)
@@ -48,8 +48,8 @@ int main()
     //Run the model
     //First for no steps
     string OutFileName = "RockyCoastCRN.dat";
-	RockyCoastCRNModel.RunModel(OutFileName);
-	
+	bool Flag = RockyCoastCRNModel.RunModel(OutFileName);
+	if (Flag == true) cout << "RetreatRate modified during model run due to sea level rise being too rapid" << endl;
 	cout << endl;
 	
 	return 0;

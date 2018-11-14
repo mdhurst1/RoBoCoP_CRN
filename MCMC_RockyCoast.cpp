@@ -148,10 +148,11 @@ long double MCMC_RockyCoast::RunCoastIteration(double RetreatRate1_Test, double 
 	int WriteResultsFlag = 0;
     string OutfileName = "emptyfilename";
 	MCMCPlatformCRN.UpdateParameters(RetreatRate1_Test, RetreatRate2_Test, ChangeTime_Test, BeachWidth_Test);
-	MCMCPlatformCRN.RunModel(OutfileName,WriteResultsFlag);
-	
+	bool Flag = MCMCPlatformCRN.RunModel(OutfileName,WriteResultsFlag);
+
 	//Calculate likelihood
-	return CalculateLikelihood();
+    if (Flag == false) return CalculateLikelihood();
+    else return -9999;
 }
 
 void MCMC_RockyCoast::RunMetropolisChain(int NIterations, char* ParameterFilename, char* OutFilename)
@@ -178,7 +179,7 @@ void MCMC_RockyCoast::RunMetropolisChain(int NIterations, char* ParameterFilenam
 
 	int NAccepted = 0;      //count accepted parameters
 	int NRejected = 0;      //count rejected parameters
-	
+
 	double Rand1, Rand2;    //For generating random numbers
 	
 	//Holders to define parameter space	
@@ -262,7 +263,8 @@ void MCMC_RockyCoast::RunMetropolisChain(int NIterations, char* ParameterFilenam
    	
 	//Run a single coastal iteration to get the initial Likelihood for the initial parameters
 	LastLikelihood = RunCoastIteration(RetreatRate1_New, RetreatRate2_New, ChangeTime_New, BeachWidth_New);
-	
+	LastLikelihood = CalculateLikelihood();
+
 	//set old parameters for comparison and updating
 	RetreatRate1_Old = RetreatRate1_New;
 	RetreatRate2_Old = RetreatRate2_New;

@@ -604,7 +604,7 @@ void RockyCoastCRN::UpdateParameters( double RetreatRate1_Test, double RetreatRa
   InitialBeachWidth = BeachWidth;
 }
 
-void RockyCoastCRN::RunModel(string outfilename, int WriteResultsFlag)
+bool RockyCoastCRN::RunModel(string outfilename, int WriteResultsFlag)
 {
 	/*  Main model loop. Iterates through time updating the CRN concentrations on the 
 		platform and at depth. Cliff steps back following cliff retreat rates, and 
@@ -647,7 +647,9 @@ void RockyCoastCRN::RunModel(string outfilename, int WriteResultsFlag)
 	Time = MaxTime;
 	WriteTime = MaxTime;
 	
-	//setup CliffPositionX for tracking cliff position in X
+	// setup CliffPositionX for tracking cliff position in X
+    // This may need some modifying of RetreatRates can be modified by sea level!
+    // MDH 14/11/18
 	if (RetreatType == 0) CliffPositionX = MaxTime*RetreatRate1;
 	else if (RetreatType == 1) CliffPositionX = ChangeTime*RetreatRate2 + (Time-ChangeTime)*RetreatRate1; 		      
 	else if (RetreatType == 2) CliffPositionX = MaxTime*(RetreatRate1+RetreatRate2)/2.;
@@ -667,6 +669,9 @@ void RockyCoastCRN::RunModel(string outfilename, int WriteResultsFlag)
 	double TempBeachThickness;
 	int BeachFlag = 1;
 	
+    //update morphology to get initial platform morphology ??
+    //UpdateEquillibriumMorphology();
+
 	for (int i=0; i<NXNodes; ++i)
 	{
 	  if (X[i] > CliffPositionX) 
@@ -694,17 +699,21 @@ void RockyCoastCRN::RunModel(string outfilename, int WriteResultsFlag)
   PlatformElevationOld = PlatformElevation;
   
   
-  //Set Z tracker to keep track of elevation index at the platform/cliff junction
-  for (int j=0; j<NZNodes; ++j) if (Z[j] > SeaLevel+JunctionElevation+BermHeight) ZTrackInd = j;
+    //Set Z tracker to keep track of elevation index at the platform/cliff junction
+    for (int j=0; j<NZNodes; ++j) if (Z[j] > SeaLevel+JunctionElevation+BermHeight) ZTrackInd = j;    
 	
+    // reset flag for forced modification of retreat rates
+    RetreatRateSLRFlag = 0;
+    
 	//////////////////////////////////////////////////////////
 	//MAIN MODEL LOOP
 	//////////////////////////////////////////////////////////
 
-	while (CliffPositionX >= 0)
+    // Make loop time dependent not cliff position dependent?
+	while (Time > 0)
 	{
 		//Get retreat rate depending on style of retreat
-		GetRetreatRate();
+        GetRetreatRate();
 		
 		//Update beachwidth
 		if (BeachType == 1) GetSinWaveBeachWidth(Time);
@@ -741,8 +750,7 @@ void RockyCoastCRN::RunModel(string outfilename, int WriteResultsFlag)
 			SeaLevel += SeaLevelChange;
 		}
 		
-		//update cliff position and time
-		CliffPositionX -= RetreatRate*dt;
+		//update time
 		Time -= dt;
 		if (CliffPositionX < X[CliffPositionInd]) CliffPositionInd -= 1;
 		//if (SeaLevel < Z[ZTrackInd]) ZTrackInd += 1;
@@ -757,8 +765,9 @@ void RockyCoastCRN::RunModel(string outfilename, int WriteResultsFlag)
     	WriteCRNProfile(OutFileName, Time+dt);
     }
 	
-  CliffPositionInd = 0;
-  
+    CliffPositionInd = 0;
+    
+    return RetreatRateSLRFlag;
 }
 
 void RockyCoastCRN::GetRetreatRate()
@@ -792,6 +801,15 @@ void RockyCoastCRN::GetRetreatRate()
 	  printf("RockyCoastCRN::%s: line %d Unknown retreat type!\n\n", __func__, __LINE__);
 	  exit(EXIT_SUCCESS);
 	}
+
+    // Check retreat rate is fast enough given rate of sea level rise
+    if (RetreatRate < GetSeaLevelRise(Time)/PlatformGradient)
+    {
+        //printf("RockyCoastCRN::%s: Retreat Rate too slow for sea level\n", __func__);
+        //printf("\tIncreasing retreat rate to SLRRate/PlatformGradient\n\n");
+        RetreatRate = GetSeaLevelRise(Time)/PlatformGradient;
+        RetreatRateSLRFlag = 1;
+    }
 }
 
 void RockyCoastCRN::UpdateCRNs()
@@ -925,20 +943,27 @@ void RockyCoastCRN::UpdateCRNs()
 
 void RockyCoastCRN::UpdateEquillibriumMorphology()
 {
-  /*
-  Function to update the morphology of the platform. Moves the cliff following the 
-  prescribed retreat rate and updates the platform surface.
-  
-  Martin Hurst
-  February 2016
-  */
-  
-  //temp parameters
-  double TempPlatformElevChange, TempBeachThickness;
+    /*
+    Function to update the morphology of the platform. Moves the cliff following the 
+    prescribed retreat rate and updates the platform surface.
+
+    Added lower limitation on retreat rate based on sea level rise. If platform gradient is
+    1/50 and sea level rises 1mm then retreat has to be at least 50mm to maintain platform gradient.
+    MDH Nov 2018
+
+    Martin Hurst
+    February 2016
+    */
+
+    //temp parameters
+    double TempPlatformElevChange, TempBeachThickness;
 	int BeachFlag = 1;
-	
-  //Update surface elevations
-  PlatformElevationOld = PlatformElevation;
+
+    // Update cliff position
+    CliffPositionX -= RetreatRate*dt;
+
+    //Update surface elevations
+    PlatformElevationOld = PlatformElevation;
   
 	for (int i=CliffPositionInd; i<NXNodes; ++i)
 	{

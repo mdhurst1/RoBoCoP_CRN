@@ -180,10 +180,10 @@ class RockyCoastCRN
 		vector<double> GeoMagScalingFactors;  //Holds data from Lifton et al. (2014) Geomag model
 		vector<double> RSLTime;
 		vector<double> RSLRate;               //Holds data from Bradley et al. (2011) GIA model
-	
-		double PlatformWidth;								//Width of model domain
-		double PlatformDepth;								//Depth of model domain
-		double NDV;													//No Data Value placeholder
+	    bool RetreatRateSLRFlag;              // Flag to track if retreat rate has had to be modified due to SLR being too fast
+		double PlatformWidth;				  //Width of model domain
+		double PlatformDepth;				  //Depth of model domain
+		double NDV;							  //No Data Value placeholder
 		
 		//CRN
 		vector <vector <double> >P_Spal, P_Muon_Fast, P_Muon_Slow; //local production rates for spallation and muons for any nuclide
@@ -379,9 +379,10 @@ class RockyCoastCRN
 		///   and a relative sea level history text file (generated from Bradley et al. (2011) model).
 		/// @param RetreatType Single (=0), step change (=1), or gradual change (=2) retreat rate scenario
 		/// @param WriteResultsFlag flag to write results to file (=1) or not (=0), default is on.
+        /// @return boolean flag to signal RetreatRate has been overwritten
 		///	@author Martin D. Hurst 
-    /// @date 14/09/2015
-		void RunModel(string OutFileName, int WriteResultsFlag=1);
+        /// @date 14/09/2015
+		bool RunModel(string OutFileName, int WriteResultsFlag=1);
 		
 		/// @brief Determine current retreat rate
 		/// @details This function determines the cliff retreat rate for the current timestep based on
