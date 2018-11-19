@@ -754,7 +754,16 @@ bool RockyCoastCRN::RunModel(string outfilename, int WriteResultsFlag)
 		if (CliffPositionX < X[CliffPositionInd]) CliffPositionInd -= 1;
 		//if (SeaLevel < Z[ZTrackInd]) ZTrackInd += 1;
         if (CliffPositionInd < 0) CliffPositionInd = 0;
-    
+
+		// break out if a retreat rate problem
+		if (RetreatRateSLRFlag = 1) 
+		{
+			if (WriteResultsFlag != 0)
+			{
+				cout << "Retreat Rate too slow for sea level rise rate, cannot maintain platform gradient." << endl;
+			}
+			break;
+		}
 	}
 
 	if (WriteResultsFlag != 0)
