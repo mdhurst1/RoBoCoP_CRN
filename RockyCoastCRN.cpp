@@ -72,7 +72,7 @@
 #include <sstream>
 #include <cstdlib>
 #include "./RockyCoastCRN.hpp"
-#include "./RPM.hpp"
+#include "../RPM.hpp"
 
 using namespace std;
 
@@ -1329,7 +1329,7 @@ void RockyCoastCRN::WriteCRNProfile(string OutputFileName, double Time)
 
 	//open the output filestream and write headers
 	ofstream WritePlatform;
-	if (FileExists == 0)
+	if (FileExists == 0 || Time < 0)
 	{
 		WritePlatform.open(OutputFileName.c_str());
 		if (WritePlatform.is_open()) 

@@ -150,7 +150,7 @@ void RPM::Initialise(double dZ_in, double dX_in)
 }
 
 
-void RPM::Initialise(double dZ_in, double dX_in, double Gradient, double CliffHeight)
+void RPM::Initialise(double dZ_in, double dX_in, double Gradient, double CliffHeight, double MinElevation)
 {
 	/* initialise a sloping cliff RPM object */
 	printf("\nRPM.Initialise: Initialised a RPM as a slope\n");
@@ -186,7 +186,7 @@ void RPM::Initialise(double dZ_in, double dX_in, double Gradient, double CliffHe
 	dX = dX_in;
 	InitialGradient = Gradient;
 	NXNodes = 1000;
-	NZNodes = round(2.*CliffHeight/dZ)+1;
+	NZNodes = round((CliffHeight-MinElevation)/dZ)+1;
 
 	//declare an array of zeros for assignment of Z vector
 	Z = vector<double>(NZNodes,0.0);

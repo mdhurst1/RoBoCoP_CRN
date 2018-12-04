@@ -71,7 +71,7 @@ These pages describe the software.
 #include <sstream>
 #include <cstdlib>
 #include "RoBoCoP.hpp"
-#include "RPM.hpp"
+#include "../RPM.hpp"
 
 using namespace std;
 

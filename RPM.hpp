@@ -195,6 +195,7 @@ class RPM
 		double CliffWeatheringRate;
 		double CliffFailureDepth;
 		double CliffHeight;
+		double MinElevation;
 
 		//This will need to be populated in the initialise tides function
 		vector<double> WeatheringEfficacy;
@@ -218,7 +219,7 @@ class RPM
 		//Initialise Functions
 		void Initialise();
 		void Initialise(double dZ, double dX);
-		void Initialise(double dZ_in, double dX_in, double Gradient, double CliffHeight);
+		void Initialise(double dZ_in, double dX_in, double Gradient, double CliffHeight, double MinElevation);
 
 	protected:
 
@@ -239,14 +240,14 @@ class RPM
 			Initialise(dZ, dX);
 		}
 
-		RPM(double dZ, double dX, double Gradient, double CliffHeight)
+		RPM(double dZ, double dX, double Gradient, double CliffHeight, double MinElevation)
 		{
-			Initialise(dZ, dX, Gradient, CliffHeight);
+			Initialise(dZ, dX, Gradient, CliffHeight, MinElevation);
 		}
 
 		void ResetModel()
 		{
-			Initialise(dZ,dX, InitialGradient, CliffHeight);
+			Initialise(dZ,dX, InitialGradient, CliffHeight, MinElevation);
 		}
 
 		//Initialise Tides
