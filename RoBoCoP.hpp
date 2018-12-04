@@ -113,11 +113,8 @@ class RoBoCoP
 		double Time, MaxTime, dt;
 		
 		//PHYSICAL CONSTANTS
-		static const double rho_w = 1025.;
-		static const double g = 9.81;
-		static const double k = 0.02;
-		static const double M = 0.0001;
-					
+		static const double rho_w, g, k, M;
+							
     /* FUNCTION DECLARATIONS */
 
 		//Initialise Functions
@@ -202,5 +199,11 @@ class RoBoCoP
 		vector<double> get_Z() const { return Z; }
 		
 };
+
+// Constant variable values
+//double const RoBoCoP::rho_w = 1025.;
+//double const RoBoCoP::g = 9.81;
+//double const RoBoCoP::k = 0.02;
+//double const RoBoCoP::M = 0.0001;
 
 #endif

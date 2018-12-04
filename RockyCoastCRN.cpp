@@ -72,7 +72,7 @@
 #include <sstream>
 #include <cstdlib>
 #include "./RockyCoastCRN.hpp"
-#include "./Hiro.hpp"
+#include "./RPM.hpp"
 
 using namespace std;
 
@@ -306,21 +306,21 @@ void RockyCoastCRN::Initialise(RoBoCoP RoBoCoPCoast, vector<int> WhichNuclides)
 	GeoMagScalingFactor = 1;
 }
 
-void RockyCoastCRN::Initialise(Hiro HiroCoast, vector<int> WhichNuclides)
+void RockyCoastCRN::Initialise(RPM RPMCoast, vector<int> WhichNuclides)
 {
-	/* initialise a RockyCoastCRN object for use with a Hiro object */
-	printf("\nRockyCoastCRN.Initialise: Initialised a RockyCoastCRN object for use with a Hiro Model object\n");
+	/* initialise a RockyCoastCRN object for use with a RPM object */
+	printf("\nRockyCoastCRN.Initialise: Initialised a RockyCoastCRN object for use with a RPM Model object\n");
 
-	//set tidal range based on HiroCoast
-	TidalRange = HiroCoast.TidalRange;
+	//set tidal range based on RPMCoast
+	TidalRange = RPMCoast.TidalRange;
 	
-	//Setup CRN domain based on HiroCoast
-	NXNodes = HiroCoast.NXNodes;
-	NZNodes = HiroCoast.NZNodes;
+	//Setup CRN domain based on RPMCoast
+	NXNodes = RPMCoast.NXNodes;
+	NZNodes = RPMCoast.NZNodes;
 	NDV = -9999;
-	dX = HiroCoast.dX;
-	dZ = HiroCoast.dZ;
-	dt = HiroCoast.TimeInterval;
+	dX = RPMCoast.dX;
+	dZ = RPMCoast.dZ;
+	dt = RPMCoast.TimeInterval;
 	
 	//Initialise the nuclides
 	InitialiseNuclides(WhichNuclides);
@@ -330,7 +330,7 @@ void RockyCoastCRN::Initialise(Hiro HiroCoast, vector<int> WhichNuclides)
 	vector<double> EmptyX(NXNodes,0);
 	vector<double> EmptyXNDV(NXNodes,NDV);
 	X = EmptyX;
-	Z = HiroCoast.Z;
+	Z = RPMCoast.Z;
 	PlatformElevation = EmptyXNDV;
 	PlatformElevationOld = EmptyXNDV;
 	SurfaceElevation = EmptyXNDV;
@@ -343,13 +343,13 @@ void RockyCoastCRN::Initialise(Hiro HiroCoast, vector<int> WhichNuclides)
 	N = EmptyNs;
 	
 	//Setup tides
-	TidalRange = HiroCoast.TidalRange;
+	TidalRange = RPMCoast.TidalRange;
 	
 	//Initialise Geomagnetic Scaling as constant
 	GeoMagScalingFactor = 1;
 	
 	//Get morphology using update function
-	UpdateMorphology(HiroCoast);
+	UpdateMorphology(RPMCoast);
 }
 
 void RockyCoastCRN::InitialiseNuclides(vector<int> WhichNuclides)
@@ -756,7 +756,7 @@ bool RockyCoastCRN::RunModel(string outfilename, int WriteResultsFlag)
         if (CliffPositionInd < 0) CliffPositionInd = 0;
 
 		// break out if a retreat rate problem
-		if (RetreatRateSLRFlag = 1) 
+		if (RetreatRateSLRFlag == 1) 
 		{
 			if (WriteResultsFlag != 0)
 			{
@@ -1058,12 +1058,12 @@ void RockyCoastCRN::UpdateMorphology(RoBoCoP RoBoCoPCoast)
   SeaLevel = RoBoCoPCoast.SeaLevel;
 }
 
-void RockyCoastCRN::UpdateMorphology(Hiro HiroCoast)
+void RockyCoastCRN::UpdateMorphology(RPM RPMCoast)
 {
 	//Get number of nodes in coastal morphology
-	X = HiroCoast.X;
-	Zx = HiroCoast.Zx;
-	SurfaceInd = HiroCoast.ZInd;
+	X = RPMCoast.X;
+	Zx = RPMCoast.Zx;
+	SurfaceInd = RPMCoast.ZInd;
 	
 	int TempXSize = X.size();
 	while (TempXSize > NXNodes)
@@ -1104,8 +1104,8 @@ void RockyCoastCRN::UpdateMorphology(Hiro HiroCoast)
 	}
 	
 	//update Sea levl
-	SeaLevel = HiroCoast.SeaLevel;
-	TidalRange = HiroCoast.TidalRange;
+	SeaLevel = RPMCoast.SeaLevel;
+	TidalRange = RPMCoast.TidalRange;
 }
 
 void RockyCoastCRN::UpdateMorphology(vector<double> XCoast, vector<double> ZCoast)

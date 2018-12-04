@@ -71,7 +71,7 @@ These pages describe the software.
 #include <sstream>
 #include <cstdlib>
 #include "RoBoCoP.hpp"
-#include "Hiro.hpp"
+#include "RPM.hpp"
 
 using namespace std;
 
@@ -83,7 +83,7 @@ using namespace std;
 class RockyCoastCRN
 {
 	friend class RoBoCoP;
-	friend class Hiro;
+	friend class RPM;
 	
 	private:
 		vector<double> X;	  //cross shore distance (m)
@@ -244,7 +244,7 @@ class RockyCoastCRN
 		void Initialise(double retreatrate1, double retreatrate2, int retreattype, double changetime, double beachwidth, int beachtype, double bermheight, double beachsteepness, double platformgradient, double cliffheight, double cliffgradient, double junctionelevation, double tidalamplitude, double SLR, int steppedplatform, double stepsize, vector<int> WhichNuclides);
 		
 		void Initialise(RoBoCoP RoBoCoPCoast, vector<int> WhichNuclides);
-		void Initialise(Hiro HiroCoast, vector<int> WhichNuclides);
+		void Initialise(RPM RPMCoast, vector<int> WhichNuclides);
 		
 		//function to initialise production schematics
 		void InitialiseNuclides(vector<int> WhichNuclides);
@@ -327,13 +327,13 @@ class RockyCoastCRN
 			RockyCoastCRN::Initialise(RoBoCoPCoast, WhichNuclides);
 		}
 		
-		/// @brief Initialisation function with friend class Hiro as the morphological model
-		/// @param Hiro HiroCoast a Hiro coastal morphology object 
+		/// @brief Initialisation function with friend class RPM as the morphological model
+		/// @param RPM RPMCoast a RPM coastal morphology object 
 		/// @author Martin D. Hurst 
 		/// @date 13/3/2017
-		RockyCoastCRN(Hiro HiroCoast, vector<int> WhichNuclides)
+		RockyCoastCRN(RPM RPMCoast, vector<int> WhichNuclides)
 		{
-			RockyCoastCRN::Initialise(HiroCoast, WhichNuclides);
+			RockyCoastCRN::Initialise(RPMCoast, WhichNuclides);
 		}
 		
 		/// @brief Empty initialisation function, will throw an error.
@@ -418,11 +418,11 @@ class RockyCoastCRN
 		/// @brief Updates the platform morphology
 		/// @details This function calculates the amount of platform downwear and 
 		/// 	cliff retre updates the elevations of the platform surface based on 
-		/// 	an iteration of the Hiro coast object.
+		/// 	an iteration of the RPM coast object.
 		/// @author Martin D. Hurst
-		/// @param HiroCoast A Hiro Coastal model object
+		/// @param RPMCoast A RPM Coastal model object
     	/// @date 13/03/2017
-		void UpdateMorphology(Hiro HiroCoast);
+		void UpdateMorphology(RPM RPMCoast);
 		
 		/// @brief Updates the platform morphology based on recieving X and Z vectors
 		/// @details This function updates the platform morphology based on a profile passed through
