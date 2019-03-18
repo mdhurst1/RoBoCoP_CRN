@@ -18,11 +18,12 @@ fig = plt.figure(1,figsize=(6,6))
 ax1 = fig.add_subplot(211)
 ax2 = fig.add_subplot(212)
 
+
 # choose colour map
-ColourMap = cm.copper
+ColourMap = cm.hot
 
 # get filename
-FileName = "../driver_files/RockyCoastCRN.dat"
+FileName = "../driver_files/scalby_8cm_testX.dat"
 
 # open the file
 f = open(FileName,'r')
@@ -59,9 +60,13 @@ for i in range(1,NoLines,4):
     ax1.plot(Xplot,Zplat,'-',c=ColourMap(Colour))
     ax2.plot(Xplot,Nplot,'-',c=ColourMap(Colour))
 
+
 ax2.set_xlabel("Distance (m)")
 ax2.set_ylabel(r"$^{10}$Be Concentration")
 ax1.set_ylabel("Elevation (m)")
 
-plt.savefig("test_output_1.png", dpi=300)  
+#limit x axis to 250m
+#plt.xlim(0,250) 
+
+plt.savefig("test_output_SY_8cm_testX.png", dpi=300)  
 plt.show()

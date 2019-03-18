@@ -45,7 +45,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <fstream>
 #include <sstream>
 #include <cstdlib>
-#include <omp.h>
 #include <unistd.h>
 #include "../RockyCoastCRN.hpp"
 
@@ -54,58 +53,97 @@ using namespace std;
 int main()
 {
 	//Input parameters
-	double RetreatRate1 = 0.19;            //Retreat Rate (m/yr) at the start of the model run
-	double RetreatRate2 = 0.1;            //Retreat Rate (m/yr) at the end of the model run
+	double RetreatRate1 = 0.07455212;            //Retreat Rate (m/yr) at the start of the model run
+	double RetreatRate2 = 0.01156387;            //Retreat Rate (m/yr) at the end of the model run
+        int RetreatType = 2;	             //Scenario of retreat 0 = constant, 1 = step change, 2 = gradual change
+
 	double ChangeTime = 0;                //Time to change retreat rates if a step change
-	double PlatformGradient = 1./100.;    //Platform gradient (average if stepped platform)
-	double Amp = 2.;                     	//Tidal amplitude (1/2 tidal range)
-	double CliffHeight = 0.;             //Cliff height for shielding
-	double BeachWidth = 0.;               //Beach width (currently assumes total shielding)
-	double BermHeight = 0.;               //Elevation of Beach Berm above junction (set beachwidth = 0 and bermheight = 0 for no beaches)
+	double PlatformGradient = 1./50.;    //Platform gradient (average if stepped platform)
+	double Amp = 4.;                     	//Tidal amplitude (1/2 tidal range)
+	double CliffHeight = 35.;             //Cliff height for shielding
+        double CliffGradient = 25./35.;       //slope of the coastal bluff
+	double BeachWidth = 2.;               //Beach width (currently assumes total shielding)
+	double BermHeight = 5.;               //Elevation of Beach Berm above junction (set beachwidth = 0 and bermheight = 0 for no beaches)
+        double BeachSteepnessFactor = 0.6;    // Scaling factor related to grain size controlling beach steepness
 	int BeachType = 0;                    //0 = constant beach width, 1 = sinusoidal beach width, 2 = thinning beach
 	double ElevInit = 2.;                 //Elevation of the platform/cliff junction
-	int RetreatType = 0;	                //Scenario of retreat 0 = constant, 1 = step change, 2 = gradual change
+        double SeaLevelRise = 0.001;           //Rate of sea level rise
+
+
 	int SteppedPlatformFlag = 0;          //Flag for a stepped platform (1 = steps, 0=no steps)
 	double StepSize = 0.0;                //size of step (0=no steps)
-	
-	// Changing RetreatRates and Platform gradient taken from plot_robocop_CRN_results.py
-	RetreatRate1 = 0.146;
-	PlatformGradient = 0.0095;
-	//Create Platform CRN object
-	RockyCoastCRN RockyCoastCRNModel(RetreatRate1, RetreatRate2, RetreatType, ChangeTime, BeachWidth, BeachType, BermHeight, PlatformGradient, CliffHeight, ElevInit, Amp, SteppedPlatformFlag, StepSize);
 
-  //Run the model
-  //First for no steps
-  string OutFileName = "RetreatRate1_0.146.xzn";
+        //Set up which nuclides to track, 10 is 10Be, 14 is 14C, 26 is 26Al, 36 is 36Cl
+	vector<int> WhichNuclides;
+	WhichNuclides.push_back(10);
+	
+	
+	//Create Platform CRN object
+	RockyCoastCRN RockyCoastCRNModel (RetreatRate1, RetreatRate2, RetreatType, ChangeTime, BeachWidth, BeachType, BermHeight, BeachSteepnessFactor, PlatformGradient, CliffHeight, CliffGradient, ElevInit, Amp, SeaLevelRise, SteppedPlatformFlag, StepSize, WhichNuclides);
+
+    // Read in sea level data ? //comment out these two lines for constant RSL change
+    string RSLFilename = "bideford_RSL_bradley_model.data";
+    RockyCoastCRNModel.InitialiseRSLData(RSLFilename);
+
+  //Run the model for RetreatRate 5_1 + 5_2
+  string OutFileName = "RetreatRate_1_test.xzn";
 	RockyCoastCRNModel.RunModel(OutFileName);
 	
-	//20 cm RetreatRate
-	RetreatRate1 = 0.089;
-	PlatformGradient = 0.0088;
-	OutFileName = "RetreatRate1_0.089.xzn";
-	RockyCoastCRN RockyCoastCRNModel2(RetreatRate1, RetreatRate2, RetreatType, ChangeTime, BeachWidth, BeachType, BermHeight, PlatformGradient, CliffHeight, ElevInit, Amp, SteppedPlatformFlag, StepSize);
-	RockyCoastCRNModel2.RunModel(OutFileName);
+	//RetreatRate 5_1 + M_2
+	RetreatRate1 = 0.07455212;
+	RetreatRate2 = 0.01920925;
+	OutFileName = "RetreatRate_2_test.xzn";
+	RockyCoastCRNModel.UpdateParameters(RetreatRate1,RetreatRate2,ChangeTime,BeachWidth);
+	RockyCoastCRNModel.RunModel(OutFileName);
 	
-	//10 cm RetreatRate
-	RetreatRate1 = 0.076;
-	PlatformGradient = 0.0081;
-	OutFileName = "RetreatRate1_0.076.xzn";
-	RockyCoastCRN RockyCoastCRNModel3(RetreatRate1, RetreatRate2, RetreatType, ChangeTime, BeachWidth, BeachType, BermHeight, PlatformGradient, CliffHeight, ElevInit, Amp, SteppedPlatformFlag, StepSize);
-	RockyCoastCRNModel3.RunModel(OutFileName);
+	//RetreatRate 5_1 + 95_2
+	RetreatRate1 = 0.07455212;
+	RetreatRate2 = 0.02963008;
+	OutFileName = "RetreatRate_3_test.xzn";
+	RockyCoastCRNModel.UpdateParameters(RetreatRate1,RetreatRate2,ChangeTime,BeachWidth);
+	RockyCoastCRNModel.RunModel(OutFileName);
 	
-	//5 cm RetreatRate
-	RetreatRate1 = 0.073;
-	PlatformGradient = 0.0078;
-	OutFileName = "RetreatRate1_0.073.xzn";
-	RockyCoastCRN RockyCoastCRNModel4(RetreatRate1, RetreatRate2, RetreatType, ChangeTime, BeachWidth, BeachType, BermHeight, PlatformGradient, CliffHeight, ElevInit, Amp, SteppedPlatformFlag, StepSize);
-	RockyCoastCRNModel4.RunModel(OutFileName);
+	//RetreatRate M_1 + 5_2
+	RetreatRate1 = 0.08327285;
+	RetreatRate2 = 0.01156387;
+	OutFileName = "RetreatRate_4_test.xzn";
+	RockyCoastCRNModel.UpdateParameters(RetreatRate1,RetreatRate2,ChangeTime,BeachWidth);
+	RockyCoastCRNModel.RunModel(OutFileName);
 	
-	//5 cm RetreatRate
-	RetreatRate1 = 0.072;
-	PlatformGradient = 0.0073;
-	OutFileName = "RetreatRate1_0.072.xzn";
-	RockyCoastCRN RockyCoastCRNModel5(RetreatRate1, RetreatRate2, RetreatType, ChangeTime, BeachWidth, BeachType, BermHeight, PlatformGradient, CliffHeight, ElevInit, Amp, SteppedPlatformFlag, StepSize);
-	RockyCoastCRNModel5.RunModel(OutFileName);
+	//RetreatRate M_1 + M_2
+	RetreatRate1 = 0.08327285;
+	RetreatRate2 = 0.01920925;
+	OutFileName = "RetreatRate_5_test.xzn";
+	RockyCoastCRNModel.UpdateParameters(RetreatRate1,RetreatRate2,ChangeTime,BeachWidth);
+	RockyCoastCRNModel.RunModel(OutFileName);
+
+        //RetreatRate M_1 + 95_2
+	RetreatRate1 = 0.08327285;
+	RetreatRate2 = 0.02963008;
+	OutFileName = "RetreatRate_6_test.xzn";
+        RockyCoastCRNModel.UpdateParameters(RetreatRate1,RetreatRate2,ChangeTime,BeachWidth);
+	RockyCoastCRNModel.RunModel(OutFileName);
+
+        //RetreatRate 95_1 + 5_2
+	RetreatRate1 = 0.09386583;
+	RetreatRate2 = 0.01156387;
+	OutFileName = "RetreatRate_7_test.xzn";
+	RockyCoastCRNModel.UpdateParameters(RetreatRate1,RetreatRate2,ChangeTime,BeachWidth);
+	RockyCoastCRNModel.RunModel(OutFileName);
+
+        //RetreatRate 95_1 + M_2
+	RetreatRate1 = 0.09386583;
+	RetreatRate2 = 0.01920925;
+	OutFileName = "RetreatRate_8_test.xzn";
+	RockyCoastCRNModel.UpdateParameters(RetreatRate1,RetreatRate2,ChangeTime,BeachWidth);
+	RockyCoastCRNModel.RunModel(OutFileName);
+
+        //RetreatRate 95_1 + 95_2
+	RetreatRate1 = 0.09386583;
+	RetreatRate2 = 0.02963008;
+	OutFileName = "RetreatRate_9_test.xzn";
+	RockyCoastCRNModel.UpdateParameters(RetreatRate1,RetreatRate2,ChangeTime,BeachWidth);
+	RockyCoastCRNModel.RunModel(OutFileName);
 	
 	cout << endl;
 	

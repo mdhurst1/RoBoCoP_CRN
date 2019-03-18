@@ -22,12 +22,12 @@ ax2 = fig.add_subplot(212)
 ColourMap = cm.copper
 
 # List of erosion rates
-Rates = [0.08]
+Rates = [1,5,9]
 
 for Rate in Rates:
 
 	# get filename
-	FileName = "../driver_files/RockyCoastCRN_"+str(Rate)+"m.dat"
+	FileName ="../driver_files/RetreatRate_"+str(Rate)+"_test.xzn"
 
 	# open the file
 	f = open(FileName,'r')
@@ -44,10 +44,11 @@ for Rate in Rates:
 	MaxTime = float(Lines[1].strip().split(" ")[0])
     
 	#Get data  
-	XLine = Lines[-3].strip().split(" ")  
+	XLine = Lines[-4].strip().split(" ")  
 	ZLine = Lines[-2].strip().split(" ")
 	NLine = Lines[-1].strip().split(" ")
 	Time = float(ZLine[0])
+
 	X = np.array(XLine[1:],dtype="float64")
 	Z = np.array(ZLine[1:],dtype="float64")
 	N = np.array(NLine[1:],dtype="float64")
@@ -61,9 +62,18 @@ for Rate in Rates:
 	Colour = (Rate-np.min(Rates))/(np.max(Rates)-np.min(Rates))
 	ax1.plot(Xplot,Zplot,'-',c=ColourMap(Colour))
 	ax2.plot(Xplot,Nplot,'-',c=ColourMap(Colour))
+
+#File2 = "../driver_files/Bideford_CRN.data"
+#X,CRN,Error=np.loadtxt(File2,unpack=True,skiprows=1,usecols=(1,2,3),delimiter=" ")
+
+#ax2.errorbar(X,CRN,fmt='o',yerr=Error,c='k')
+#ax2.scatter(X,CRN)
     
 ax2.set_xlabel("Distance (m)")
 ax2.set_ylabel(r"$^{10}$Be Concentration")
 ax1.set_ylabel("Elevation (m)")
 
-plt.savefig("test_output_1.png", dpi=300)  
+#limit x axis to 250m
+plt.xlim(0,250) 
+
+plt.savefig("test_output_CB_3.png", dpi=300)  
