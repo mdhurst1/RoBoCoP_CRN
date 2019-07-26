@@ -71,6 +71,7 @@
 #include <fstream>
 #include <sstream>
 #include <cstdlib>
+#include <omp.h>
 #include "./RockyCoastCRN.hpp"
 #include "../RPM.hpp"
 
@@ -819,6 +820,21 @@ void RockyCoastCRN::GetRetreatRate()
         RetreatRate = GetSeaLevelRise(Time)/PlatformGradient;
         RetreatRateSLRFlag = 1;
     }
+}
+
+void RockyCoastCRN::ParallelUpdateCRNs()
+{
+	/*
+	Function to update the concentrations of cosmogenic radionuclides at and below 
+	the platform surface. 
+	
+	Multithreaded using pragma omp directives
+
+	Martin Hurst
+	February 2016
+	*/
+
+
 }
 
 void RockyCoastCRN::UpdateCRNs()

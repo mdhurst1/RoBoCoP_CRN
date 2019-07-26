@@ -399,6 +399,7 @@ class RockyCoastCRN
 		/// @author Martin D. Hurst 
 		/// @date 09/02/2016
 		void UpdateCRNs();
+		void ParallelUpdateCRNs();
 
 		/// @brief Updates the platform morphology
 		/// @details This function calculates the amount of platform downwear and updates the elevations
