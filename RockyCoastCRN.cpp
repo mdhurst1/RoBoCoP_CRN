@@ -74,9 +74,9 @@
 #include <omp.h>
 #include "./RockyCoastCRN.hpp"
 #include "../RPM.hpp"
+#include "../FastExp.hpp"
 
 using namespace std;
-
 
 void RockyCoastCRN::Initialise()
 {
