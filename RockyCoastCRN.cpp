@@ -74,7 +74,7 @@
 #include <omp.h>
 #include "./RockyCoastCRN.hpp"
 #include "../RPM.hpp"
-//#include "../FastExp.hpp"
+#include "../FastExp.hpp"
 
 using namespace std;
 
@@ -896,9 +896,9 @@ void RockyCoastCRN::UpdateCRNs()
 				//FOR EACH NUCLIDE OF INTEREST
 				for (int n=0; n<NoNuclides; ++n)
 				{
-					P_Spal[n][j] += GeoMagScalingFactor*TopoShieldingFactor*Po_Spal[n]*exp(-WaterDepths[a]/z_ws);
-					P_Muon_Fast[n][j] += TopoShieldingFactor*Po_Muon_Fast[n]*exp(-WaterDepths[a]/z_wm);
-					P_Muon_Slow[n][j] += TopoShieldingFactor*Po_Muon_Slow[n]*exp(-WaterDepths[a]/z_wm);
+					P_Spal[n][j] += GeoMagScalingFactor*TopoShieldingFactor*Po_Spal[n]*fastexp(-WaterDepths[a]/z_ws);
+					P_Muon_Fast[n][j] += TopoShieldingFactor*Po_Muon_Fast[n]*fastexp(-WaterDepths[a]/z_wm);
+					P_Muon_Slow[n][j] += TopoShieldingFactor*Po_Muon_Slow[n]*fastexp(-WaterDepths[a]/z_wm);
 				}
 			}
 			//FOR EACH NUCLIDE OF INTEREST
@@ -933,9 +933,9 @@ void RockyCoastCRN::UpdateCRNs()
 					//update concentrations at depth
 					//This is kept as SurfaceElevation not Platform Elevation for now
 					//NB This assumes that material density of the beach is the same as the bedrock!
-					N[n][j][i] += dt*P_Spal[n][j]*exp((Z[i]-SurfaceElevation[j])/z_rs);	//spallation
-					N[n][j][i] += dt*P_Muon_Fast[n][j]*exp((Z[i]-SurfaceElevation[j])/z_rm);	//muons
-					N[n][j][i] += dt*P_Muon_Slow[n][j]*exp((Z[i]-SurfaceElevation[j])/z_rm);	//muons
+					N[n][j][i] += dt*P_Spal[n][j]*fastexp((Z[i]-SurfaceElevation[j])/z_rs);	//spallation
+					N[n][j][i] += dt*P_Muon_Fast[n][j]*fastexp((Z[i]-SurfaceElevation[j])/z_rm);	//muons
+					N[n][j][i] += dt*P_Muon_Slow[n][j]*fastexp((Z[i]-SurfaceElevation[j])/z_rm);	//muons
 					//remove atoms due to radioactive decay
 					N[n][j][i] -= dt*Lambda[n];
 				}
@@ -944,9 +944,9 @@ void RockyCoastCRN::UpdateCRNs()
 					for (int n=0; n<NoNuclides; ++n)
 					{
 						// Update surface concentrations
-						SurfaceN[n][j] += dt*P_Spal[n][j]*exp((PlatformElevation[j]-SurfaceElevation[j])/z_rs);	//spallation
-					    SurfaceN[n][j] += dt*P_Muon_Fast[n][j]*exp((PlatformElevation[j]-SurfaceElevation[j])/z_rm);	//muons
-					    SurfaceN[n][j] += dt*P_Muon_Slow[n][j]*exp((PlatformElevation[j]-SurfaceElevation[j])/z_rm);	//muons
+						SurfaceN[n][j] += dt*P_Spal[n][j]*fastexp((PlatformElevation[j]-SurfaceElevation[j])/z_rs);	//spallation
+					    SurfaceN[n][j] += dt*P_Muon_Fast[n][j]*fastexp((PlatformElevation[j]-SurfaceElevation[j])/z_rm);	//muons
+					    SurfaceN[n][j] += dt*P_Muon_Slow[n][j]*fastexp((PlatformElevation[j]-SurfaceElevation[j])/z_rm);	//muons
 
 						//linearly interpolate to get concentration at the surface
 						//if (PlatformElevationOld[j] == -9999) PlatformElevationOld[j] = SeaLevel+JunctionElevation;
