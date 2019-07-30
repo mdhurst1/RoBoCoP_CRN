@@ -834,7 +834,126 @@ void RockyCoastCRN::ParallelUpdateCRNs()
 	February 2016
 	*/
 
+	//Temp parameters
+	vector<double> EmptyNVec(NXNodes,0);
+	vector <vector <double> > P_Spal(NoNuclides,EmptyNVec);
+	P_Muon_Fast = P_Spal;
+	P_Muon_Slow = P_Spal;
+	
+	// variation in production on the platform at depth as a function of a tidal period
+	// First get a Tidal Sequence of Water Levels, clipping for negative depths
+	for (int i=0, NN=WaterLevels.size(); i<NN;++i) WaterLevels[i] = SeaLevel+TideLevels[i];
 
+	//LOOP Through the concentrations arrays
+	#pragma omp parallel
+	{
+		#pragma omp for schedule(guided)
+		for (int j=0; j<NXNodes; ++j)
+		{	
+			//skip if we're on non existant topography
+			if (SurfaceElevation[j] == NDV) continue;
+			
+			//Get topographic shielding factor
+			TopoShieldingFactor = GetTopographicShieldingFactor(X[j]-CliffPositionX, CliffHeight);
+			
+			//Sort out the water shielding to set surface production rates
+			if (SurfaceElevation[j] > SeaLevel+TidalAmplitude)
+			{
+				for (int n=0; n<NoNuclides; ++n)
+				{
+					P_Spal[n][j] = Po_Spal[n];
+					P_Muon_Fast[n][j] = Po_Muon_Fast[n];
+					P_Muon_Slow[n][j] = Po_Muon_Slow[n];
+				}
+			}
+			else
+			{
+				//if under water calculate production modified for water depth
+				for (int n=0; n<NoNuclides; ++n)
+				{
+					P_Spal[n][j] = 0;
+					P_Muon_Fast[n][j] = 0;
+					P_Muon_Slow[n][j] = 0;
+				}
+				
+				//Loop over the tidal cycle and total the production
+				for (int a=0, NN=WaterLevels.size(); a<NN; ++a)
+				{
+					if (WaterLevels[a] >= SurfaceElevation[j]) WaterDepths[a] = WaterLevels[a]-SurfaceElevation[j];
+					else WaterDepths[a] = 0;
+
+					//Calculate Production for this profile
+					//FOR EACH NUCLIDE OF INTEREST
+					for (int n=0; n<NoNuclides; ++n)
+					{
+						P_Spal[n][j] += GeoMagScalingFactor*TopoShieldingFactor*Po_Spal[n]*fastexp(-WaterDepths[a]/z_ws);
+						P_Muon_Fast[n][j] += TopoShieldingFactor*Po_Muon_Fast[n]*fastexp(-WaterDepths[a]/z_wm);
+						P_Muon_Slow[n][j] += TopoShieldingFactor*Po_Muon_Slow[n]*fastexp(-WaterDepths[a]/z_wm);
+					}
+				}
+				//FOR EACH NUCLIDE OF INTEREST
+				for (int n=0; n<NoNuclides; ++n)
+				{
+					//find mean production rate at surface
+					//normalise by the tidal duration
+					P_Spal[n][j] /= NTidalValues;
+					P_Muon_Fast[n][j] /= NTidalValues;
+					P_Muon_Slow[n][j] /= NTidalValues;
+				}
+			}
+		}
+
+		//LOOP Through the concentrations arrays
+		#pragma omp for collapse(2) schedule(guided)
+		for (int j=0; j<NXNodes; ++j)
+		{	
+			// update concentrations at depth and in the sky
+			for (int i=0; i<NZNodes; ++i)
+			{
+				if (Z[i] > PlatformElevation[j])
+				{
+					for (int n=0; n<NoNuclides; ++n)
+					{
+						N[n][j][i] = 0;
+					}
+				}
+				else if (Z[i] > PlatformElevation[j]-20.)
+				{
+					for (int n=0; n<NoNuclides; ++n)
+					{
+						//update concentrations at depth
+						//This is kept as SurfaceElevation not Platform Elevation for now
+						//NB This assumes that material density of the beach is the same as the bedrock!
+						N[n][j][i] += dt*P_Spal[n][j]*fastexp((Z[i]-SurfaceElevation[j])/z_rs);	//spallation
+						N[n][j][i] += dt*P_Muon_Fast[n][j]*fastexp((Z[i]-SurfaceElevation[j])/z_rm);	//muons
+						N[n][j][i] += dt*P_Muon_Slow[n][j]*fastexp((Z[i]-SurfaceElevation[j])/z_rm);	//muons
+						//remove atoms due to radioactive decay
+						N[n][j][i] -= dt*Lambda[n];
+					}
+				}
+			}
+
+			// update surface concentrations
+			for (int n=0; n<NoNuclides; ++n)
+			{
+				// Update surface concentrations
+				SurfaceN[n][j] += dt*P_Spal[n][j]*fastexp((PlatformElevation[j]-SurfaceElevation[j])/z_rs);	//spallation
+				SurfaceN[n][j] += dt*P_Muon_Fast[n][j]*fastexp((PlatformElevation[j]-SurfaceElevation[j])/z_rm);	//muons
+				SurfaceN[n][j] += dt*P_Muon_Slow[n][j]*fastexp((PlatformElevation[j]-SurfaceElevation[j])/z_rm);	//muons
+
+				//linearly interpolate to get concentration at the surface
+				//if (PlatformElevationOld[j] == -9999) PlatformElevationOld[j] = SeaLevel+JunctionElevation;
+				if (PlatformElevation[j] < PlatformElevationOld[j]) 
+				{
+					SurfaceN[n][j] -= (((PlatformElevationOld[j]-PlatformElevation[j])/(PlatformElevationOld[j]-Z[i]))*(SurfaceN[n][j]-N[n][j][i]));
+				}
+				if (isnan(SurfaceN[n][j]))
+				{
+					printf("RockyCoastCRN::%s: line %d NaN in surface concentrations\n\n", __func__, __LINE__);
+				}
+			}
+		}
+	}
 }
 
 void RockyCoastCRN::UpdateCRNs()
