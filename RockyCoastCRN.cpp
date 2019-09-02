@@ -905,7 +905,7 @@ void RockyCoastCRN::UpdateCRNs()
 			// update concentrations at depth and in the sky
 			for (int i=0; i<NZNodes; ++i)
 			{
-				bool Top = false;
+				//bool Top = false;
 				
 				if (Z[i] > PlatformElevation[j])
 				{
@@ -928,7 +928,7 @@ void RockyCoastCRN::UpdateCRNs()
 						N[n][j][i] -= dt*Lambda[n];
 					}
 				}
-
+				/*
 				if (Top == false)
 				{
 					for (int n=0; n<NoNuclides; ++n)
@@ -951,6 +951,7 @@ void RockyCoastCRN::UpdateCRNs()
 					}
 					Top = 1;
 				}
+				*/
 			}
 		}
 	}
