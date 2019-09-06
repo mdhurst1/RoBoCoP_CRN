@@ -71,7 +71,7 @@
 #include <fstream>
 #include <sstream>
 #include <cstdlib>
-#include <omp.h>
+//#include <omp.h>
 #include "./RockyCoastCRN.hpp"
 #include "../RPM.hpp"
 #include "../FastExp.hpp"
