@@ -1362,6 +1362,7 @@ void RockyCoastCRN::WriteCRNProfile(string OutputFileName, double Time)
 		for (int n=0; n<NoNuclides; ++n)
 		{
 			WritePlatform << Time;
+			WritePlatform << " " << Nuclides[n];
 			for (int j=0; j<NXNodes; ++j) WritePlatform << setprecision(5) << " " << SurfaceN[n][j];
 			WritePlatform << endl;
 		}
