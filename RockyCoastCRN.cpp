@@ -356,29 +356,38 @@ void RockyCoastCRN::Initialise(RPM RPMCoast, vector<int> WhichNuclides)
 
 void RockyCoastCRN::InitialiseNuclides(vector<int> WhichNuclides)
 {
-	// Spallation (a/g/yr) calibrated 10Be production rate (Lifton et al. 2014).
-	Po_10Be_Spal = 4.007;
+	
+	// Spallation (a/g/yr) calibrated 10Be production rate of Lifton et al. (2014), reported in Borchers et al. (2016)
+	Po_10Be_Spal = 4.009;
 
-	// Spallation (a/g/yr) calibrated 14C production rate (add ref).
-	Po_14C_Spal = 12.29;
+	// Spallation (a/g/yr) calibrated 14C production rate of Lifton et al. (2014), reported in Borchers et al. (2016)
+	Po_14C_Spal = 12.72;
 
-	// Spallation (a/g/yr) calibrated 26Al production rate (add ref).
-	Po_26Al_Spal = 4.007;
+	// Spallation (a/g/yr) calibrated 26Al production rate of Lifton et al. (2014), reported in Borchers et al. (2016)
+	Po_26Al_Spal = 28.61;
 
-	// Spallation (a/g/yr) calibrated 36Cl production rate (add_ref).
-	Po_36Cl_Spal = 4.007;
+	///@brief 36Cl spallation of Ca reference production rate.
+	///@details Spallation of calcium (a/g(Ca)/yr) calibrated 36Cl production rate of Lifton et al. (2014), reported in Borchers et al. (2016)..
+	Po_36Cl_Ca_Spal = 56.61;
 
-	// Total muogenic production rate (a/g/yr) following Braucher et al. (2013).
-	Po_10Be_Muon_Fast = 0.028;
+	///@brief 36Cl spallation of K reference production rate.
+	///@details Spallation of pottasium (a/g(K)/yr) calibrated 36Cl production rate for Sf scaling scheme of Lifton et al. (2014), reported in Borchers et al. (2016).
+	Po_36Cl_K_Spal = 153.95;
+
+	///@brief   10Be muogneic reference produciton rate.
+	///@details Total muogenic production rate (a/g/yr) following Balco (2017).
+	Po_10Be_Muon_Fast = 0.084;
 	Po_10Be_Muon_Slow = 0;
 
-	// Total muogenic production rate (a/g/yr)
+	///@brief   14C muogneic reference produciton rate.
+	///@details Total muogenic production rate (a/g/yr) following Heisinger et al. (2002)
 	Po_14C_Muon_Fast = 3.34;
 	Po_14C_Muon_Slow = 0.44;
 
-	// Total muogenic production rate (a/g/yr)
-	Po_26Al_Muon_Fast = 3.34;
-	Po_26Al_Muon_Slow = 0.44;
+	///@brief   26Al muogneic reference produciton rate.
+	///@details Total muogenic production rate (a/g/yr) following Balco (2017) approximation
+	Po_26Al_Muon_Fast = 0.761;
+	Po_26Al_Muon_Slow = 0.;
 
 	// Total muogenic production rate (a/g/yr)
 	Po_36Cl_Muon_Fast = 3.34;
@@ -388,8 +397,8 @@ void RockyCoastCRN::InitialiseNuclides(vector<int> WhichNuclides)
 	//Spallogenic attenuation length (kg/m^2).
 	Lamb_Spal = 1600.0;
 
-	// Muogenic attenuation length (kg/m^2) following Braucher et al. (2013).
-	Lamb_Muon = 42000.0;	
+	// Muogenic attenuation length (kg/m^2) Muogenic attenuation length (kg/m^2) for 26Al following Balco (2017)
+	Lamb_Muon = 25010.0;	
 
 	// density of rock and water respectively
 	rho_r = 2600.; 
@@ -402,16 +411,22 @@ void RockyCoastCRN::InitialiseNuclides(vector<int> WhichNuclides)
 	z_wm = Lamb_Muon/rho_w;		//Decay length scale sea water muons
 
 	// Half life of 10Be (Korschineck et al. 2010).
-	Lambda_10Be = 4.99*pow(10.,-7);
+	///@brief Half life of 10Be (Korschineck et al. 2010).
+	HalfLife_10Be = 1.387*pow(10.,6.);
+	Lambda_10Be = log(2.)/HalfLife_10Be;
 
-	// Half life of 14C (ref).
-	Lambda_14C = 4.99*pow(10.,-7);
+	///@brief Half life of 14C (ref).
+	HalfLife_14C = 5730.;
+	Lambda_14C = log(2.)/HalfLife_14C;
 
-	// Half life of 26Al (ref).
-	Lambda_26Al = 4.99*pow(10.,-7);
+	///@brief Half life of 26Al (ref).
+	HalfLife_26Al = 7.05*pow(10.,5.);
+	Lambda_26Al = log(2.)/HalfLife_26Al;
 
-	// Half life of 36Cl (ref).
-	Lambda_36Cl = 4.99*pow(10.,-7);
+	///@brief Half life of 36Cl (ref).
+	HalfLife_36Cl = 3.01*pow(10.,5.);
+	Lambda_36Cl = log(2.)/HalfLife_36Cl;
+	
 
 	//Declare number of nuclides
 	NoNuclides = Nuclides.size();
@@ -451,7 +466,7 @@ void RockyCoastCRN::InitialiseNuclides(vector<int> WhichNuclides)
 		}
 		else if (Nuclides[n] == 36)
 		{
-			Po_Spal[n] = Po_36Cl_Spal;
+			Po_Spal[n] = Po_36Cl_Ca_Spal;
 			Po_Muon_Fast[n] = Po_36Cl_Muon_Fast;
 			Po_Muon_Slow[n] = Po_36Cl_Muon_Slow;
 			Lambda[n] = Lambda_36Cl;

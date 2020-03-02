@@ -112,7 +112,8 @@ class RockyCoastCRN
 
 		///@brief   36Cl spallation reference production rate.
 		///@details Spallation (a/g/yr) calibrated 36Cl production rate (add_ref).
-		float Po_36Cl_Spal;
+		float Po_36Cl_Ca_Spal;
+		float Po_36Cl_K_Spal;
 
 		///@brief   10Be muogneic reference produciton rate.
 		///@details Total muogenic production rate (a/g/yr) following Braucher et al. (2013).
@@ -152,15 +153,19 @@ class RockyCoastCRN
 		float z_wm;
 
 		///@brief Half life of 10Be (Korschineck et al. 2010).
+		float HalfLife_10Be;
 		float Lambda_10Be;
 
 		///@brief Half life of 14C (ref).
+		float HalfLife_14C;
 		float Lambda_14C;
 
 		///@brief Half life of 26Al (ref).
+		float HalfLife_26Al;
 		float Lambda_26Al;
 
 		///@brief Half life of 36Cl (ref).
+		float HalfLife_36Cl;
 		float Lambda_36Cl;
 
 		int NoNuclides;								//How many nuclides to track
