@@ -66,16 +66,16 @@ float Po_36Cl_Muon_Fast = 3.34;
 float Po_36Cl_Muon_Slow = 0.44;
 
 // Attenuation Lengths
-///@brief Spallogenic attenuation length (kg/m^2).
+///@brief Spallogenic attenuation length (kg/m^2) following Balco et al (2008).
 float Lamb_Spal = 1600.0;
 
-// might need different values for different productions?
+// might need different lambda values for different productions?
 
-///@brief Muogenic attenuation length (kg/m^2) following Balco (2017).
-float Lamb_10Be_Muon = 25010;	
+///@brief Muogenic attenuation length (kg/m^2) (for 10Be) following Balco (2017).
+float Lamb_Muon = 25010;	
 
 ///@brief Muogenic attenuation length (kg/m^2) for 26Al following Balco (2017)
-float Lamb_26Al_Muon = 24170.0;
+///float Lamb_26Al_Muon = 24170.0;
 
 // density of rock and sea water respectively
 float rho_r = 2600.; 
@@ -96,10 +96,12 @@ float HalfLife_14C = 5730.;
 float Lambda_14C = log(2.)/HalfLife_14C;
 
 ///@brief Half life of 26Al (ref).
-float Lambda_26Al = 4.99*pow(10.,-7);
+float HalfLife_26Al = 7.05*pow(10.,5.);
+float Lambda_26Al = log(2.)/HalfLife_26Al;
 
 ///@brief Half life of 36Cl (ref).
-float Lambda_36Cl = 4.99*pow(10.,-7);
+float HalfLife_36Cl = 3.01*pow(10.,5.);
+float Lambda_36Cl = log(2.)/HalfLife_36Cl;
 
 //float Po_Spal = 4.34;				//Spallation (a/g/yr) to match Regard et al (2012)
 //float Po_Fast = 0.039;			//Fast Muons (a/g/yr) to match Regard et al (2012)
