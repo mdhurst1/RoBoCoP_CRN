@@ -381,8 +381,8 @@ void RockyCoastCRN::InitialiseNuclides(vector<int> WhichNuclides)
 
 	///@brief   14C muogneic reference produciton rate.
 	///@details Total muogenic production rate (a/g/yr) following Heisinger et al. (2002)
-	Po_14C_Muon_Fast = 3.34;
-	Po_14C_Muon_Slow = 0.44;
+	Po_14C_Muon_Fast = 3.31;
+	Po_14C_Muon_Slow = 0.0;
 
 	///@brief   26Al muogneic reference produciton rate.
 	///@details Total muogenic production rate (a/g/yr) following Balco (2017) approximation
