@@ -929,7 +929,7 @@ void RockyCoastCRN::UpdateCRNs()
 						N[n][j][i] = 0;
 					}
 				}
-				else if (Z[i] > PlatformElevation[j]-20.)
+				else if (Z[i] > PlatformElevation[j]-10.)
 				{
 					for (int n=0; n<NoNuclides; ++n)
 					{
@@ -1113,12 +1113,14 @@ void RockyCoastCRN::UpdateMorphology(RPM RPMCoast)
 		}
 	}
 	
-	//Cliff is on the right, find it
+	//Cliff is on the right, find it and update surface elevations to cliff elevation
 	//This will need updating once we have sea level rise
-	CliffHeight = Z[NZNodes-1];
+	CliffHeight = RPMCoast.CliffElevation-RPMCoast.SeaLevel;
 	CliffPositionX = 0;
 	for (int j=NXNodes-1;j>0; --j)
 	{
+		SurfaceElevation[j] = RPMCoast.CliffElevation;
+		
 		if (Zx[j] < Zx[NXNodes-1])
 		{
 			CliffPositionX = X[j];
