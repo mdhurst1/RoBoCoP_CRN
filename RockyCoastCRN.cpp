@@ -325,6 +325,7 @@ void RockyCoastCRN::Initialise(RPM RPMCoast, vector<int> WhichNuclides)
 	//get max extent of shoreface from RPM
 	XMin = RPMCoast.X[0];
 	XMax = RPMCoast.X[RPMCoast.NXNodes-1];
+	OldXMax = XMax;
 
 	// Modify horizontal resolution
 	dX = 1.;
@@ -336,8 +337,11 @@ void RockyCoastCRN::Initialise(RPM RPMCoast, vector<int> WhichNuclides)
 	//Setup Surface Arrays
 	vector<double> EmptyZ(NZNodes,0);
 	vector<double> EmptyX(NXNodes,0);
+	vector<int> EmptyXInd(NXNodes,0);
 	vector<double> EmptyXNDV(NXNodes,NDV);
 	X = EmptyX;
+	SampleInd = EmptyXInd;
+	SurfaceInd = EmptyXInd;
 	Z = RPMCoast.Z;
 	PlatformElevation = EmptyXNDV;
 	PlatformElevationOld = EmptyXNDV;
@@ -1102,11 +1106,10 @@ void RockyCoastCRN::UpdateMorphology(RoBoCoP RoBoCoPCoast)
 void RockyCoastCRN::UpdateMorphology(RPM RPMCoast)
 {
 	// Get new maximum extent of array
-	OldXMax = XMax;
 	XMax = RPMCoast.X[RPMCoast.NXNodes-1];
 
 	// grow arrays if more nodes needed
-	while (OldXMax < XMax)
+	while (OldXMax+dX < XMax)
 	{
 		for (int n=0; n<NoNuclides; ++n)
 		{
@@ -1115,8 +1118,10 @@ void RockyCoastCRN::UpdateMorphology(RPM RPMCoast)
 		}
 		PlatformElevation.push_back(PlatformElevation[NXNodes-1]);
 		X.push_back(X[NXNodes-1]+dX);
-		SampleInd.push_back(SampleInd[-1]+SamplingInterval);
+		SampleInd.push_back(SampleInd[NXNodes-1]+SamplingInterval);
+		SurfaceInd.push_back(SurfaceInd[NXNodes-1]);
 		++NXNodes;
+		OldXMax += dX;
 	}
 	
 	// loop through morphology array here and resample elevations
@@ -1126,14 +1131,15 @@ void RockyCoastCRN::UpdateMorphology(RPM RPMCoast)
 	{
 		X[i] = RPMCoast.X[SampleInd[i]];
 		PlatformElevation[i] = RPMCoast.Zx[SampleInd[i]];
+		SurfaceInd[i] = RPMCoast.ZInd[SampleInd[i]];
 	}
 	
 	// why are these kept separate?
 	SurfaceElevation = PlatformElevation;
 	
-	for (int j=0; j<NXNodes; ++j)
+	for (int n=0; n<NoNuclides; ++n)
 	{
-		for (int n=0; n<NoNuclides; ++n)
+		for (int j=0; j<NXNodes; ++j)
 		{
 			SurfaceN[n][j] = N[n][j][SurfaceInd[j]];
 		}
