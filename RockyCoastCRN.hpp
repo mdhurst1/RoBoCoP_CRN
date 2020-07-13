@@ -213,10 +213,13 @@ class RockyCoastCRN
 		double JunctionElevation;
 		double CliffPositionX;        //tracks the cliff position in X (m)
 		int CliffPositionInd;         //tracks the index of the cliff position in X
-		double XMin, XMax;            //Extent of the model domain in X (m)
+		double XMin, XMax, OldXMax;            //Extent of the model domain in X (m)
 		double ZMin, ZMax;
 		int ZTrackInd;
-				
+		
+		vector<int> SampleInd;				//Indices for resampling morphology from another model
+		int SamplingInterval;				//Spacing of SampleInd
+
 		//sea level parameters
 		double SeaLevel, SLRRate, SeaLevelChange;
 		

@@ -317,12 +317,18 @@ void RockyCoastCRN::Initialise(RPM RPMCoast, vector<int> WhichNuclides)
 	TidalRange = RPMCoast.TidalRange;
 	
 	//Setup CRN domain based on RPMCoast
-	NXNodes = RPMCoast.NXNodes;
 	NZNodes = RPMCoast.NZNodes;
-	NDV = -9999;
-	dX = RPMCoast.dX;
 	dZ = RPMCoast.dZ;
 	dt = RPMCoast.TimeInterval;
+	NDV = -9999;
+	
+	//get max extent of shoreface from RPM
+	XMin = RPMCoast.X[0];
+	XMax = RPMCoast.X[RPMCoast.NXNodes-1];
+
+	// Modify horizontal resolution
+	dX = 1.;
+	NXNodes = (XMax-XMin)/dX;
 	
 	//Initialise the nuclides
 	InitialiseNuclides(WhichNuclides);
@@ -338,7 +344,15 @@ void RockyCoastCRN::Initialise(RPM RPMCoast, vector<int> WhichNuclides)
 	SurfaceElevation = EmptyXNDV;
 	vector< vector <double> > EmptySurfaceNs(NoNuclides,EmptyX);
 	SurfaceN = EmptySurfaceNs;
-	
+	SamplingInterval = (int)dX/RPMCoast.dX;
+
+	// setup horizontal domain
+	for (int i=0; i<NXNodes; ++i) 
+	{
+		X[i] = i*dX;
+		SampleInd[i] = i*SamplingInterval;
+	}
+		
 	//Setup CRN Arrays 	
 	vector< vector<double> > EmptyN(NXNodes,EmptyZ);
 	vector< vector< vector<double> > > EmptyNs(NoNuclides,EmptyN);
@@ -865,6 +879,8 @@ void RockyCoastCRN::UpdateCRNs()
 		#pragma omp for schedule(guided)
 		for (int j=0; j<NXNodes; ++j)
 		{	
+			// if X[j] > CliffPositionX return or find index of cliff position and change loop
+			
 			//skip if we're on non existant topography
 			if (SurfaceElevation[j] == NDV) continue;
 			
@@ -881,6 +897,8 @@ void RockyCoastCRN::UpdateCRNs()
 					P_Muon_Slow[n][j] = Po_Muon_Slow[n];
 				}
 			}
+
+			/// else if water depth > some threshold below -- ADD THIS
 			else
 			{
 				//if under water calculate production modified for water depth
@@ -1083,13 +1101,12 @@ void RockyCoastCRN::UpdateMorphology(RoBoCoP RoBoCoPCoast)
 
 void RockyCoastCRN::UpdateMorphology(RPM RPMCoast)
 {
-	//Get number of nodes in coastal morphology
-	X = RPMCoast.X;
-	Zx = RPMCoast.Zx;
-	SurfaceInd = RPMCoast.ZInd;
-	
-	int TempXSize = X.size();
-	while (TempXSize > NXNodes)
+	// Get new maximum extent of array
+	OldXMax = XMax;
+	XMax = RPMCoast.X[RPMCoast.NXNodes-1];
+
+	// grow arrays if more nodes needed
+	while (OldXMax < XMax)
 	{
 		for (int n=0; n<NoNuclides; ++n)
 		{
@@ -1097,13 +1114,22 @@ void RockyCoastCRN::UpdateMorphology(RPM RPMCoast)
 			SurfaceN[n].push_back(SurfaceN[n][NXNodes-1]);
 		}
 		PlatformElevation.push_back(PlatformElevation[NXNodes-1]);
-		--TempXSize;
+		X.push_back(X[NXNodes-1]+dX);
+		SampleInd.push_back(SampleInd[-1]+SamplingInterval);
+		++NXNodes;
 	}
-	NXNodes = X.size();
-	 
+	
+	// loop through morphology array here and resample elevations
 	PlatformElevationOld = PlatformElevation;
-	PlatformElevation = Zx;
-	SurfaceElevation = Zx;
+	
+	for (int i=0, N = SampleInd.size(); i<N; ++i)
+	{
+		X[i] = RPMCoast.X[SampleInd[i]];
+		PlatformElevation[i] = RPMCoast.Zx[SampleInd[i]];
+	}
+	
+	// why are these kept separate?
+	SurfaceElevation = PlatformElevation;
 	
 	for (int j=0; j<NXNodes; ++j)
 	{
@@ -1121,7 +1147,7 @@ void RockyCoastCRN::UpdateMorphology(RPM RPMCoast)
 	{
 		SurfaceElevation[j] = RPMCoast.CliffElevation;
 		
-		if (Zx[j] < Zx[NXNodes-1])
+		if (PlatformElevation[j] < PlatformElevation[NXNodes-1])
 		{
 			CliffPositionX = X[j];
 			break;
